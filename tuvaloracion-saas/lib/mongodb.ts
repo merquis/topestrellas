@@ -1,17 +1,22 @@
 import { MongoClient, Db } from 'mongodb';
 
-if (!process.env.MONGODB_URI && !process.env.MONGODB_URI_INTERNAL) {
-  throw new Error('Please add your Mongo URI to .env.local');
-}
-
-const uri = process.env.NODE_ENV === 'production' && process.env.MONGODB_URI_INTERNAL
-  ? process.env.MONGODB_URI_INTERNAL
-  : process.env.MONGODB_URI!;
-
 const options = {};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
+
+// Only check for MongoDB URI when actually trying to connect
+function getMongoUri(): string {
+  const uri = process.env.NODE_ENV === 'production' && process.env.MONGODB_URI_INTERNAL
+    ? process.env.MONGODB_URI_INTERNAL
+    : process.env.MONGODB_URI;
+    
+  if (!uri) {
+    throw new Error('Please add your Mongo URI to .env.local');
+  }
+  
+  return uri;
+}
 
 if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value
@@ -21,14 +26,26 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect();
+    try {
+      const uri = getMongoUri();
+      client = new MongoClient(uri, options);
+      globalWithMongo._mongoClientPromise = client.connect();
+    } catch (error) {
+      // During build time, we might not have the URI yet
+      globalWithMongo._mongoClientPromise = Promise.reject(error);
+    }
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   // In production mode, it's best to not use a global variable.
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  try {
+    const uri = getMongoUri();
+    client = new MongoClient(uri, options);
+    clientPromise = client.connect();
+  } catch (error) {
+    // During build time, we might not have the URI yet
+    clientPromise = Promise.reject(error);
+  }
 }
 
 // Export a module-scoped MongoClient promise. By doing this in a
