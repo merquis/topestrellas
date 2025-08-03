@@ -21,9 +21,9 @@ async function getBusinessBySubdomain(subdomain: string): Promise<{ business: Bu
     if (!business) return { business: null, isSuspended: false }
     
     // Verificar si está suspendido
-    // Si isActive no existe o es false, considerar como suspendido
-    // Si isActive es true, NO está suspendido
-    const isSuspended = business.isActive === false || business.isActive === undefined
+    // Si isActive es explícitamente false, está suspendido
+    // Si isActive es true o undefined (no existe), NO está suspendido
+    const isSuspended = business.isActive === false
     
     // Log para depuración
     console.log('Business subdomain:', subdomain)
