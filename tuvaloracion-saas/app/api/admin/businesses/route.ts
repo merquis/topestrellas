@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export async function GET() {
   try {
@@ -164,6 +165,63 @@ export async function POST(request: Request) {
     console.error('Error creating business:', error);
     return NextResponse.json(
       { error: 'Error al crear negocio' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID del negocio es requerido' },
+        { status: 400 }
+      );
+    }
+    
+    const client = await clientPromise;
+    const db = client.db('tuvaloracion');
+    
+    // Verificar que el ID sea válido
+    let objectId;
+    try {
+      objectId = new ObjectId(id);
+    } catch (e) {
+      return NextResponse.json(
+        { error: 'ID inválido' },
+        { status: 400 }
+      );
+    }
+    
+    // Eliminar el negocio
+    const result = await db.collection('businesses').deleteOne({ 
+      _id: objectId 
+    });
+    
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Negocio no encontrado' },
+        { status: 404 }
+      );
+    }
+    
+    // También eliminar las opiniones asociadas
+    await db.collection('opinions').deleteMany({ 
+      businessId: id 
+    });
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Negocio eliminado exitosamente'
+    });
+    
+  } catch (error) {
+    console.error('Error deleting business:', error);
+    return NextResponse.json(
+      { error: 'Error al eliminar negocio' },
       { status: 500 }
     );
   }

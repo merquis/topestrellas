@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
 
   // Simple autenticación (en producción usar NextAuth)
@@ -52,6 +53,34 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (confirm(`¿Estás seguro de que quieres eliminar ${name}?`)) {
+      setDeletingId(id);
+      try {
+        const response = await fetch(`/api/admin/businesses?id=${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setToast({ message: 'Negocio eliminado exitosamente', type: 'success' });
+          loadBusinesses();
+        } else {
+          const data = await response.json();
+          setToast({ message: `Error: ${data.error}`, type: 'error' });
+        }
+      } catch (error) {
+        setToast({ message: 'Error al eliminar el negocio', type: 'error' });
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
+
+  const handleEdit = (business: any) => {
+    // Por ahora, redirigir a una página de edición (la crearemos después)
+    router.push(`/admin/edit-business/${business._id}`);
   };
 
   if (loading) {
@@ -155,8 +184,19 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className="border p-2">
-                        <button className="text-blue-500 hover:underline mr-2">Editar</button>
-                        <button className="text-red-500 hover:underline">Eliminar</button>
+                        <button 
+                          onClick={() => handleEdit(business)}
+                          className="text-blue-500 hover:underline mr-2"
+                        >
+                          Editar
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(business._id, business.name)}
+                          disabled={deletingId === business._id}
+                          className="text-red-500 hover:underline disabled:opacity-50"
+                        >
+                          {deletingId === business._id ? 'Eliminando...' : 'Eliminar'}
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -175,6 +215,13 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
