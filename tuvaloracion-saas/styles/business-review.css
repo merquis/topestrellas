@@ -18,3 +18,15 @@
 .business-review-page body {
   background: transparent;
 }
+
+/* Sobrescribir estilos del título del restaurante */
+.business-review-page .restaurant-title {
+  background: none !important;
+  margin-bottom: 20px;
+}
+
+.business-review-page .restaurant-title h2 {
+  color: white;
+  font-weight: bold !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
