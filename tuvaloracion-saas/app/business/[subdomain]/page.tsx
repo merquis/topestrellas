@@ -21,7 +21,7 @@ async function getBusinessBySubdomain(subdomain: string): Promise<{ business: Bu
     if (!business) return { business: null, isSuspended: false }
     
     // Verificar si está suspendido
-    const isSuspended = !business.active || business.subscription?.status === 'suspended'
+    const isSuspended = !business.isActive
     
     // Convertir ObjectId a string para serialización
     return { 
@@ -89,11 +89,11 @@ export default async function BusinessPage({ params }: PageProps) {
             </p>
           </div>
           
-          {business.contact?.email && (
+          {business.email && (
             <div className="text-sm text-gray-500">
               <p>Para más información:</p>
-              <a href={`mailto:${business.contact.email}`} className="text-orange-500 hover:text-orange-600 font-medium">
-                {business.contact.email}
+              <a href={`mailto:${business.email}`} className="text-orange-500 hover:text-orange-600 font-medium">
+                {business.email}
               </a>
             </div>
           )}
