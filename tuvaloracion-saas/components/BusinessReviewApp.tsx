@@ -156,6 +156,8 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         star.classList.remove('hover');
       }
     });
+    // Cambiar la carita según el hover
+    setRatingFace(getFaceForRating(value));
   }
 
   const handleStarLeave = () => {
@@ -163,6 +165,8 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     stars.forEach(star => {
       star.classList.remove('hover');
     });
+    // Volver a la carita del rating actual (o la carita por defecto si no hay rating)
+    setRatingFace(getFaceForRating(rating));
   }
 
   const handleStarClick = (value: number) => {
