@@ -34,7 +34,7 @@ async function initDatabase() {
 
     // Índices para businesses
     await db.collection('businesses').createIndex({ subdomain: 1 }, { unique: true });
-    await db.collection('businesses').createIndex({ isActive: 1 });
+    await db.collection('businesses').createIndex({ active: 1 });
     await db.collection('businesses').createIndex({ plan: 1 });
     console.log('✅ Índices de businesses creados');
 
@@ -66,7 +66,7 @@ async function initDatabase() {
       address: 'Paseo marítimo 6',
       googleReviewUrl: 'https://google.es',
       plan: 'basic',
-      isActive: true,
+      active: true,
       createdAt: new Date(),
       updatedAt: new Date(),
       config: {

@@ -16,26 +16,26 @@ async function updateBusinessActive() {
 
     const db = client.db('tuvaloracion');
     
-    // Buscar todos los negocios que no tienen el campo isActive
+    // Buscar todos los negocios que no tienen el campo active
     const businessesWithoutActive = await db.collection('businesses').find({
-      isActive: { $exists: false }
+      active: { $exists: false }
     }).toArray();
     
-    console.log(`\n📊 Negocios sin campo isActive: ${businessesWithoutActive.length}`);
+    console.log(`\n📊 Negocios sin campo active: ${businessesWithoutActive.length}`);
     
     if (businessesWithoutActive.length > 0) {
-      // Actualizar todos los negocios sin isActive para que lo tengan como true
+      // Actualizar todos los negocios sin active para que lo tengan como true
       const result = await db.collection('businesses').updateMany(
-        { isActive: { $exists: false } },
+        { active: { $exists: false } },
         { 
           $set: { 
-            isActive: true,
+            active: true,
             updatedAt: new Date()
           } 
         }
       );
       
-      console.log(`✅ Actualizados ${result.modifiedCount} negocios con isActive = true`);
+      console.log(`✅ Actualizados ${result.modifiedCount} negocios con active = true`);
     }
     
     // Verificar el negocio demo específicamente
@@ -43,21 +43,21 @@ async function updateBusinessActive() {
     if (demoBusiness) {
       console.log('\n📋 Estado del negocio demo:');
       console.log('   - Nombre:', demoBusiness.name);
-      console.log('   - isActive:', demoBusiness.isActive);
+      console.log('   - active:', demoBusiness.active);
       console.log('   - Plan:', demoBusiness.plan);
       
-      // Si el demo no tiene isActive o está en false, actualizarlo
-      if (!demoBusiness.isActive) {
+      // Si el demo no tiene active o está en false, actualizarlo
+      if (!demoBusiness.active) {
         await db.collection('businesses').updateOne(
           { subdomain: 'demo' },
           { 
             $set: { 
-              isActive: true,
+              active: true,
               updatedAt: new Date()
             } 
           }
         );
-        console.log('✅ Negocio demo actualizado con isActive = true');
+        console.log('✅ Negocio demo actualizado con active = true');
       }
     }
     
