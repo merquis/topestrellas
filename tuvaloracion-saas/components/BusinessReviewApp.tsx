@@ -94,27 +94,27 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   }
 
   const validateForm = () => {
-    const newErrors = { ...errors, name: '', email: '', feedback: '', privacy: '' };
+    const formErrors = { name: '', email: '', feedback: '', privacy: '' };
     let isValid = true;
 
     if (!name) {
-      newErrors.name = getTranslation('requiredField');
+      formErrors.name = getTranslation('requiredField');
       isValid = false;
     }
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = getTranslation('invalidEmail');
+      formErrors.email = getTranslation('invalidEmail');
       isValid = false;
     }
     if (rating < 5 && !feedback) {
-      newErrors.feedback = getTranslation('requiredField');
+      formErrors.feedback = getTranslation('requiredField');
       isValid = false;
     }
     if (!privacyPolicy) {
-      newErrors.privacy = getTranslation('requiredField');
+      formErrors.privacy = getTranslation('requiredField');
       isValid = false;
     }
     
-    setErrors(newErrors);
+    setErrors(prevErrors => ({ ...prevErrors, ...formErrors }));
     return isValid;
   }
 
