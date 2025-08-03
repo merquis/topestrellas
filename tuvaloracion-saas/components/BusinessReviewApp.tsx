@@ -81,7 +81,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [currentView, setCurrentView] = useState<'initial' | 'form' | 'roulette' | 'code' | 'review'>('initial')
   const [rating, setRating] = useState(0)
   const [prizeWon, setPrizeWon] = useState<any>(null)
-  const [watchingCount, setWatchingCount] = useState(Math.floor(Math.random() * 10) + 5)
+  const [watchingCount, setWatchingCount] = useState(Math.floor(Math.random() * 4) + 1)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [feedback, setFeedback] = useState('')
@@ -117,7 +117,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setWatchingCount((prev: number) => Math.max(5, Math.min(20, prev + (Math.floor(Math.random() * 3) - 1))))
+      setWatchingCount((prev: number) => Math.max(1, Math.min(4, prev + (Math.floor(Math.random() * 3) - 1))))
     }, 3000)
     return () => clearInterval(interval)
   }, [])
