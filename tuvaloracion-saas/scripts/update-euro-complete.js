@@ -36,26 +36,26 @@ async function updateEuroComplete() {
           fr: { name: 'DÎNER (VALEUR 60€)', emoji: '🍽️' }
         }
       },
-      {
-        index: 1,
-        value: '30€',
-        translations: {
-          es: { name: '30€ DESCUENTO', emoji: '💰' },
-          en: { name: '€30 DISCOUNT', emoji: '💰' },
-          de: { name: '30€ RABATT', emoji: '💰' },
-          fr: { name: '30€ DE RÉDUCTION', emoji: '💰' }
-        }
-      },
-      {
-        index: 2,
-        value: '25€',
-        translations: {
-          es: { name: 'BOTELLA VINO', emoji: '🍾' },
-          en: { name: 'WINE BOTTLE', emoji: '🍾' },
-          de: { name: 'WEINFLASCHE', emoji: '🍾' },
-          fr: { name: 'BOUTEILLE DE VIN', emoji: '🍾' }
-        }
-      },
+          {
+            index: 1,
+            value: '30€',
+            translations: {
+              es: { name: '30€ DESCUENTO', emoji: '💰' },
+              en: { name: '€30 DISCOUNT', emoji: '💰' },
+              de: { name: '30€ RABATT', emoji: '💰' },
+              fr: { name: '30€ RÉDUCTION', emoji: '💰' }
+            }
+          },
+          {
+            index: 2,
+            value: '25€',
+            translations: {
+              es: { name: 'BOTELLA VINO', emoji: '🍾' },
+              en: { name: 'WINE BOTTLE', emoji: '🍾' },
+              de: { name: 'WEINFLASCHE', emoji: '🍾' },
+              fr: { name: 'BOUTEILLE VIN', emoji: '🍾' }
+            }
+          },
       {
         index: 3,
         value: '10€',
