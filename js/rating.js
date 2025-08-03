@@ -40,23 +40,46 @@ export class RatingManager {
    * Configura los event listeners
    */
   setupEventListeners() {
-    // Hover sobre las estrellas
-    this.container.addEventListener('mouseover', (e) => {
+    // Variable para rastrear el último valor del hover
+    let lastHoverValue = 0;
+    
+    // Hover sobre el contenedor completo
+    this.container.addEventListener('mousemove', (e) => {
       if (this.isLocked) return;
-      if (e.target.classList.contains('star')) {
-        const value = parseInt(e.target.dataset.value);
-        // Durante el hover, siempre mostrar desde 1 hasta el valor actual
-        this.updateStarsVisual(value);
-        // Actualizar la cara si no hay selección o si es la primera vez
+      
+      // Encontrar sobre qué estrella está el ratón
+      let hoverValue = 0;
+      const rect = this.container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      
+      // Calcular qué estrella corresponde a la posición X
+      this.stars.forEach((star, index) => {
+        const starRect = star.getBoundingClientRect();
+        const starX = starRect.left - rect.left;
+        const starWidth = starRect.width;
+        
+        // Si el ratón está sobre esta estrella o más allá
+        if (x >= starX) {
+          hoverValue = index + 1;
+        }
+      });
+      
+      // Solo actualizar si el valor cambió
+      if (hoverValue !== lastHoverValue && hoverValue > 0) {
+        lastHoverValue = hoverValue;
+        this.updateStarsVisual(hoverValue);
+        
+        // Actualizar la cara si no hay selección
         if (this.selectedValue === 0) {
-          this.showFaceForRating(value);
+          this.showFaceForRating(hoverValue);
         }
       }
     });
 
-    // Mouse leave del contenedor (mejor que mouseout)
+    // Mouse leave del contenedor
     this.container.addEventListener('mouseleave', () => {
       if (!this.isLocked) {
+        lastHoverValue = 0;
         // Al salir, restaurar el estado visual a la selección actual
         this.updateStarsVisual(this.selectedValue);
         this.showFaceForRating(this.selectedValue);
