@@ -157,6 +157,8 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       } else {
         star.classList.remove('active');
       }
+      // Quitar el efecto de parpadeo cuando se selecciona una estrella
+      star.classList.remove('heartbeat-pulse');
     });
   }
 
