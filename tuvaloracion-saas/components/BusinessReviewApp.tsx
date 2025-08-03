@@ -6,7 +6,7 @@ import { getBrowserLanguage } from '@/lib/utils'
 import LanguageSelector from './LanguageSelector'
 import RouletteWheel from './RouletteWheel'
 import '@/styles/business-review.css'
-import { translations as defaultTranslations } from '../../js/translations';
+import { translations as defaultTranslations } from '@/lib/translations';
 
 interface BusinessReviewAppProps {
   business: Business
