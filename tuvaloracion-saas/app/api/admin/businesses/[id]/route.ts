@@ -68,22 +68,27 @@ export async function PUT(
       );
     }
     
+    // Obtener el negocio actual para preservar algunos datos
+    const currentBusiness = await db.collection('businesses').findOne({ _id: objectId });
+    
+    if (!currentBusiness) {
+      return NextResponse.json(
+        { error: 'Negocio no encontrado' },
+        { status: 404 }
+      );
+    }
+    
     // Preparar datos para actualizar
     const updateData = {
       name: data.name,
       type: data.type || 'restaurante',
       category: data.category || '',
       config: {
-        languages: ['es'],
-        defaultLanguage: 'es',
+        ...currentBusiness.config, // Preservar configuración existente
         googleReviewUrl: data.googleReviewUrl || '',
         theme: {
           primaryColor: data.primaryColor || '#f97316',
           secondaryColor: data.secondaryColor || '#ea580c'
-        },
-        features: {
-          showScarcityIndicators: true,
-          requireGoogleReview: true
         }
       },
       contact: {
@@ -92,6 +97,7 @@ export async function PUT(
         address: data.address || ''
       },
       subscription: {
+        ...currentBusiness.subscription, // Preservar datos de suscripción
         plan: data.plan || 'trial',
         status: data.active ? 'active' : 'suspended'
       },

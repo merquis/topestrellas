@@ -26,7 +26,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     loadBusiness();
-  }, []);
+  }, [params.id]);
 
   const loadBusiness = async () => {
     try {
