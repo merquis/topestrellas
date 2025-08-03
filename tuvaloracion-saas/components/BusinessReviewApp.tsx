@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Business } from '@/lib/types'
+import { Business, Prize } from '@/lib/types'
 import { getBrowserLanguage } from '@/lib/utils'
 import LanguageSelector from './LanguageSelector'
 import RouletteWheel from './RouletteWheel'
