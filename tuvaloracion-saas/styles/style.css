@@ -10,17 +10,7 @@
   font-weight: bold;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, var(--bg-primary, #1a1a2e) 0%, var(--bg-secondary, #16213e) 100%);
-  color: #fff;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow-x: hidden;
-  position: relative;
-}
+/* Los estilos del body se aplican ahora solo a .business-review-page en business-review.css */
 
 
 /* CONTENEDOR PRINCIPAL */
