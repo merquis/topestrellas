@@ -140,26 +140,74 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     return isValid;
   }
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (validateForm()) {
-      setCurrentView('roulette')
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      return;
     }
+
+    // Verificar email con el webhook si está configurado
+    if (business.config.webhooks?.verifyEmailUrl) {
+      try {
+        const response = await fetch(business.config.webhooks.verifyEmailUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim().toLowerCase() })
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result?.existe === true) {
+            setErrors(prev => ({ ...prev, email: getTranslation('emailAlreadyUsed') }));
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error verifying email:', error);
+        // Opcional: mostrar un error genérico
+      }
+    }
+    
+    setCurrentView('roulette');
   }
 
-  const handleSpinComplete = (prizeIndex: number) => {
-    const prize = business.config.prizes[prizeIndex]
-    setPrizeWon(prize)
-    const generatedCode = `${business.subdomain.toUpperCase()}-${Date.now().toString(36).slice(-4).toUpperCase()}`
-    setRewardCode(generatedCode)
-    
-    // Lógica de guardado (simplificada)
-    console.log('Saving lead:', { name, email, rating, feedback, prize, code: generatedCode })
+  const handleSpinComplete = async (prizeIndex: number) => {
+    const prize = business.config.prizes[prizeIndex];
+    setPrizeWon(prize);
+    const generatedCode = `${business.subdomain.toUpperCase()}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    setRewardCode(generatedCode);
+
+    const leadData = {
+      name,
+      email,
+      rating,
+      review: feedback,
+      premio: prize.translations[currentLanguage]?.name || prize.translations['es']?.name,
+      codigoPremio: generatedCode,
+      lang: currentLanguage,
+      businessName: business.name,
+      subdomain: business.subdomain
+    };
+
+    // Guardar lead con el webhook si está configurado
+    if (business.config.webhooks?.saveLeadUrl) {
+      try {
+        await fetch(business.config.webhooks.saveLeadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(leadData)
+        });
+      } catch (error) {
+        console.error('Error saving lead via webhook:', error);
+      }
+    } else {
+      // Fallback a la API interna si no hay webhook
+      console.log('Saving lead via internal API:', leadData);
+    }
 
     if (rating === 5) {
-      setCurrentView('review')
+      setCurrentView('review');
     } else {
-      setCurrentView('code')
+      setCurrentView('code');
     }
   }
 
