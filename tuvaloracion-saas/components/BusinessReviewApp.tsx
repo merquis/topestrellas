@@ -163,6 +163,17 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const handleRateNow = () => {
     if (rating === 0) {
       setErrors(prev => ({ ...prev, rating: getTranslation('selectAtLeastOneStar') }))
+      
+      // En móviles, hacer scroll hasta las estrellas para que el usuario las vea
+      if (window.innerWidth <= 768) {
+        const starsElement = document.querySelector('.stars')
+        if (starsElement) {
+          starsElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          })
+        }
+      }
       return
     }
     setErrors(prev => ({ ...prev, rating: '' }))
