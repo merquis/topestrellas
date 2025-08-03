@@ -94,7 +94,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   }
 
   const validateForm = () => {
-    const newErrors = { name: '', email: '', feedback: '', privacy: '' }
+    const newErrors = { name: '', email: '', feedback: '', privacy: '', rating: '' }
     let isValid = true
     if (!name) {
       newErrors.name = getTranslation('requiredField')
