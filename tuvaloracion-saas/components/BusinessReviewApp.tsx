@@ -34,6 +34,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [privacyPolicy, setPrivacyPolicy] = useState(false)
   const [errors, setErrors] = useState<ErrorState>({ name: '', email: '', feedback: '', privacy: '', rating: '' })
   const [rewardCode, setRewardCode] = useState('')
+  const [ratingFace, setRatingFace] = useState('🤔')
 
   // Efectos para tema y contador de personas (se mantienen)
   useEffect(() => {
@@ -79,8 +80,21 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     return text
   }
 
+  const getFaceForRating = (value: number) => {
+    switch (value) {
+      case 0: return '🤔';
+      case 1: return '😞';
+      case 2: return '😕';
+      case 3: return '😐';
+      case 4: return '🙂';
+      case 5: return '😊';
+      default: return '🤔';
+    }
+  }
+
   const handleStarClick = (value: number) => {
     setRating(value)
+    setRatingFace(getFaceForRating(value))
     const stars = document.querySelectorAll('.star');
     stars.forEach(star => {
       const starValue = parseInt(star.getAttribute('data-value') || '0', 10);
@@ -199,6 +213,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               {[1, 2, 3, 4, 5].map(v => (
                 <span key={v} className="star" data-value={v} onClick={() => handleStarClick(v)}>★</span>
               ))}
+              <span className="rating-face">{ratingFace}</span>
             </div>
             {errors.rating && <div className="rating-error">{errors.rating}</div>}
             <div id="valorarBtnContainer">
