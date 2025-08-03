@@ -77,14 +77,56 @@ export default function RouletteWheel({
     
     setIsSpinning(true)
     
-    const prizeIndex = Math.floor(Math.random() * prizes.length)
+    // Lógica de probabilidades controladas basada en el rating
+    let prizeIndex: number;
+    const random = Math.random();
     
+    // Obtener el rating desde localStorage o asumir 5 por defecto
+    const currentRating = parseInt(localStorage.getItem('currentRating') || '5');
+    
+    if (currentRating >= 1 && currentRating <= 4) {
+      // LÓGICA PARA 1-4 ESTRELLAS
+      const lowTierPrizes = [3, 4, 7]; // Índices para HELADO, CERVEZA, CHUPITO
+      
+      // Comprobamos las probabilidades fijas del 0.01% cada una
+      if (random < 0.0001) {        // 0.01%
+        prizeIndex = 0; // CENA
+      } else if (random < 0.0002) { // 0.01%
+        prizeIndex = 1; // 30€ DESCUENTO
+      } else if (random < 0.0003) { // 0.01%
+        prizeIndex = 2; // BOTELLA VINO
+      } else if (random < 0.0004) { // 0.01%
+        prizeIndex = 5; // REFRESCO
+      } else if (random < 0.0005) { // 0.01%
+        prizeIndex = 6; // MOJITO
+      } else {
+        // El 99.95% restante se reparte entre los 3 premios menores
+        const randomIndex = Math.floor(Math.random() * lowTierPrizes.length);
+        prizeIndex = lowTierPrizes[randomIndex];
+      }
+    } else {
+      // LÓGICA PARA 5 ESTRELLAS
+      // Comprobamos las probabilidades fijas del 0.1% cada una
+      if (random < 0.001) {        // 0.1%
+        prizeIndex = 0; // CENA
+      } else if (random < 0.002) { // 0.1%
+        prizeIndex = 1; // 30€ DESCUENTO
+      } else if (random < 0.003) { // 0.1%
+        prizeIndex = 2; // BOTELLA VINO
+      } else {
+        // El 99.7% restante se reparte entre los 5 premios restantes
+        const highTierLowPrizes = [3, 4, 5, 6, 7]; // Helado, Cerveza, Refresco, Mojito, Chupito
+        const randomIndex = Math.floor(Math.random() * highTierLowPrizes.length);
+        prizeIndex = highTierLowPrizes[randomIndex];
+      }
+    }
+    
+    // Calcular rotación para que la ruleta pare en el premio seleccionado
     const anglePerSegment = 360 / prizes.length
-    const prizeAngle = prizeIndex * anglePerSegment
-    const randomOffset = Math.random() * (anglePerSegment * 0.8) + (anglePerSegment * 0.1)
-    const targetAngle = prizeAngle + randomOffset
-    
-    const totalRotation = (360 * 5) + (360 - targetAngle)
+    const targetIndex = (prizeIndex - 2 + prizes.length) % prizes.length;
+    const rotation = 270 - (targetIndex * anglePerSegment) - (anglePerSegment / 2);
+    const randomSpins = Math.floor(Math.random() * 3) + 5; // Entre 5 y 7 vueltas
+    const totalRotation = (randomSpins * 360) + rotation;
 
     wheelRef.current.style.transition = `transform 4300ms cubic-bezier(.17,.67,.17,1)`
     wheelRef.current.style.transform = `rotate(${totalRotation}deg)`

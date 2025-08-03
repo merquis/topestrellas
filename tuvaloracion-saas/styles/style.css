@@ -912,7 +912,7 @@
   }
   
   /* Espacio reservado en la parte inferior para la barra fija */
-  body {
+  .business-review-page {
     padding-bottom: 90px; 
   }
 
@@ -923,17 +923,12 @@
     left: 0;
     width: 100%;
     padding: 15px;
-    background: #181E37;
+    background: var(--bg-primary, #181E37);
     z-index: 1000;
     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
   }
 
   .fixed-cta-container button {
-    display: none; /* Los botones internos se gestionan por JS */
-  }
-
-  /* Estilo específico para el botón en la barra fija */
-  #fixed-cta-bar .confirmation-btn {
     width: 100%;
     max-width: 100%;
     margin: 0;
@@ -945,6 +940,22 @@
     font-size: 18px;
     white-space: nowrap;
     animation: heartbeat 1.5s ease-in-out infinite;
+    border: none;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .fixed-cta-container button:hover {
+    transform: translateY(-2px);
+  }
+
+  .fixed-cta-container button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   @keyframes heartbeat {
@@ -958,7 +969,6 @@
       transform: scale(1);
     }
   }
-
 
   .urgency-timer {
     font-size: 14px;

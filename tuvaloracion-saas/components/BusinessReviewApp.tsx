@@ -5,6 +5,10 @@ import { Business, Prize } from '@/lib/types'
 import { getBrowserLanguage } from '@/lib/utils'
 import LanguageSelector from './LanguageSelector'
 import RouletteWheel from './RouletteWheel'
+import MobileStickyBar from './MobileStickyBar'
+import ScarcityIndicators from './ScarcityIndicators'
+import RatingSection from './RatingSection'
+import GoogleTimer from './GoogleTimer'
 import '@/styles/business-review.css'
 import { translations as defaultTranslations } from '@/lib/translations';
 
@@ -163,6 +167,8 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       return
     }
     setErrors(prev => ({ ...prev, rating: '' }))
+    // Guardar el rating en localStorage para que la ruleta pueda acceder a él
+    localStorage.setItem('currentRating', rating.toString())
     setCurrentView('form')
   }
 
@@ -370,8 +376,19 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
 
         {/* VISTA REVIEW GOOGLE */}
         <div id="resenaBtn" className={currentView !== 'review' ? 'hidden' : ''}>
+          <div className="reward-code premium-reward">
+            <div className="description">
+              <span>{getTranslation('rewardCode')}</span>
+            </div>
+            <div className="code">{rewardCode}</div>
+            <div className="expiry-warning">
+              <span>{getTranslation('todayOnly')}</span>
+            </div>
+             <p className="email-message" dangerouslySetInnerHTML={{ __html: getTranslation('prizeByEmail', { email: `<span class="highlight-email">${email}</span>` }) }} />
+          </div>
           <div className="form-section final-step">
             <h3 className="urgent-final"><span>{getTranslation('googleReviewTitle')}</span></h3>
+            <GoogleTimer getTranslation={getTranslation} />
             <div id="googleBtnContainer">
               <a href={business.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="google-btn premium-google">
                 <span>{getTranslation('googleBtn')}</span>
@@ -392,6 +409,26 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
           />
         </div>
       )}
+
+      {/* BARRA STICKY MÓVIL */}
+      <MobileStickyBar
+        currentView={currentView}
+        onRateNow={handleRateNow}
+        onSubmitForm={() => {
+          const form = document.querySelector('#formulario form') as HTMLFormElement;
+          if (form) {
+            const event = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(event);
+          }
+        }}
+        onGoToReview={() => {
+          if (business.googleReviewUrl) {
+            window.open(business.googleReviewUrl, '_blank');
+          }
+        }}
+        getTranslation={getTranslation}
+        isFormValid={!errors.name && !errors.email && !errors.feedback && !errors.privacy && name && email && (rating >= 5 || feedback) && privacyPolicy}
+      />
     </div>
   )
 }
