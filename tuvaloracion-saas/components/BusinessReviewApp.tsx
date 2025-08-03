@@ -181,13 +181,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             stars.forEach(star => {
               star.classList.add('heartbeat-pulse')
             })
-            
-            // Quitar el efecto después de 3 segundos
-            setTimeout(() => {
-              stars.forEach(star => {
-                star.classList.remove('heartbeat-pulse')
-              })
-            }, 3000)
+            // Las estrellas seguirán parpadeando hasta que se seleccione una
           }, 500) // Esperar 500ms para que termine el scroll
         }
       }
