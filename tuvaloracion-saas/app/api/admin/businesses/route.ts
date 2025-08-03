@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       type: data.type || 'restaurante',
       category: data.category || '',
       config: {
-        languages: data.languages || ['es'],
+        languages: data.languages || ['es', 'en', 'de', 'fr'],
         defaultLanguage: 'es',
         googleReviewUrl: data.googleReviewUrl || '',
         theme: {
@@ -68,7 +68,9 @@ export async function POST(request: Request) {
             value: '60€',
             translations: {
               es: { name: 'Premio Mayor', emoji: '🎁' },
-              en: { name: 'Grand Prize', emoji: '🎁' }
+              en: { name: 'Grand Prize', emoji: '🎁' },
+              de: { name: 'Hauptpreis', emoji: '🎁' },
+              fr: { name: 'Grand Prix', emoji: '🎁' }
             }
           },
           {
@@ -76,7 +78,9 @@ export async function POST(request: Request) {
             value: '30€',
             translations: {
               es: { name: 'Descuento 30€', emoji: '💰' },
-              en: { name: '€30 Discount', emoji: '💰' }
+              en: { name: '€30 Discount', emoji: '💰' },
+              de: { name: '30€ Rabatt', emoji: '💰' },
+              fr: { name: '30€ de Réduction', emoji: '💰' }
             }
           },
           {
@@ -84,7 +88,9 @@ export async function POST(request: Request) {
             value: '25€',
             translations: {
               es: { name: 'Vale 25€', emoji: '🎟️' },
-              en: { name: '€25 Voucher', emoji: '🎟️' }
+              en: { name: '€25 Voucher', emoji: '🎟️' },
+              de: { name: '25€ Gutschein', emoji: '🎟️' },
+              fr: { name: 'Bon 25€', emoji: '🎟️' }
             }
           },
           {
@@ -92,7 +98,9 @@ export async function POST(request: Request) {
             value: '10€',
             translations: {
               es: { name: 'Descuento 10€', emoji: '💵' },
-              en: { name: '€10 Discount', emoji: '💵' }
+              en: { name: '€10 Discount', emoji: '💵' },
+              de: { name: '10€ Rabatt', emoji: '💵' },
+              fr: { name: '10€ de Réduction', emoji: '💵' }
             }
           },
           {
@@ -100,7 +108,9 @@ export async function POST(request: Request) {
             value: '5€',
             translations: {
               es: { name: 'Vale 5€', emoji: '🎫' },
-              en: { name: '€5 Voucher', emoji: '🎫' }
+              en: { name: '€5 Voucher', emoji: '🎫' },
+              de: { name: '5€ Gutschein', emoji: '🎫' },
+              fr: { name: 'Bon 5€', emoji: '🎫' }
             }
           },
           {
@@ -108,7 +118,9 @@ export async function POST(request: Request) {
             value: '3€',
             translations: {
               es: { name: 'Descuento 3€', emoji: '🪙' },
-              en: { name: '€3 Discount', emoji: '🪙' }
+              en: { name: '€3 Discount', emoji: '🪙' },
+              de: { name: '3€ Rabatt', emoji: '🪙' },
+              fr: { name: '3€ de Réduction', emoji: '🪙' }
             }
           },
           {
@@ -116,7 +128,9 @@ export async function POST(request: Request) {
             value: '8€',
             translations: {
               es: { name: 'Vale 8€', emoji: '🎯' },
-              en: { name: '€8 Voucher', emoji: '🎯' }
+              en: { name: '€8 Voucher', emoji: '🎯' },
+              de: { name: '8€ Gutschein', emoji: '🎯' },
+              fr: { name: 'Bon 8€', emoji: '🎯' }
             }
           },
           {
@@ -124,7 +138,9 @@ export async function POST(request: Request) {
             value: '2€',
             translations: {
               es: { name: 'Descuento 2€', emoji: '✨' },
-              en: { name: '€2 Discount', emoji: '✨' }
+              en: { name: '€2 Discount', emoji: '✨' },
+              de: { name: '2€ Rabatt', emoji: '✨' },
+              fr: { name: '2€ de Réduction', emoji: '✨' }
             }
           }
         ],
