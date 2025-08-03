@@ -172,6 +172,21 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             behavior: 'smooth', 
             block: 'center' 
           })
+          
+          // Después del scroll, hacer que las estrellas parpadeen como latido del corazón
+          setTimeout(() => {
+            const stars = document.querySelectorAll('.star')
+            stars.forEach(star => {
+              star.classList.add('heartbeat-pulse')
+            })
+            
+            // Quitar el efecto después de 3 segundos
+            setTimeout(() => {
+              stars.forEach(star => {
+                star.classList.remove('heartbeat-pulse')
+              })
+            }, 3000)
+          }, 500) // Esperar 500ms para que termine el scroll
         }
       }
       return
