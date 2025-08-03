@@ -9,6 +9,7 @@ import LeadForm from './LeadForm'
 import RouletteWheel from './RouletteWheel'
 import PrizeDisplay from './PrizeDisplay'
 import GoogleReviewPrompt from './GoogleReviewPrompt'
+import '@/styles/business-review.css'
 
 interface BusinessReviewAppProps {
   business: Business
@@ -189,10 +190,11 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   }
 
   return (
-    <div className="main-wrapper">
-      <div className="restaurant-title">
-        <h2>{business.name}</h2>
-      </div>
+    <div className="business-review-page">
+      <div className="main-wrapper">
+        <div className="restaurant-title">
+          <h2>{business.name}</h2>
+        </div>
       
       <div className="container">
         <LanguageSelector
@@ -281,16 +283,17 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         )}
       </div>
       
-      {currentView === 'roulette' && (
-        <div className="roulette-screen">
-          <RouletteWheel
-            prizes={business.config.prizes}
-            language={currentLanguage}
-            onSpinComplete={handleSpinComplete}
-            getTranslation={getTranslation}
-          />
-        </div>
-      )}
+        {currentView === 'roulette' && (
+          <div className="roulette-screen">
+            <RouletteWheel
+              prizes={business.config.prizes}
+              language={currentLanguage}
+              onSpinComplete={handleSpinComplete}
+              getTranslation={getTranslation}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
