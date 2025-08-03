@@ -45,14 +45,21 @@ export class RatingManager {
       if (this.isLocked) return;
       if (e.target.classList.contains('star')) {
         const value = parseInt(e.target.dataset.value);
-        this.updateStars(value, true); // true indica que es hover
+        // Durante el hover, siempre mostrar desde 1 hasta el valor actual
+        this.updateStarsVisual(value);
+        // Actualizar la cara si no hay selección o si es la primera vez
+        if (this.selectedValue === 0) {
+          this.showFaceForRating(value);
+        }
       }
     });
 
     // Mouse leave del contenedor (mejor que mouseout)
     this.container.addEventListener('mouseleave', () => {
       if (!this.isLocked) {
-        this.updateStars(this.selectedValue, false); // false indica que no es hover
+        // Al salir, restaurar el estado visual a la selección actual
+        this.updateStarsVisual(this.selectedValue);
+        this.showFaceForRating(this.selectedValue);
       }
     });
 
@@ -82,16 +89,7 @@ export class RatingManager {
    * @param {boolean} isHover - Si es un hover temporal
    */
   updateStars(value, isHover = false) {
-    this.stars.forEach(star => {
-      const starValue = parseInt(star.dataset.value);
-      const shouldBeActive = starValue <= value;
-      
-      if (shouldBeActive) {
-        star.classList.add('active');
-      } else {
-        star.classList.remove('active');
-      }
-    });
+    this.updateStarsVisual(value);
     
     // Solo actualizar la cara en estos casos:
     // 1. No es hover (es un click o reset)
@@ -103,6 +101,23 @@ export class RatingManager {
       this.showFaceForRating(value);
     }
     // Si es hover y ya hay una selección, no cambiar la cara
+  }
+
+  /**
+   * Actualiza solo el aspecto visual de las estrellas sin afectar la lógica
+   * @param {number} value - Valor hasta el cual activar las estrellas
+   */
+  updateStarsVisual(value) {
+    this.stars.forEach(star => {
+      const starValue = parseInt(star.dataset.value);
+      const shouldBeActive = starValue <= value;
+      
+      if (shouldBeActive) {
+        star.classList.add('active');
+      } else {
+        star.classList.remove('active');
+      }
+    });
   }
 
   /**
