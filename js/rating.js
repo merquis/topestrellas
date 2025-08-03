@@ -40,27 +40,19 @@ export class RatingManager {
    * Configura los event listeners
    */
   setupEventListeners() {
-    // Eventos individuales para cada estrella
-    this.stars.forEach((star, index) => {
-      // Cuando el ratón entra en una estrella
-      star.addEventListener('mouseenter', () => {
-        if (this.isLocked) return;
-        const value = index + 1;
-        this.updateStarsVisual(value);
-        
-        // Solo actualizar la cara si no hay selección previa
-        if (this.selectedValue === 0) {
-          this.showFaceForRating(value);
-        }
-      });
+    // Hover sobre las estrellas
+    this.container.addEventListener('mouseover', (e) => {
+      if (this.isLocked) return;
+      if (e.target.classList.contains('star')) {
+        const value = parseInt(e.target.dataset.value);
+        this.updateStars(value, true); // true indica que es hover
+      }
     });
 
-    // Cuando el ratón sale del contenedor completo
+    // Mouse leave del contenedor (mejor que mouseout)
     this.container.addEventListener('mouseleave', () => {
       if (!this.isLocked) {
-        // Restaurar el estado visual a la selección actual
-        this.updateStarsVisual(this.selectedValue);
-        this.showFaceForRating(this.selectedValue);
+        this.updateStars(this.selectedValue);
       }
     });
 
@@ -90,25 +82,6 @@ export class RatingManager {
    * @param {boolean} isHover - Si es un hover temporal
    */
   updateStars(value, isHover = false) {
-    this.updateStarsVisual(value);
-    
-    // Solo actualizar la cara en estos casos:
-    // 1. No es hover (es un click o reset)
-    // 2. Es hover pero no hay ninguna estrella seleccionada y el valor es mayor que 0
-    if (!isHover) {
-      this.showFaceForRating(value);
-    } else if (this.selectedValue === 0 && value > 0) {
-      // Solo mostrar cara durante hover si no hay selección previa y el valor es mayor que 0
-      this.showFaceForRating(value);
-    }
-    // Si es hover y ya hay una selección, no cambiar la cara
-  }
-
-  /**
-   * Actualiza solo el aspecto visual de las estrellas sin afectar la lógica
-   * @param {number} value - Valor hasta el cual activar las estrellas
-   */
-  updateStarsVisual(value) {
     this.stars.forEach(star => {
       const starValue = parseInt(star.dataset.value);
       const shouldBeActive = starValue <= value;
@@ -119,6 +92,11 @@ export class RatingManager {
         star.classList.remove('active');
       }
     });
+    
+    // Mostrar cara correspondiente solo si no es hover o si no hay selección
+    if (!isHover || this.selectedValue === 0) {
+      this.showFaceForRating(value);
+    }
   }
 
   /**
@@ -127,19 +105,9 @@ export class RatingManager {
    */
   showFaceForRating(value) {
     let face = '';
-    
-    // Si el valor es 0, verificar si hay alguna estrella activa
-    if (value === 0) {
-      const hasActiveStars = Array.from(this.stars).some(star => star.classList.contains('active'));
-      if (hasActiveStars) {
-        // Si hay estrellas activas, no mostrar nada o mantener la cara actual
-        return;
-      }
-    }
-    
     switch (value) {
       case 0:
-        face = '🤔'; // Cara pensativa/interrogación SOLO cuando todas las estrellas están apagadas
+        face = '🤔'; // Cara pensativa/interrogación para estado inicial
         break;
       case 1:
         face = '😞'; // Cara triste/decepcionada
