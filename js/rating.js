@@ -43,6 +43,31 @@ export class RatingManager {
     // Variable para rastrear el último valor del hover
     let lastHoverValue = 0;
     
+    // Cuando el ratón entra al contenedor
+    this.container.addEventListener('mouseenter', (e) => {
+      if (this.isLocked) return;
+      
+      // Si no hay selección previa, encender al menos la primera estrella
+      if (this.selectedValue === 0) {
+        const rect = this.container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        
+        // Determinar qué estrella encender basándose en la posición de entrada
+        let initialValue = 1;
+        this.stars.forEach((star, index) => {
+          const starRect = star.getBoundingClientRect();
+          const starCenter = (starRect.left - rect.left) + (starRect.width / 2);
+          if (x >= starCenter) {
+            initialValue = index + 1;
+          }
+        });
+        
+        lastHoverValue = initialValue;
+        this.updateStarsVisual(initialValue);
+        this.showFaceForRating(initialValue);
+      }
+    });
+    
     // Hover sobre el contenedor completo
     this.container.addEventListener('mousemove', (e) => {
       if (this.isLocked) return;
@@ -55,16 +80,26 @@ export class RatingManager {
       // Calcular qué estrella corresponde a la posición X
       this.stars.forEach((star, index) => {
         const starRect = star.getBoundingClientRect();
-        const starX = starRect.left - rect.left;
-        const starWidth = starRect.width;
+        const starLeft = starRect.left - rect.left;
+        const starRight = starLeft + starRect.width;
+        const starCenter = starLeft + (starRect.width / 2);
         
-        // Si el ratón está sobre esta estrella o más allá
-        if (x >= starX) {
+        // Si el ratón está en o después del centro de esta estrella
+        if (x >= starCenter) {
+          hoverValue = index + 1;
+        } else if (x >= starLeft && hoverValue === 0) {
+          // Si está en la primera mitad de la primera estrella
           hoverValue = index + 1;
         }
       });
       
-      // Solo actualizar si el valor cambió
+      // Si el ratón está dentro del contenedor pero no se calculó ningún valor,
+      // mantener al menos 1 estrella encendida
+      if (hoverValue === 0 && x > 0 && x < rect.width) {
+        hoverValue = 1;
+      }
+      
+      // Solo actualizar si el valor cambió y es mayor que 0
       if (hoverValue !== lastHoverValue && hoverValue > 0) {
         lastHoverValue = hoverValue;
         this.updateStarsVisual(hoverValue);
