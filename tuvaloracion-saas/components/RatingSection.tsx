@@ -17,6 +17,7 @@ export default function RatingSection({
   business 
 }: RatingSectionProps) {
   const [selectedRating, setSelectedRating] = useState(0)
+  const [hoveredRating, setHoveredRating] = useState(0)
   const [showError, setShowError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -24,6 +25,14 @@ export default function RatingSection({
     setSelectedRating(rating)
     setShowError(false)
     setErrorMessage('')
+  }
+
+  const handleMouseEnter = (rating: number) => {
+    setHoveredRating(rating)
+  }
+
+  const handleMouseLeave = () => {
+    setHoveredRating(0)
   }
 
   const handleConfirm = () => {
@@ -61,13 +70,15 @@ export default function RatingSection({
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
-            className={`star ${selectedRating >= star ? 'active' : ''} ${showError ? 'pulse-error' : ''}`}
+            className={`star ${selectedRating >= star ? 'active' : ''} ${hoveredRating >= star ? 'hover' : ''} ${showError ? 'pulse-error' : ''}`}
             onClick={() => handleRatingClick(star)}
+            onMouseEnter={() => handleMouseEnter(star)}
+            onMouseLeave={handleMouseLeave}
           >
             ★
           </span>
         ))}
-        <span className="rating-face">{getFaceEmoji(selectedRating)}</span>
+        <span className="rating-face">{getFaceEmoji(hoveredRating || selectedRating)}</span>
       </div>
 
       <div className={`rating-error ${showError ? '' : 'hidden'}`}>
