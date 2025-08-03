@@ -40,82 +40,25 @@ export class RatingManager {
    * Configura los event listeners
    */
   setupEventListeners() {
-    // Variable para rastrear el último valor del hover
-    let lastHoverValue = 0;
-    
-    // Cuando el ratón entra al contenedor
-    this.container.addEventListener('mouseenter', (e) => {
-      if (this.isLocked) return;
-      
-      // Si no hay selección previa, encender al menos la primera estrella
-      if (this.selectedValue === 0) {
-        const rect = this.container.getBoundingClientRect();
-        const x = e.clientX - rect.left;
+    // Eventos individuales para cada estrella
+    this.stars.forEach((star, index) => {
+      // Cuando el ratón entra en una estrella
+      star.addEventListener('mouseenter', () => {
+        if (this.isLocked) return;
+        const value = index + 1;
+        this.updateStarsVisual(value);
         
-        // Determinar qué estrella encender basándose en la posición de entrada
-        let initialValue = 1;
-        this.stars.forEach((star, index) => {
-          const starRect = star.getBoundingClientRect();
-          const starCenter = (starRect.left - rect.left) + (starRect.width / 2);
-          if (x >= starCenter) {
-            initialValue = index + 1;
-          }
-        });
-        
-        lastHoverValue = initialValue;
-        this.updateStarsVisual(initialValue);
-        this.showFaceForRating(initialValue);
-      }
-    });
-    
-    // Hover sobre el contenedor completo
-    this.container.addEventListener('mousemove', (e) => {
-      if (this.isLocked) return;
-      
-      // Encontrar sobre qué estrella está el ratón
-      let hoverValue = 0;
-      const rect = this.container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      
-      // Calcular qué estrella corresponde a la posición X
-      this.stars.forEach((star, index) => {
-        const starRect = star.getBoundingClientRect();
-        const starLeft = starRect.left - rect.left;
-        const starRight = starLeft + starRect.width;
-        const starCenter = starLeft + (starRect.width / 2);
-        
-        // Si el ratón está en o después del centro de esta estrella
-        if (x >= starCenter) {
-          hoverValue = index + 1;
-        } else if (x >= starLeft && hoverValue === 0) {
-          // Si está en la primera mitad de la primera estrella
-          hoverValue = index + 1;
+        // Solo actualizar la cara si no hay selección previa
+        if (this.selectedValue === 0) {
+          this.showFaceForRating(value);
         }
       });
-      
-      // Si el ratón está dentro del contenedor pero no se calculó ningún valor,
-      // mantener al menos 1 estrella encendida
-      if (hoverValue === 0 && x > 0 && x < rect.width) {
-        hoverValue = 1;
-      }
-      
-      // Solo actualizar si el valor cambió y es mayor que 0
-      if (hoverValue !== lastHoverValue && hoverValue > 0) {
-        lastHoverValue = hoverValue;
-        this.updateStarsVisual(hoverValue);
-        
-        // Actualizar la cara si no hay selección
-        if (this.selectedValue === 0) {
-          this.showFaceForRating(hoverValue);
-        }
-      }
     });
 
-    // Mouse leave del contenedor
+    // Cuando el ratón sale del contenedor completo
     this.container.addEventListener('mouseleave', () => {
       if (!this.isLocked) {
-        lastHoverValue = 0;
-        // Al salir, restaurar el estado visual a la selección actual
+        // Restaurar el estado visual a la selección actual
         this.updateStarsVisual(this.selectedValue);
         this.showFaceForRating(this.selectedValue);
       }
