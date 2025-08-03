@@ -67,7 +67,7 @@ export default function RatingSection({
             ★
           </span>
         ))}
-        <span className="rating-face">{selectedRating > 0 ? getFaceEmoji(selectedRating) : '🤔'}</span>
+        <span className="rating-face">{getFaceEmoji(selectedRating)}</span>
       </div>
 
       <div className={`rating-error ${showError ? '' : 'hidden'}`}>
