@@ -12,6 +12,8 @@ export default function AdminPage() {
 
   // Simple autenticación (en producción usar NextAuth)
   const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+  console.log('Admin password from env:', process.env.NEXT_PUBLIC_ADMIN_PASSWORD);
+  console.log('Using password:', ADMIN_PASSWORD);
 
   useEffect(() => {
     const isAuth = sessionStorage.getItem('adminAuth') === 'true';
