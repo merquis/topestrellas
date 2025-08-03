@@ -169,8 +169,42 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     setErrors(prev => ({ ...prev, rating: '' }))
     // Guardar el rating en localStorage para que la ruleta pueda acceder a él
     localStorage.setItem('currentRating', rating.toString())
+    
+    // Preparar el formulario según el rating (lógica del código original)
+    prepareFormForRating(rating)
+    
     setCurrentView('form')
   }
+
+  const prepareFormForRating = (rating: number) => {
+    // Usar setTimeout para asegurar que el DOM esté listo
+    setTimeout(() => {
+      const feedbackTextarea = document.querySelector('#formulario textarea') as HTMLTextAreaElement
+      const feedbackGroup = feedbackTextarea?.closest('.form-group') as HTMLElement
+      
+      if (feedbackTextarea && feedbackGroup) {
+        if (rating < 5) {
+          // Mostrar textarea para ratings < 5
+          feedbackGroup.style.display = 'block'
+          feedbackTextarea.required = true
+          feedbackTextarea.placeholder = getTranslation('feedbackPlaceholder')
+        } else {
+          // Ocultar textarea para rating = 5
+          feedbackGroup.style.display = 'none'
+          feedbackTextarea.required = false
+          // Limpiar el feedback si se oculta
+          setFeedback('')
+        }
+      }
+    }, 100)
+  }
+
+  // useEffect para manejar la visibilidad del textarea cuando cambia la vista
+  useEffect(() => {
+    if (currentView === 'form' && rating > 0) {
+      prepareFormForRating(rating)
+    }
+  }, [currentView, rating])
 
   const validateForm = () => {
     const formErrors = { name: '', email: '', feedback: '', privacy: '' };
@@ -230,7 +264,10 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const handleSpinComplete = async (prizeIndex: number) => {
     const prize = ORIGINAL_PRIZES[prizeIndex];
     setPrizeWon(prize);
-    const generatedCode = `${business.subdomain.toUpperCase()}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    
+    // Generar código como en la versión original: EURO-XXXX donde el último dígito es el rating
+    const randomPart = Math.random().toString().slice(2, 5); // 3 dígitos aleatorios
+    const generatedCode = `EURO-${randomPart}${rating}`;
     setRewardCode(generatedCode);
 
     const leadData = {
@@ -364,13 +401,27 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         <div id="codigoContainer" className={currentView !== 'code' ? 'hidden' : ''}>
           <div className="reward-code premium-reward">
             <div className="description">
-              <span>{getTranslation('rewardCode')}</span>
+              <span>🎁 {getTranslation('rewardCode')}</span>
             </div>
-            <div className="code">{rewardCode}</div>
+            {prizeWon && (
+              <div className="premio-grande">
+                <span style={{ fontSize: '3rem', marginRight: '10px' }}>
+                  {prizeWon.translations[currentLanguage]?.emoji || prizeWon.translations['es']?.emoji}
+                </span>
+                {prizeWon.translations[currentLanguage]?.name || prizeWon.translations['es']?.name}
+              </div>
+            )}
+            <div style={{ 
+              fontSize: '14px', 
+              color: '#fff', 
+              marginBottom: '10px',
+              opacity: 0.9 
+            }}>
+              Se va a generar el código de tu premio. Lo recibirás en <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{email}</span> en unos minutos, con formato <span style={{ color: '#00ff00', fontWeight: 'bold' }}>{rewardCode}</span>. Preséntalo en el local para obtener tu regalo.
+            </div>
             <div className="expiry-warning">
-              <span>{getTranslation('todayOnly')}</span>
+              <span>⏰ {getTranslation('todayOnly')}</span>
             </div>
-             <p className="email-message" dangerouslySetInnerHTML={{ __html: getTranslation('prizeByEmail', { email: `<span class="highlight-email">${email}</span>` }) }} />
           </div>
         </div>
 
@@ -378,13 +429,27 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         <div id="resenaBtn" className={currentView !== 'review' ? 'hidden' : ''}>
           <div className="reward-code premium-reward">
             <div className="description">
-              <span>{getTranslation('rewardCode')}</span>
+              <span>🎁 {getTranslation('rewardCode')}</span>
             </div>
-            <div className="code">{rewardCode}</div>
+            {prizeWon && (
+              <div className="premio-grande">
+                <span style={{ fontSize: '3rem', marginRight: '10px' }}>
+                  {prizeWon.translations[currentLanguage]?.emoji || prizeWon.translations['es']?.emoji}
+                </span>
+                {prizeWon.translations[currentLanguage]?.name || prizeWon.translations['es']?.name}
+              </div>
+            )}
             <div className="expiry-warning">
-              <span>{getTranslation('todayOnly')}</span>
+              <span>⏰ {getTranslation('todayOnly')}</span>
             </div>
-             <p className="email-message" dangerouslySetInnerHTML={{ __html: getTranslation('prizeByEmail', { email: `<span class="highlight-email">${email}</span>` }) }} />
+            <div style={{ 
+              fontSize: '14px', 
+              color: '#fff', 
+              marginBottom: '10px',
+              opacity: 0.9 
+            }}>
+              Se va a generar el código de tu premio. Lo recibirás en <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{email}</span> en unos minutos, con formato <span style={{ color: '#00ff00', fontWeight: 'bold' }}>{rewardCode}</span>. Preséntalo en el local para obtener tu regalo.
+            </div>
           </div>
           <div className="form-section final-step">
             <h3 className="urgent-final"><span>{getTranslation('googleReviewTitle')}</span></h3>

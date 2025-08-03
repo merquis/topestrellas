@@ -543,8 +543,22 @@ body {
 .premium-google {
   background: linear-gradient(135deg, #ea4335, #4285f4);
   width: 100%;
-  font-size: 24px;
-  padding: 25px;
+  font-size: 20px;
+  padding: 20px 15px;
+  white-space: normal;
+  line-height: 1.3;
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+@media (max-width: 480px) {
+  .premium-google {
+    font-size: 16px;
+    padding: 15px 10px;
+    line-height: 1.2;
+  }
 }
 
 /* BOTÓN DE SALIDA CASI INVISIBLE */
@@ -922,38 +936,54 @@ body {
   
   /* Espacio reservado en la parte inferior para la barra fija */
   body {
-    padding-bottom: 90px; 
+    padding-bottom: 90px !important; 
+  }
+
+  .main-wrapper {
+    padding-bottom: 90px !important;
   }
 
   /* Contenedor de la barra fija */
   .fixed-cta-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 15px;
-    background: #181E37;
-    z-index: 1000;
-    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 15px !important;
+    background: #181E37 !important;
+    z-index: 1000 !important;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2) !important;
+    display: block !important;
   }
 
   .fixed-cta-container button {
-    display: none; /* Los botones internos se gestionan por JS */
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    box-shadow: none !important;
+    padding: 15px !important;
+    font-size: 18px !important;
+    white-space: nowrap !important;
+    animation: heartbeat 1.5s ease-in-out infinite !important;
+    border: none !important;
+    color: white !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: block !important;
   }
 
-  /* Estilo específico para el botón en la barra fija */
-  #fixed-cta-bar .confirmation-btn {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #f39c12, #e67e22);
-    box-shadow: none;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    font-size: 18px;
-    white-space: nowrap;
-    animation: heartbeat 1.5s ease-in-out infinite;
+  .fixed-cta-container button:hover {
+    transform: translateY(-2px) !important;
+  }
+
+  .fixed-cta-container button:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
   }
 
   @keyframes heartbeat {
@@ -968,6 +998,39 @@ body {
     }
   }
 
+  /* Forzar la visualización de la barra sticky en móviles */
+  .fixed-cta-container {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 15px !important;
+    background: #181E37 !important;
+    z-index: 1000 !important;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2) !important;
+    display: block !important;
+  }
+
+  .fixed-cta-container button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    box-shadow: none !important;
+    padding: 15px !important;
+    font-size: 18px !important;
+    white-space: nowrap !important;
+    animation: heartbeat 1.5s ease-in-out infinite !important;
+    border: none !important;
+    color: white !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: block !important;
+  }
 
   .urgency-timer {
     font-size: 14px;
