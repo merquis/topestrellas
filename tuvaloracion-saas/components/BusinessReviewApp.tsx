@@ -5,7 +5,6 @@ import { Business, Prize } from '@/lib/types'
 import { getBrowserLanguage } from '@/lib/utils'
 import LanguageSelector from './LanguageSelector'
 import RouletteWheel from './RouletteWheel'
-import MobileStickyBar from './MobileStickyBar'
 import ScarcityIndicators from './ScarcityIndicators'
 import RatingSection from './RatingSection'
 import GoogleTimer from './GoogleTimer'
@@ -205,6 +204,57 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       prepareFormForRating(rating)
     }
   }, [currentView, rating])
+
+  // useEffect para manejar la barra sticky móvil como en el código original
+  useEffect(() => {
+    const updateFixedCta = (view: string) => {
+      const fixedCtaBar = document.getElementById('fixed-cta-bar')
+      const fixedCtaBtn = document.getElementById('fixed-cta-btn')
+      const fixedCtaBtnForm = document.getElementById('fixed-cta-btn-form')
+      const fixedCtaBtnReview = document.getElementById('fixed-cta-btn-review')
+      
+      if (!fixedCtaBar) return
+
+      // Ocultar todos los botones originales en móvil
+      const valorarBtnContainer = document.getElementById('valorarBtnContainer')
+      const googleBtnContainer = document.getElementById('googleBtnContainer')
+      const submitBtn = document.querySelector('#formulario button[type="submit"]') as HTMLElement
+
+      if (window.innerWidth <= 768) {
+        // Mostrar la barra sticky
+        fixedCtaBar.classList.remove('hidden')
+        
+        // Ocultar botones originales
+        if (valorarBtnContainer) valorarBtnContainer.style.display = 'none'
+        if (googleBtnContainer) googleBtnContainer.style.display = 'none'
+        if (submitBtn) submitBtn.style.display = 'none'
+
+        // Mostrar solo el botón correspondiente a la vista actual
+        if (fixedCtaBtn) fixedCtaBtn.style.display = view === 'initial' ? 'block' : 'none'
+        if (fixedCtaBtnForm) fixedCtaBtnForm.style.display = view === 'form' ? 'block' : 'none'
+        if (fixedCtaBtnReview) fixedCtaBtnReview.style.display = view === 'review' ? 'block' : 'none'
+      } else {
+        // Ocultar la barra sticky en desktop
+        fixedCtaBar.classList.add('hidden')
+        
+        // Mostrar botones originales
+        if (valorarBtnContainer) valorarBtnContainer.style.display = 'block'
+        if (googleBtnContainer) googleBtnContainer.style.display = 'block'
+        if (submitBtn) submitBtn.style.display = 'block'
+      }
+    }
+
+    // Actualizar cuando cambie la vista
+    updateFixedCta(currentView)
+
+    // Listener para cambios de tamaño de ventana
+    const handleResize = () => updateFixedCta(currentView)
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [currentView])
 
   const validateForm = () => {
     const formErrors = { name: '', email: '', feedback: '', privacy: '' };
@@ -475,25 +525,28 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         </div>
       )}
 
-      {/* BARRA STICKY MÓVIL */}
-      <MobileStickyBar
-        currentView={currentView}
-        onRateNow={handleRateNow}
-        onSubmitForm={() => {
+      {/* BARRA STICKY MÓVIL - ESTRUCTURA ORIGINAL */}
+      <div className="fixed-cta-container hidden" id="fixed-cta-bar">
+        <button className="confirmation-btn" id="fixed-cta-btn" onClick={handleRateNow}>
+          {getTranslation('rateNow')}
+        </button>
+        <button className="confirmation-btn" id="fixed-cta-btn-form" onClick={() => {
           const form = document.querySelector('#formulario form') as HTMLFormElement;
           if (form) {
             const event = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(event);
           }
-        }}
-        onGoToReview={() => {
+        }}>
+          {getTranslation('submitBtn')}
+        </button>
+        <button className="confirmation-btn" id="fixed-cta-btn-review" onClick={() => {
           if (business.googleReviewUrl) {
             window.open(business.googleReviewUrl, '_blank');
           }
-        }}
-        getTranslation={getTranslation}
-        isFormValid={!errors.name && !errors.email && !errors.feedback && !errors.privacy && !!name && !!email && (rating >= 5 || !!feedback) && privacyPolicy}
-      />
+        }}>
+          {getTranslation('googleBtn')}
+        </button>
+      </div>
     </div>
   )
 }
