@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ROULETTE_COLORS, calculateRouletteRotation } from '@/lib/utils'
 import { Prize } from '@/lib/types'
 
 interface RouletteWheelProps {
@@ -18,32 +17,8 @@ export default function RouletteWheel({
   getTranslation 
 }: RouletteWheelProps) {
   const [isSpinning, setIsSpinning] = useState(false)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const wheelRef = useRef<HTMLDivElement>(null)
-  const [selectedPrizeIndex, setSelectedPrizeIndex] = useState<number | null>(null)
-
-  const defaultTranslations: Record<string, Record<string, string>> = {
-    es: {
-      whichPrize: '¿Cuál será tu premio?',
-      spinBtn: 'Girar la ruleta'
-    },
-    en: {
-      whichPrize: 'What will your prize be?',
-      spinBtn: 'Spin the wheel'
-    },
-    de: {
-      whichPrize: 'Was wird dein Preis sein?',
-      spinBtn: 'Drehen Sie das Rad'
-    },
-    fr: {
-      whichPrize: 'Quel sera ton prix ?',
-      spinBtn: 'Faire tourner la roue'
-    }
-  }
-
-  const getLocalTranslation = (key: string): string => {
-    return defaultTranslations[language]?.[key] || defaultTranslations['es'][key] || key
-  }
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     drawWheel()
@@ -60,81 +35,96 @@ export default function RouletteWheel({
     const centerY = canvas.height / 2
     const radius = Math.min(centerX, centerY) - 10
 
-    // Clear canvas
+    // Limpiar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    const anglePerPrize = (2 * Math.PI) / prizes.length
-
+    // Dibujar segmentos
+    const anglePerSegment = (2 * Math.PI) / prizes.length
+    
     prizes.forEach((prize, index) => {
-      const startAngle = index * anglePerPrize - Math.PI / 2
-      const endAngle = (index + 1) * anglePerPrize - Math.PI / 2
-
-      // Draw segment
+      const startAngle = index * anglePerSegment - Math.PI / 2
+      const endAngle = (index + 1) * anglePerSegment - Math.PI / 2
+      
+      // Obtener color del segmento
+      const color = getComputedStyle(document.documentElement)
+        .getPropertyValue(`--roulette-color-${index}`)
+        .trim() || getDefaultColor(index)
+      
+      // Dibujar segmento
       ctx.beginPath()
       ctx.moveTo(centerX, centerY)
       ctx.arc(centerX, centerY, radius, startAngle, endAngle)
       ctx.closePath()
-      ctx.fillStyle = ROULETTE_COLORS[index % ROULETTE_COLORS.length]
+      ctx.fillStyle = color
       ctx.fill()
-
-      // Draw border
       ctx.strokeStyle = '#fff'
       ctx.lineWidth = 2
       ctx.stroke()
-
-      // Draw text
+      
+      // Dibujar texto
       ctx.save()
       ctx.translate(centerX, centerY)
-      ctx.rotate(startAngle + anglePerPrize / 2)
-      ctx.textAlign = 'right'
+      ctx.rotate(startAngle + anglePerSegment / 2)
+      ctx.textAlign = 'center'
       ctx.fillStyle = '#fff'
       ctx.font = 'bold 14px Arial'
+      ctx.shadowColor = 'rgba(0,0,0,0.8)'
+      ctx.shadowBlur = 4
       
-      const prizeText = prize.translations[language]?.name || prize.translations['es'].name
-      const emoji = prize.translations[language]?.emoji || prize.translations['es'].emoji
+      // Emoji
+      ctx.fillText(prize.translations[language].emoji, radius * 0.7, 0)
       
-      ctx.fillText(emoji + ' ' + prizeText, radius - 10, 5)
+      // Nombre del premio (dividir en líneas si es muy largo)
+      const name = prize.translations[language].name
+      const words = name.split(' ')
+      if (words.length > 2) {
+        ctx.font = 'bold 10px Arial'
+        ctx.fillText(words.slice(0, 2).join(' '), radius * 0.5, -5)
+        ctx.fillText(words.slice(2).join(' '), radius * 0.5, 5)
+      } else {
+        ctx.font = 'bold 12px Arial'
+        ctx.fillText(name, radius * 0.5, 0)
+      }
+      
       ctx.restore()
     })
-
-    // Draw center circle
+    
+    // Dibujar círculo central
     ctx.beginPath()
     ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI)
     ctx.fillStyle = '#333'
     ctx.fill()
-    ctx.strokeStyle = '#fff'
+    ctx.strokeStyle = '#ffd700'
     ctx.lineWidth = 3
     ctx.stroke()
   }
 
-  const handleSpin = () => {
-    if (isSpinning) return
+  const getDefaultColor = (index: number) => {
+    const colors = [
+      '#e67e22', '#e74c3c', '#2980b9', '#8e44ad',
+      '#27ae60', '#f1c40f', '#3498db', '#9b59b6'
+    ]
+    return colors[index % colors.length]
+  }
 
+  const spinWheel = () => {
+    if (isSpinning || !wheelRef.current) return
+    
     setIsSpinning(true)
     
-    // Seleccionar premio (ponderado hacia premios menores)
-    const weights = [5, 8, 10, 15, 20, 15, 15, 12] // Pesos para cada premio
-    const totalWeight = weights.reduce((a, b) => a + b, 0)
-    let random = Math.random() * totalWeight
-    let prizeIndex = 0
+    // Calcular premio aleatorio
+    const prizeIndex = Math.floor(Math.random() * prizes.length)
     
-    for (let i = 0; i < weights.length; i++) {
-      random -= weights[i]
-      if (random <= 0) {
-        prizeIndex = i
-        break
-      }
-    }
-
-    setSelectedPrizeIndex(prizeIndex)
+    // Calcular ángulo de rotación
+    const anglePerSegment = 360 / prizes.length
+    const prizeAngle = prizeIndex * anglePerSegment
+    const randomOffset = Math.random() * anglePerSegment * 0.8 + anglePerSegment * 0.1
+    const totalRotation = 360 * 5 + (360 - prizeAngle - anglePerSegment / 2) + randomOffset
     
-    const rotation = calculateRouletteRotation(prizeIndex, prizes.length)
+    // Aplicar rotación
+    wheelRef.current.style.transform = `rotate(${totalRotation}deg)`
     
-    if (wheelRef.current) {
-      wheelRef.current.style.transform = `rotate(${rotation}deg)`
-      wheelRef.current.style.transition = 'transform 4s cubic-bezier(.17,.67,.17,1)'
-    }
-
+    // Esperar a que termine la animación
     setTimeout(() => {
       setIsSpinning(false)
       onSpinComplete(prizeIndex)
@@ -142,35 +132,33 @@ export default function RouletteWheel({
   }
 
   return (
-    <div className="roulette-screen">
-      <div className="roulette-content">
-        <div className="roulette-header">
-          <h2 className="roulette-title">
-            {getTranslation('whichPrize') || getLocalTranslation('whichPrize')}
-          </h2>
-        </div>
-        
-        <div id="rouletteContainer">
-          <div className="roulette-pointer"></div>
-          <div ref={wheelRef} className="roulette-wheel">
-            <canvas
-              ref={canvasRef}
-              width={320}
-              height={320}
-              style={{ width: '100%', height: '100%' }}
-            />
-          </div>
-        </div>
-        
-        <button
-          id="spinBtn"
-          className="confirmation-btn spin-premium mt-6"
-          onClick={handleSpin}
-          disabled={isSpinning}
-        >
-          {isSpinning ? '...' : (getTranslation('spinBtn') || getLocalTranslation('spinBtn'))}
-        </button>
+    <div className="roulette-content">
+      <div className="roulette-header">
+        <h2 className="roulette-title" id="whichPrizeTitle">
+          {getTranslation('whichPrize')}
+        </h2>
       </div>
+      
+      <div id="rouletteContainer">
+        <div className="roulette-pointer"></div>
+        <div id="rouletteWheel" className="roulette-wheel" ref={wheelRef}>
+          <canvas 
+            ref={canvasRef}
+            width={300}
+            height={300}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </div>
+      </div>
+      
+      <button 
+        id="spinBtn" 
+        className="confirmation-btn spin-premium"
+        onClick={spinWheel}
+        disabled={isSpinning}
+      >
+        {getTranslation('spinBtn')}
+      </button>
     </div>
   )
 }

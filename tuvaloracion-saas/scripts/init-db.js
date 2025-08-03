@@ -34,8 +34,8 @@ async function initDatabase() {
 
     // Índices para businesses
     await db.collection('businesses').createIndex({ subdomain: 1 }, { unique: true });
-    await db.collection('businesses').createIndex({ active: 1 });
-    await db.collection('businesses').createIndex({ 'subscription.validUntil': 1 });
+    await db.collection('businesses').createIndex({ isActive: 1 });
+    await db.collection('businesses').createIndex({ plan: 1 });
     console.log('✅ Índices de businesses creados');
 
     // Índices para opinions
@@ -55,109 +55,127 @@ async function initDatabase() {
     await db.collection('email_validations').createIndex({ usedAt: 1 });
     console.log('✅ Índices de email_validations creados');
 
-    // Crear negocio de ejemplo
+    // Crear negocio de ejemplo con todos los campos personalizables
     const exampleBusiness = {
       subdomain: 'demo',
-      name: 'Restaurante Demo',
+      name: 'Restaurante Pizzería EURO',
       type: 'restaurante',
-      category: 'Mediterráneo',
+      category: 'Internacional, Canaria',
+      phone: '+34666543026',
+      email: 'info@restaurantepizzeriaeuro.com',
+      address: 'Paseo marítimo 6',
+      googleReviewUrl: 'https://google.es',
+      plan: 'basic',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       config: {
-        languages: ['es', 'en'],
-        defaultLanguage: 'es',
-        googleReviewUrl: 'https://g.page/r/example',
         theme: {
           primaryColor: '#f97316',
-          secondaryColor: '#ea580c'
+          secondaryColor: '#ea580c',
+          bgPrimary: '#1a1a2e',
+          bgSecondary: '#16213e',
+          buttonPrimary: '#5a6c7d',
+          buttonSecondary: '#6c7b8a'
         },
+        rouletteColors: [
+          '#e67e22', '#e74c3c', '#2980b9', '#8e44ad',
+          '#27ae60', '#f1c40f', '#3498db', '#9b59b6'
+        ],
+        languages: ['es', 'en', 'de', 'fr'],
         prizes: [
           {
             index: 0,
             value: '60€',
             translations: {
-              es: { name: 'Cena para 2', emoji: '🍽️' },
-              en: { name: 'Dinner for 2', emoji: '🍽️' }
+              es: { name: 'CENA (VALOR 60€)', emoji: '🍽️' },
+              en: { name: 'DINNER (VALUE €60)', emoji: '🍽️' },
+              de: { name: 'ABENDESSEN (WERT 60€)', emoji: '🍽️' },
+              fr: { name: 'DÎNER (VALEUR 60€)', emoji: '🍽️' }
             }
           },
           {
             index: 1,
             value: '30€',
             translations: {
-              es: { name: 'Descuento 30€', emoji: '💰' },
-              en: { name: '€30 Discount', emoji: '💰' }
+              es: { name: '30€ DESCUENTO', emoji: '💰' },
+              en: { name: '€30 DISCOUNT', emoji: '💰' },
+              de: { name: '30€ RABATT', emoji: '💰' },
+              fr: { name: '30€ DE RÉDUCTION', emoji: '💰' }
             }
           },
           {
             index: 2,
             value: '25€',
             translations: {
-              es: { name: 'Botella de vino', emoji: '🍾' },
-              en: { name: 'Wine bottle', emoji: '🍾' }
+              es: { name: 'BOTELLA VINO', emoji: '🍾' },
+              en: { name: 'WINE BOTTLE', emoji: '🍾' },
+              de: { name: 'WEINFLASCHE', emoji: '🍾' },
+              fr: { name: 'BOUTEILLE DE VIN', emoji: '🍾' }
             }
           },
           {
             index: 3,
             value: '10€',
             translations: {
-              es: { name: 'Postre gratis', emoji: '🍦' },
-              en: { name: 'Free dessert', emoji: '🍦' }
+              es: { name: 'HELADO', emoji: '🍦' },
+              en: { name: 'ICE CREAM', emoji: '🍦' },
+              de: { name: 'EIS', emoji: '🍦' },
+              fr: { name: 'GLACE', emoji: '🍦' }
             }
           },
           {
             index: 4,
             value: '5€',
             translations: {
-              es: { name: 'Bebida gratis', emoji: '🍺' },
-              en: { name: 'Free drink', emoji: '🍺' }
+              es: { name: 'CERVEZA', emoji: '🍺' },
+              en: { name: 'BEER', emoji: '🍺' },
+              de: { name: 'BIER', emoji: '🍺' },
+              fr: { name: 'BIÈRE', emoji: '🍺' }
             }
           },
           {
             index: 5,
             value: '3€',
             translations: {
-              es: { name: 'Café gratis', emoji: '☕' },
-              en: { name: 'Free coffee', emoji: '☕' }
+              es: { name: 'REFRESCO', emoji: '🥤' },
+              en: { name: 'SOFT DRINK', emoji: '🥤' },
+              de: { name: 'ERFRISCHUNG', emoji: '🥤' },
+              fr: { name: 'BOISSON', emoji: '🥤' }
             }
           },
           {
             index: 6,
             value: '8€',
             translations: {
-              es: { name: 'Cóctel gratis', emoji: '🍹' },
-              en: { name: 'Free cocktail', emoji: '🍹' }
+              es: { name: 'MOJITO', emoji: '🍹' },
+              en: { name: 'MOJITO', emoji: '🍹' },
+              de: { name: 'MOJITO', emoji: '🍹' },
+              fr: { name: 'MOJITO', emoji: '🍹' }
             }
           },
           {
             index: 7,
             value: '2€',
             translations: {
-              es: { name: 'Chupito gratis', emoji: '🥃' },
-              en: { name: 'Free shot', emoji: '🥃' }
+              es: { name: 'CHUPITO', emoji: '🥃' },
+              en: { name: 'SHOT', emoji: '🥃' },
+              de: { name: 'SHOT', emoji: '🥃' },
+              fr: { name: 'SHOT', emoji: '🥃' }
             }
           }
         ],
         features: {
           showScarcityIndicators: true,
+          showPrizeWheel: true,
           requireGoogleReview: true
+        },
+        webhooks: {
+          saveLeadUrl: 'https://n8n-n8n.hpv7eo.easypanel.host/webhook/guardar-lead',
+          verifyEmailUrl: 'https://n8n-n8n.hpv7eo.easypanel.host/webhook/verificar-email',
+          getOpinionsUrl: 'https://n8n-n8n.hpv7eo.easypanel.host/webhook/opiniones'
         }
-      },
-      contact: {
-        phone: '+34 900 000 000',
-        email: 'demo@tuvaloracion.com',
-        address: 'Calle Demo 123, Madrid'
-      },
-      subscription: {
-        plan: 'trial',
-        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
-        status: 'active'
-      },
-      stats: {
-        totalOpinions: 0,
-        totalPrizesGiven: 0,
-        avgRating: 0
-      },
-      active: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      }
     };
 
     const existingDemo = await db.collection('businesses').findOne({ subdomain: 'demo' });

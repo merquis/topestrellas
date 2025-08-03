@@ -1,94 +1,88 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Business } from '@/lib/types'
 
 interface RatingSectionProps {
   onRatingConfirmed: (rating: number) => void
   language: string
   getTranslation: (key: string) => string
+  business?: Business
 }
 
 export default function RatingSection({ 
   onRatingConfirmed, 
   language, 
-  getTranslation 
+  getTranslation,
+  business 
 }: RatingSectionProps) {
   const [selectedRating, setSelectedRating] = useState(0)
-  const [hoveredRating, setHoveredRating] = useState(0)
-  const [error, setError] = useState('')
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const handleRatingClick = (rating: number) => {
+    setSelectedRating(rating)
+    setShowError(false)
+    setErrorMessage('')
+  }
 
   const handleConfirm = () => {
     if (selectedRating === 0) {
-      setError(getTranslation('selectAtLeastOneStar') || 'Por favor, selecciona al menos una estrella para valorar.')
+      setShowError(true)
+      setErrorMessage(language === 'es' 
+        ? 'Por favor, selecciona al menos una estrella para valorar.' 
+        : 'Please select at least one star to rate.')
+      
+      // Añadir animación de error a las estrellas
+      const stars = document.querySelectorAll('.star')
+      stars.forEach(star => {
+        star.classList.add('pulse-error')
+        setTimeout(() => star.classList.remove('pulse-error'), 800)
+      })
+      
       return
     }
     onRatingConfirmed(selectedRating)
   }
 
-  const defaultTranslations: Record<string, Record<string, string>> = {
-    es: {
-      ratingInstruction: '¿Qué tal ha sido tu experiencia?',
-      confirmRating: 'SÍ, QUIERO MI REGALO',
-      selectAtLeastOneStar: 'Por favor, selecciona al menos una estrella para valorar.'
-    },
-    en: {
-      ratingInstruction: 'How was your experience?',
-      confirmRating: 'YES, I WANT MY GIFT',
-      selectAtLeastOneStar: 'Please select at least one star to rate.'
-    },
-    de: {
-      ratingInstruction: 'Wie war Ihre Erfahrung?',
-      confirmRating: 'JA, ICH MÖCHTE MEIN GESCHENK',
-      selectAtLeastOneStar: 'Bitte wählen Sie mindestens einen Stern zum Bewerten aus.'
-    },
-    fr: {
-      ratingInstruction: 'Comment était votre expérience ?',
-      confirmRating: 'OUI, JE VEUX MON CADEAU',
-      selectAtLeastOneStar: 'Veuillez sélectionner au moins une étoile pour évaluer.'
-    }
-  }
-
-  const getLocalTranslation = (key: string): string => {
-    return defaultTranslations[language]?.[key] || defaultTranslations['es'][key] || key
+  // Emoji de cara según la calificación
+  const getFaceEmoji = (rating: number) => {
+    const faces = ['', '😢', '😕', '😐', '😊', '😍']
+    return faces[rating] || ''
   }
 
   return (
     <div className="rating-section">
       <p className="rating-instruction">
-        {getTranslation('ratingInstruction') || getLocalTranslation('ratingInstruction')}
+        {getTranslation('ratingInstruction')}
       </p>
       
       <div className="stars">
-        {[1, 2, 3, 4, 5].map((rating) => (
+        {[1, 2, 3, 4, 5].map((star) => (
           <span
-            key={rating}
-            className={`star ${selectedRating >= rating || hoveredRating >= rating ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedRating(rating)
-              setError('')
-            }}
-            onMouseEnter={() => setHoveredRating(rating)}
-            onMouseLeave={() => setHoveredRating(0)}
+            key={star}
+            className={`star ${selectedRating >= star ? 'active' : ''} ${showError ? 'pulse-error' : ''}`}
+            onClick={() => handleRatingClick(star)}
           >
             ★
           </span>
         ))}
+        {selectedRating > 0 && (
+          <span className="rating-face">{getFaceEmoji(selectedRating)}</span>
+        )}
       </div>
 
-      {error && (
-        <div className="rating-error text-red-500 text-sm mt-2 text-center">
-          {error}
-        </div>
-      )}
+      <div className={`rating-error ${showError ? '' : 'hidden'}`}>
+        {errorMessage}
+      </div>
 
-      <div className="mt-6">
+      <div id="valorarBtnContainer">
         <button 
           className="confirmation-btn premium-btn"
+          id="valorarBtn"
           onClick={handleConfirm}
         >
-          <span>
-            {getTranslation('confirmRating') || getLocalTranslation('confirmRating')}
-          </span>
+          <span id="btnText">{getTranslation('confirmRating')}</span>
         </button>
       </div>
     </div>

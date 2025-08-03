@@ -24,6 +24,31 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [prizeWon, setPrizeWon] = useState<any>(null)
   const [watchingCount, setWatchingCount] = useState(Math.floor(Math.random() * 5) + 1)
 
+  // Aplicar colores personalizados al cargar
+  useEffect(() => {
+    const root = document.documentElement
+    const theme = business.config.theme
+    
+    // Colores de fondo
+    if (theme.bgPrimary) root.style.setProperty('--bg-primary', theme.bgPrimary)
+    if (theme.bgSecondary) root.style.setProperty('--bg-secondary', theme.bgSecondary)
+    
+    // Colores principales
+    if (theme.primaryColor) root.style.setProperty('--primary-color', theme.primaryColor)
+    if (theme.secondaryColor) root.style.setProperty('--primary-color-dark', theme.secondaryColor)
+    
+    // Colores de botones
+    if (theme.buttonPrimary) root.style.setProperty('--button-primary', theme.buttonPrimary)
+    if (theme.buttonSecondary) root.style.setProperty('--button-secondary', theme.buttonSecondary)
+    
+    // Colores de la ruleta
+    if (business.config.rouletteColors) {
+      business.config.rouletteColors.forEach((color, index) => {
+        root.style.setProperty(`--roulette-color-${index}`, color)
+      })
+    }
+  }, [business])
+
   // Simular contador de personas viendo
   useEffect(() => {
     const interval = setInterval(() => {
@@ -56,20 +81,40 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     
     setPrizeWon(prizeData)
     
-    // Enviar datos al backend
+    // Enviar datos al backend o webhook
     try {
-      await fetch('/api/opinions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId: business._id,
-          subdomain: business.subdomain,
-          ...formData,
-          rating,
-          prize: prizeData,
-          language: currentLanguage
+      // Si hay webhook configurado, usar ese
+      if (business.config.webhooks?.saveLeadUrl) {
+        await fetch(business.config.webhooks.saveLeadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            rating,
+            review: formData.feedback,
+            premio: prizeData.name,
+            codigoPremio: `${business.subdomain.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
+            lang: currentLanguage,
+            businessName: business.name,
+            subdomain: business.subdomain
+          })
         })
-      })
+      } else {
+        // Si no, usar la API interna
+        await fetch('/api/opinions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId: business._id,
+            subdomain: business.subdomain,
+            ...formData,
+            rating,
+            prize: prizeData,
+            language: currentLanguage
+          })
+        })
+      }
     } catch (error) {
       console.error('Error saving opinion:', error)
     }
@@ -95,14 +140,48 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         title_part2: '🎁 Gira nuestra ruleta y llévate un regalo seguro por tu visita.',
         prizesLeft: '¡QUEDAN 3 PREMIOS GRANDES HOY!',
         peopleWatching: 'personas viendo esta oferta',
-        morePrizes: '🎁 + 5 premios más en la ruleta'
+        morePrizes: '🎁 + 5 premios más en la ruleta',
+        prizes_subtitle: 'Estos son algunos de nuestros premios:',
+        ratingInstruction: '¿Qué tal ha sido tu experiencia?',
+        confirmRating: 'SÍ, QUIERO MI REGALO',
+        improveQuestion: '¿Dónde enviamos tu PREMIO? 🎁',
+        emailWarning: 'Asegúrate de que tu email es correcto. ¡Ahí recibirás el código de referencia para canjear tu premio!',
+        namePlaceholder: 'Tu nombre',
+        emailPlaceholder: 'Tu email',
+        feedbackPlaceholder: 'Tu opinión es muy importante para nosotros. 😊',
+        privacyPolicy: 'Acepto la política de privacidad',
+        privacyLink: 'Privacidad',
+        submitBtn: 'CONTINUAR',
+        rewardCode: '🎁 TU PREMIO',
+        todayOnly: '⏰ VÁLIDO SOLO HOY',
+        googleReviewTitle: '¡Último paso! Completa tu reseña. Recibirás el código de tu premio por email automáticamente',
+        googleBtn: 'Completar mi reseña',
+        whichPrize: '¿Cuál será tu premio?',
+        spinBtn: 'GIRAR LA RULETA'
       },
       en: {
         title_part1: 'Share your experience in 30 seconds! Your feedback helps us improve. ✨',
         title_part2: '🎁 Spin our roulette and get a guaranteed gift for your visit.',
         prizesLeft: '3 BIG PRIZES LEFT TODAY!',
         peopleWatching: 'people viewing this offer',
-        morePrizes: '🎁 + 5 more prizes on the wheel'
+        morePrizes: '🎁 + 5 more prizes on the wheel',
+        prizes_subtitle: 'These are some of our prizes:',
+        ratingInstruction: 'How was your experience?',
+        confirmRating: 'YES, I WANT MY GIFT',
+        improveQuestion: 'Where should we send your PRIZE? 🎁',
+        emailWarning: 'Make sure your email is correct. You will receive the reference code to redeem your prize there!',
+        namePlaceholder: 'Your name',
+        emailPlaceholder: 'Your email',
+        feedbackPlaceholder: 'Your opinion is very important to us. 😊',
+        privacyPolicy: 'I accept the privacy policy',
+        privacyLink: 'Privacy',
+        submitBtn: 'CONTINUE',
+        rewardCode: '🎁 YOUR PRIZE',
+        todayOnly: '⏰ VALID TODAY ONLY',
+        googleReviewTitle: 'Last step! Complete your review. You will receive your prize code by email automatically',
+        googleBtn: 'Complete my review',
+        whichPrize: 'What will be your prize?',
+        spinBtn: 'SPIN THE WHEEL'
       }
     }
     
@@ -111,9 +190,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
 
   return (
     <div className="main-wrapper">
-      <div className="restaurant-title" style={{ 
-        background: `linear-gradient(to right, ${business.config.theme.primaryColor}, ${business.config.theme.primaryColor}dd)` 
-      }}>
+      <div className="restaurant-title">
         <h2>{business.name}</h2>
       </div>
       
@@ -125,12 +202,12 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         />
         
         {currentView === 'rating' && (
-          <div className="fade-in">
+          <div id="initial-view" className="fade-in">
             <div className="header">
               <p>{getTranslation('title_part1')}</p>
               <p>{getTranslation('title_part2')}</p>
               
-              {business.config.features?.showScarcityIndicators && (
+              {business.config.features?.showScarcityIndicators !== false && (
                 <div className="scarcity-indicators">
                   <div className="scarcity-item">
                     <span className="scarcity-number">3</span>
@@ -143,6 +220,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
                 </div>
               )}
               
+              <p className="prizes-subtitle">{getTranslation('prizes_subtitle')}</p>
               <div className="big-prizes-preview">
                 {business.config.prizes.slice(0, 3).map((prize, index) => (
                   <div key={index} className="prize-preview-item">
@@ -160,6 +238,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               onRatingConfirmed={handleRatingConfirmed}
               language={currentLanguage}
               getTranslation={getTranslation}
+              business={business}
             />
           </div>
         )}
@@ -170,6 +249,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             onSubmit={handleFormSubmit}
             language={currentLanguage}
             getTranslation={getTranslation}
+            business={business}
           />
         )}
         
@@ -179,6 +259,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             email={formData.email}
             language={currentLanguage}
             getTranslation={getTranslation}
+            business={business}
           />
         )}
         
@@ -189,9 +270,10 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               email={formData.email}
               language={currentLanguage}
               getTranslation={getTranslation}
+              business={business}
             />
             <GoogleReviewPrompt
-              googleReviewUrl={business.config.googleReviewUrl}
+              googleReviewUrl={business.googleReviewUrl}
               language={currentLanguage}
               getTranslation={getTranslation}
             />
@@ -200,12 +282,14 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       </div>
       
       {currentView === 'roulette' && (
-        <RouletteWheel
-          prizes={business.config.prizes}
-          language={currentLanguage}
-          onSpinComplete={handleSpinComplete}
-          getTranslation={getTranslation}
-        />
+        <div className="roulette-screen">
+          <RouletteWheel
+            prizes={business.config.prizes}
+            language={currentLanguage}
+            onSpinComplete={handleSpinComplete}
+            getTranslation={getTranslation}
+          />
+        </div>
       )}
     </div>
   )

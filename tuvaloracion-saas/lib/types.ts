@@ -2,37 +2,47 @@ import { ObjectId } from 'mongodb';
 
 // Business types
 export interface Business {
-  _id?: ObjectId;
-  subdomain: string;
-  name: string;
-  type: 'restaurante' | 'peluqueria' | 'gimnasio' | 'clinica' | 'taller' | 'otro';
-  category?: string;
-  config: BusinessConfig;
-  contact?: ContactInfo;
-  subscription: Subscription;
-  stats?: BusinessStats;
-  active: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface BusinessConfig {
-  languages: string[];
-  defaultLanguage: string;
-  googleReviewUrl?: string;
-  websiteUrl?: string;
-  theme: Theme;
-  prizes: Prize[];
-  customTexts?: CustomTexts;
-  features?: Features;
-}
-
-export interface Theme {
-  primaryColor: string;
-  secondaryColor?: string;
-  logo?: string;
-  backgroundImage?: string;
-  font?: string;
+  _id?: string
+  subdomain: string
+  name: string
+  type: string
+  category: string
+  phone: string
+  email: string
+  address: string
+  googleReviewUrl: string
+  plan: 'trial' | 'basic' | 'premium' | 'enterprise'
+  isActive: boolean
+  createdAt?: Date
+  updatedAt?: Date
+  config: {
+    theme: {
+      primaryColor: string
+      secondaryColor: string
+      bgPrimary?: string
+      bgSecondary?: string
+      buttonPrimary?: string
+      buttonSecondary?: string
+    }
+    rouletteColors?: string[]
+    languages: string[]
+    prizes: Prize[]
+    features?: {
+      showScarcityIndicators?: boolean
+      showPrizeWheel?: boolean
+      requireGoogleReview?: boolean
+    }
+    customTexts?: {
+      [language: string]: {
+        [key: string]: string
+      }
+    }
+    webhooks?: {
+      saveLeadUrl?: string
+      verifyEmailUrl?: string
+      getOpinionsUrl?: string
+    }
+  }
 }
 
 export interface Prize {

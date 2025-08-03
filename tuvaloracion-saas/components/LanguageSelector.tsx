@@ -1,29 +1,18 @@
 'use client'
 
-import Image from 'next/image'
-
 interface LanguageSelectorProps {
   languages: string[]
   currentLanguage: string
   onLanguageChange: (lang: string) => void
 }
 
-const languageFlags: Record<string, string> = {
-  es: 'https://flagcdn.com/w20/es.png',
-  en: 'https://flagcdn.com/w20/gb.png',
-  de: 'https://flagcdn.com/w20/de.png',
-  fr: 'https://flagcdn.com/w20/fr.png',
-  it: 'https://flagcdn.com/w20/it.png',
-  pt: 'https://flagcdn.com/w20/pt.png'
-}
-
-const languageNames: Record<string, string> = {
-  es: 'Español',
-  en: 'English',
-  de: 'Deutsch',
-  fr: 'Français',
-  it: 'Italiano',
-  pt: 'Português'
+const flagUrls: Record<string, string> = {
+  es: 'https://flagcdn.com/w40/es.png',
+  en: 'https://flagcdn.com/w40/gb.png',
+  de: 'https://flagcdn.com/w40/de.png',
+  fr: 'https://flagcdn.com/w40/fr.png',
+  it: 'https://flagcdn.com/w40/it.png',
+  pt: 'https://flagcdn.com/w40/pt.png'
 }
 
 export default function LanguageSelector({ 
@@ -36,18 +25,13 @@ export default function LanguageSelector({
       {languages.map((lang) => (
         <button
           key={lang}
+          className={`language-flag-btn ${currentLanguage === lang ? 'active' : ''}`}
           onClick={() => onLanguageChange(lang)}
-          className={`language-flag ${currentLanguage === lang ? 'active' : ''}`}
-          title={languageNames[lang] || lang}
-        >
-          <Image
-            src={languageFlags[lang] || languageFlags.en}
-            alt={languageNames[lang] || lang}
-            width={32}
-            height={24}
-            className="flag-image"
-          />
-        </button>
+          style={{
+            backgroundImage: `url(${flagUrls[lang] || flagUrls.es})`
+          }}
+          aria-label={`Change language to ${lang}`}
+        />
       ))}
     </div>
   )
