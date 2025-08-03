@@ -63,7 +63,7 @@ export default function RouletteWheel({
       const x = cx + textRadius * Math.cos(angleRad)
       const y = cy + textRadius * Math.sin(angleRad)
 
-      const textRotation = angleDeg + 90 // Ajuste para que el texto quede horizontal
+      const textRotation = angleDeg // Ajuste para que el texto esté orientado radialmente
 
       textDiv.style.position = 'absolute'
       textDiv.style.left = `${x}px`
