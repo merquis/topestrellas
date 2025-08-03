@@ -1,0 +1,170 @@
+import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
+
+export async function GET() {
+  try {
+    const client = await clientPromise;
+    const db = client.db('tuvaloracion');
+    
+    const businesses = await db.collection('businesses')
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
+    
+    return NextResponse.json(businesses);
+  } catch (error) {
+    console.error('Error fetching businesses:', error);
+    return NextResponse.json(
+      { error: 'Error al obtener negocios' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const client = await clientPromise;
+    const db = client.db('tuvaloracion');
+    const data = await request.json();
+    
+    // Validar datos requeridos
+    if (!data.subdomain || !data.name) {
+      return NextResponse.json(
+        { error: 'Subdominio y nombre son requeridos' },
+        { status: 400 }
+      );
+    }
+    
+    // Verificar si el subdominio ya existe
+    const existing = await db.collection('businesses').findOne({ 
+      subdomain: data.subdomain 
+    });
+    
+    if (existing) {
+      return NextResponse.json(
+        { error: 'El subdominio ya está en uso' },
+        { status: 400 }
+      );
+    }
+    
+    // Estructura del nuevo negocio
+    const newBusiness = {
+      subdomain: data.subdomain.toLowerCase(),
+      name: data.name,
+      type: data.type || 'restaurante',
+      category: data.category || '',
+      config: {
+        languages: data.languages || ['es'],
+        defaultLanguage: 'es',
+        googleReviewUrl: data.googleReviewUrl || '',
+        theme: {
+          primaryColor: data.primaryColor || '#f97316',
+          secondaryColor: data.secondaryColor || '#ea580c'
+        },
+        prizes: data.prizes || [
+          {
+            index: 0,
+            value: '60€',
+            translations: {
+              es: { name: 'Premio Mayor', emoji: '🎁' },
+              en: { name: 'Grand Prize', emoji: '🎁' }
+            }
+          },
+          {
+            index: 1,
+            value: '30€',
+            translations: {
+              es: { name: 'Descuento 30€', emoji: '💰' },
+              en: { name: '€30 Discount', emoji: '💰' }
+            }
+          },
+          {
+            index: 2,
+            value: '25€',
+            translations: {
+              es: { name: 'Vale 25€', emoji: '🎟️' },
+              en: { name: '€25 Voucher', emoji: '🎟️' }
+            }
+          },
+          {
+            index: 3,
+            value: '10€',
+            translations: {
+              es: { name: 'Descuento 10€', emoji: '💵' },
+              en: { name: '€10 Discount', emoji: '💵' }
+            }
+          },
+          {
+            index: 4,
+            value: '5€',
+            translations: {
+              es: { name: 'Vale 5€', emoji: '🎫' },
+              en: { name: '€5 Voucher', emoji: '🎫' }
+            }
+          },
+          {
+            index: 5,
+            value: '3€',
+            translations: {
+              es: { name: 'Descuento 3€', emoji: '🪙' },
+              en: { name: '€3 Discount', emoji: '🪙' }
+            }
+          },
+          {
+            index: 6,
+            value: '8€',
+            translations: {
+              es: { name: 'Vale 8€', emoji: '🎯' },
+              en: { name: '€8 Voucher', emoji: '🎯' }
+            }
+          },
+          {
+            index: 7,
+            value: '2€',
+            translations: {
+              es: { name: 'Descuento 2€', emoji: '✨' },
+              en: { name: '€2 Discount', emoji: '✨' }
+            }
+          }
+        ],
+        features: {
+          showScarcityIndicators: true,
+          requireGoogleReview: true
+        }
+      },
+      contact: {
+        phone: data.phone || '',
+        email: data.email || '',
+        address: data.address || ''
+      },
+      subscription: {
+        plan: data.plan || 'trial',
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
+        status: 'active'
+      },
+      stats: {
+        totalOpinions: 0,
+        totalPrizesGiven: 0,
+        avgRating: 0
+      },
+      active: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const result = await db.collection('businesses').insertOne(newBusiness);
+    
+    return NextResponse.json({
+      success: true,
+      businessId: result.insertedId,
+      subdomain: newBusiness.subdomain
+    });
+    
+  } catch (error) {
+    console.error('Error creating business:', error);
+    return NextResponse.json(
+      { error: 'Error al crear negocio' },
+      { status: 500 }
+    );
+  }
+}
