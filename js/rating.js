@@ -52,7 +52,7 @@ export class RatingManager {
     // Mouse leave del contenedor (mejor que mouseout)
     this.container.addEventListener('mouseleave', () => {
       if (!this.isLocked) {
-        this.updateStars(this.selectedValue);
+        this.updateStars(this.selectedValue, false); // false indica que no es hover
       }
     });
 
@@ -93,10 +93,16 @@ export class RatingManager {
       }
     });
     
-    // Mostrar cara correspondiente solo si no es hover o si no hay selección
-    if (!isHover || this.selectedValue === 0) {
+    // Solo actualizar la cara en estos casos:
+    // 1. No es hover (es un click o reset)
+    // 2. Es hover pero no hay ninguna estrella seleccionada y el valor es mayor que 0
+    if (!isHover) {
+      this.showFaceForRating(value);
+    } else if (this.selectedValue === 0 && value > 0) {
+      // Solo mostrar cara durante hover si no hay selección previa y el valor es mayor que 0
       this.showFaceForRating(value);
     }
+    // Si es hover y ya hay una selección, no cambiar la cara
   }
 
   /**
