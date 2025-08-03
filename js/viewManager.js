@@ -54,24 +54,15 @@ class ViewManager {
         if (typeof this.fixedCta.action === 'function') {
           this.fixedCta.action();
         }
+      });
+    }
+    
     // Event listener para el botón fijo de review
     if (this.fixedCta.btnReview) {
       this.fixedCta.btnReview.addEventListener('click', () => {
-        // Importar la URL de config.js de forma segura
-        try {
-          const config = require('./config.js');
-          if (config && config.CONFIG && config.CONFIG.googleReviewUrl) {
-            window.open(config.CONFIG.googleReviewUrl, '_blank');
-          } else {
-            // Fallback si no se puede importar
-            window.open('https://search.google.com/local/writereview?placeid=ChIJ5ctEMDCYagwR9QBWYQaQdes', '_blank');
-          }
-        } catch (e) {
-          // Fallback si no se puede importar
-          window.open('https://search.google.com/local/writereview?placeid=ChIJ5ctEMDCYagwR9QBWYQaQdes', '_blank');
+        if (window.goToReview) {
+          window.goToReview();
         }
-      });
-    }
       });
     }
     // Event listener para el botón fijo de formulario
