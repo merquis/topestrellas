@@ -1,6 +1,6 @@
-/* Importar los estilos originales */
-@import './style.css';
-@import './roulette.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Variables CSS personalizables por negocio */
 :root {
@@ -27,23 +27,18 @@
   --roulette-color-7: #9b59b6;
 }
 
-/* Sobrescribir estilos de Tailwind que puedan interferir */
-body {
-  margin: 0;
-  padding: 0;
-}
-
-/* Asegurar que los estilos originales tengan prioridad */
-.main-wrapper,
-.container,
-.restaurant-title,
-.rating-section,
-.form-section,
-.roulette-screen {
-  all: revert;
-}
-
 /* Clase para animación de entrada */
 .fade-in {
   animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
