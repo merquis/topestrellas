@@ -427,7 +427,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
           }
         }}
         getTranslation={getTranslation}
-        isFormValid={!errors.name && !errors.email && !errors.feedback && !errors.privacy && name && email && (rating >= 5 || feedback) && privacyPolicy}
+        isFormValid={!errors.name && !errors.email && !errors.feedback && !errors.privacy && !!name && !!email && (rating >= 5 || !!feedback) && privacyPolicy}
       />
     </div>
   )
