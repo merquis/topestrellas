@@ -79,8 +79,37 @@ export default function AdminPage() {
   };
 
   const handleEdit = (business: any) => {
-    // Por ahora, redirigir a una página de edición (la crearemos después)
     router.push(`/admin/edit-business/${business._id}`);
+  };
+
+  const handleSuspend = async (id: string, name: string, currentStatus: boolean) => {
+    const action = currentStatus ? 'suspend' : 'activate';
+    const actionText = currentStatus ? 'suspender' : 'activar';
+    
+    if (confirm(`¿Estás seguro de que quieres ${actionText} ${name}?`)) {
+      try {
+        const response = await fetch(`/api/admin/businesses/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action }),
+        });
+
+        if (response.ok) {
+          setToast({ 
+            message: `Negocio ${currentStatus ? 'suspendido' : 'activado'} exitosamente`, 
+            type: 'success' 
+          });
+          loadBusinesses();
+        } else {
+          const data = await response.json();
+          setToast({ message: `Error: ${data.error}`, type: 'error' });
+        }
+      } catch (error) {
+        setToast({ message: `Error al ${actionText} el negocio`, type: 'error' });
+      }
+    }
   };
 
   if (loading) {
@@ -189,6 +218,12 @@ export default function AdminPage() {
                           className="text-blue-500 hover:underline mr-2"
                         >
                           Editar
+                        </button>
+                        <button 
+                          onClick={() => handleSuspend(business._id, business.name, business.active)}
+                          className={`${business.active ? 'text-orange-500' : 'text-green-500'} hover:underline mr-2`}
+                        >
+                          {business.active ? 'Suspender' : 'Activar'}
                         </button>
                         <button 
                           onClick={() => handleDelete(business._id, business.name)}
