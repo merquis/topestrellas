@@ -1,3 +1,4 @@
+// Componente de la Ruleta
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -18,93 +19,56 @@ export default function RouletteWheel({
 }: RouletteWheelProps) {
   const [isSpinning, setIsSpinning] = useState(false)
   const wheelRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const textLayerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    drawWheel()
+    // Usamos un observer para asegurarnos de que el elemento es visible y tiene dimensiones
+    const observer = new ResizeObserver(() => {
+      createTexts()
+    });
+
+    if (wheelRef.current) {
+      observer.observe(wheelRef.current);
+    }
+
+    return () => observer.disconnect();
   }, [prizes, language])
 
-  const drawWheel = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+  const createTexts = () => {
+    if (!textLayerRef.current || !wheelRef.current) return
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const N = prizes.length
+    if (N === 0) return;
 
-    const centerX = canvas.width / 2
-    const centerY = canvas.height / 2
-    const radius = Math.min(centerX, centerY) - 10
+    const sliceAngle = 360 / N
+    const R = wheelRef.current.offsetWidth / 2
 
-    // Limpiar canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    if (R === 0) {
+      // Si el radio es 0, no podemos calcular. El ResizeObserver se encargará.
+      return
+    }
 
-    // Dibujar segmentos
-    const anglePerSegment = (2 * Math.PI) / prizes.length
-    
-    prizes.forEach((prize, index) => {
-      const startAngle = index * anglePerSegment - Math.PI / 2
-      const endAngle = (index + 1) * anglePerSegment - Math.PI / 2
-      
-      // Obtener color del segmento
-      const color = getComputedStyle(document.documentElement)
-        .getPropertyValue(`--roulette-color-${index}`)
-        .trim() || getDefaultColor(index)
-      
-      // Dibujar segmento
-      ctx.beginPath()
-      ctx.moveTo(centerX, centerY)
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle)
-      ctx.closePath()
-      ctx.fillStyle = color
-      ctx.fill()
-      ctx.strokeStyle = '#fff'
-      ctx.lineWidth = 2
-      ctx.stroke()
-      
-      // Dibujar texto
-      ctx.save()
-      ctx.translate(centerX, centerY)
-      ctx.rotate(startAngle + anglePerSegment / 2)
-      ctx.textAlign = 'center'
-      ctx.fillStyle = '#fff'
-      ctx.font = 'bold 14px Arial'
-      ctx.shadowColor = 'rgba(0,0,0,0.8)'
-      ctx.shadowBlur = 4
-      
-      // Emoji
-      ctx.fillText(prize.translations[language].emoji, radius * 0.7, 0)
-      
-      // Nombre del premio (dividir en líneas si es muy largo)
-      const name = prize.translations[language].name
-      const words = name.split(' ')
-      if (words.length > 2) {
-        ctx.font = 'bold 10px Arial'
-        ctx.fillText(words.slice(0, 2).join(' '), radius * 0.5, -5)
-        ctx.fillText(words.slice(2).join(' '), radius * 0.5, 5)
-      } else {
-        ctx.font = 'bold 12px Arial'
-        ctx.fillText(name, radius * 0.5, 0)
-      }
-      
-      ctx.restore()
+    const cx = R
+    const cy = R
+
+    prizes.forEach((prize, i) => {
+      const textDiv = textLayerRef.current?.children[i] as HTMLDivElement
+      if (!textDiv) return
+
+      const angleDeg = -90 + (i * sliceAngle) + (sliceAngle / 2)
+      const angleRad = angleDeg * Math.PI / 180
+
+      const textRadius = 0.55 * R
+      const x = cx + textRadius * Math.cos(angleRad)
+      const y = cy + textRadius * Math.sin(angleRad)
+
+      const textRotation = angleDeg + 90 // Ajuste para que el texto quede horizontal
+
+      textDiv.style.position = 'absolute'
+      textDiv.style.left = `${x}px`
+      textDiv.style.top = `${y}px`
+      textDiv.style.transform = `translate(-50%, -50%) rotate(${textRotation}deg)`
     })
-    
-    // Dibujar círculo central
-    ctx.beginPath()
-    ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI)
-    ctx.fillStyle = '#333'
-    ctx.fill()
-    ctx.strokeStyle = '#ffd700'
-    ctx.lineWidth = 3
-    ctx.stroke()
-  }
-
-  const getDefaultColor = (index: number) => {
-    const colors = [
-      '#e67e22', '#e74c3c', '#2980b9', '#8e44ad',
-      '#27ae60', '#f1c40f', '#3498db', '#9b59b6'
-    ]
-    return colors[index % colors.length]
   }
 
   const spinWheel = () => {
@@ -112,22 +76,29 @@ export default function RouletteWheel({
     
     setIsSpinning(true)
     
-    // Calcular premio aleatorio
     const prizeIndex = Math.floor(Math.random() * prizes.length)
     
-    // Calcular ángulo de rotación
     const anglePerSegment = 360 / prizes.length
     const prizeAngle = prizeIndex * anglePerSegment
-    const randomOffset = Math.random() * anglePerSegment * 0.8 + anglePerSegment * 0.1
-    const totalRotation = 360 * 5 + (360 - prizeAngle - anglePerSegment / 2) + randomOffset
+    const randomOffset = Math.random() * (anglePerSegment * 0.8) + (anglePerSegment * 0.1)
+    const targetAngle = prizeAngle + randomOffset
     
-    // Aplicar rotación
+    const totalRotation = (360 * 5) + (360 - targetAngle)
+
+    wheelRef.current.style.transition = `transform 4300ms cubic-bezier(.17,.67,.17,1)`
     wheelRef.current.style.transform = `rotate(${totalRotation}deg)`
     
-    // Esperar a que termine la animación
     setTimeout(() => {
       setIsSpinning(false)
       onSpinComplete(prizeIndex)
+      
+      // Resetear la rotación para el próximo giro sin animación
+      if(wheelRef.current) {
+        wheelRef.current.style.transition = 'none';
+        const finalRotation = totalRotation % 360;
+        wheelRef.current.style.transform = `rotate(${finalRotation}deg)`;
+      }
+
     }, 4300)
   }
 
@@ -141,13 +112,14 @@ export default function RouletteWheel({
       
       <div id="rouletteContainer">
         <div className="roulette-pointer"></div>
-        <div id="rouletteWheel" className="roulette-wheel" ref={wheelRef}>
-          <canvas 
-            ref={canvasRef}
-            width={300}
-            height={300}
-            style={{ width: '100%', height: '100%' }}
-          />
+        <div id="rouletteWheel" ref={wheelRef}>
+          <div id="rouletteTextLayer" ref={textLayerRef}>
+            {prizes.map((prize, index) => (
+              <div key={index} className="roulette-text">
+                <span>{prize.translations[language]?.name || prize.translations['en']?.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       
