@@ -183,6 +183,54 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         googleBtn: 'Complete my review',
         whichPrize: 'What will be your prize?',
         spinBtn: 'SPIN THE WHEEL'
+      },
+      de: {
+        title_part1: 'Teilen Sie Ihre Erfahrung in 30 Sekunden! Ihr Feedback hilft uns, besser zu werden. ✨',
+        title_part2: '🎁 Drehen Sie unser Glücksrad und erhalten Sie ein garantiertes Geschenk für Ihren Besuch.',
+        prizesLeft: 'NUR NOCH 3 GROSSE PREISE HEUTE!',
+        peopleWatching: 'Personen sehen sich dieses Angebot an',
+        morePrizes: '🎁 + 5 weitere Preise am Rad',
+        prizes_subtitle: 'Dies sind einige unserer Preise:',
+        ratingInstruction: 'Wie war Ihre Erfahrung?',
+        confirmRating: 'JA, ICH MÖCHTE MEIN GESCHENK',
+        improveQuestion: 'Wohin sollen wir Ihren PREIS senden? 🎁',
+        emailWarning: 'Stellen Sie sicher, dass Ihre E-Mail korrekt ist. Dort erhalten Sie den Referenzcode zum Einlösen Ihres Preises!',
+        namePlaceholder: 'Ihr Name',
+        emailPlaceholder: 'Ihre E-Mail',
+        feedbackPlaceholder: 'Ihre Meinung ist uns sehr wichtig. 😊',
+        privacyPolicy: 'Ich akzeptiere die Datenschutzrichtlinie',
+        privacyLink: 'Datenschutz',
+        submitBtn: 'WEITER',
+        rewardCode: '🎁 IHR PREIS',
+        todayOnly: '⏰ NUR HEUTE GÜLTIG',
+        googleReviewTitle: 'Letzter Schritt! Vervollständigen Sie Ihre Bewertung. Sie erhalten Ihren Preiscode automatisch per E-Mail',
+        googleBtn: 'Meine Bewertung abschließen',
+        whichPrize: 'Was wird Ihr Preis sein?',
+        spinBtn: 'RAD DREHEN'
+      },
+      fr: {
+        title_part1: 'Partagez votre expérience en 30 secondes ! Vos commentaires nous aident à nous améliorer. ✨',
+        title_part2: '🎁 Faites tourner notre roulette et obtenez un cadeau garanti pour votre visite.',
+        prizesLeft: 'PLUS QUE 3 GROS PRIX AUJOURD\'HUI !',
+        peopleWatching: 'personnes consultent cette offre',
+        morePrizes: '🎁 + 5 prix supplémentaires sur la roue',
+        prizes_subtitle: 'Voici quelques-uns de nos prix :',
+        ratingInstruction: 'Comment était votre expérience ?',
+        confirmRating: 'OUI, JE VEUX MON CADEAU',
+        improveQuestion: 'Où devons-nous envoyer votre PRIX ? 🎁',
+        emailWarning: 'Assurez-vous que votre email est correct. Vous y recevrez le code de référence pour réclamer votre prix !',
+        namePlaceholder: 'Votre nom',
+        emailPlaceholder: 'Votre email',
+        feedbackPlaceholder: 'Votre opinion est très importante pour nous. 😊',
+        privacyPolicy: 'J\'accepte la politique de confidentialité',
+        privacyLink: 'Confidentialité',
+        submitBtn: 'CONTINUER',
+        rewardCode: '🎁 VOTRE PRIX',
+        todayOnly: '⏰ VALABLE AUJOURD\'HUI SEULEMENT',
+        googleReviewTitle: 'Dernière étape ! Complétez votre avis. Vous recevrez votre code prix par email automatiquement',
+        googleBtn: 'Compléter mon avis',
+        whichPrize: 'Quel sera votre prix ?',
+        spinBtn: 'TOURNER LA ROUE'
       }
     }
     
@@ -224,12 +272,16 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               
               <p className="prizes-subtitle">{getTranslation('prizes_subtitle')}</p>
               <div className="big-prizes-preview">
-                {business.config.prizes.slice(0, 3).map((prize, index) => (
-                  <div key={index} className="prize-preview-item">
-                    <span className="prize-icon">{prize.translations[currentLanguage].emoji}</span>
-                    <span className="prize-text">{prize.translations[currentLanguage].name}</span>
-                  </div>
-                ))}
+                {business.config.prizes.slice(0, 3).map((prize, index) => {
+                  // Usar español como fallback si no existe la traducción para el idioma actual
+                  const translation = prize.translations[currentLanguage] || prize.translations['es'] || { emoji: '🎁', name: 'Premio' }
+                  return (
+                    <div key={index} className="prize-preview-item">
+                      <span className="prize-icon">{translation.emoji}</span>
+                      <span className="prize-text">{translation.name}</span>
+                    </div>
+                  )
+                })}
               </div>
               <div className="more-prizes-text">
                 <span>{getTranslation('morePrizes')}</span>
