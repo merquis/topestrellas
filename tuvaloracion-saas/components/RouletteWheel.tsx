@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Prize } from '@/lib/types'
+import '@/styles/roulette.css'
 
 interface RouletteWheelProps {
   prizes: Prize[]
