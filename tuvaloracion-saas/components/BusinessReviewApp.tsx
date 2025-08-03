@@ -94,26 +94,28 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   }
 
   const validateForm = () => {
-    const newErrors = { name: '', email: '', feedback: '', privacy: '', rating: '' }
-    let isValid = true
+    const newErrors = { ...errors, name: '', email: '', feedback: '', privacy: '' };
+    let isValid = true;
+
     if (!name) {
-      newErrors.name = getTranslation('requiredField')
-      isValid = false
+      newErrors.name = getTranslation('requiredField');
+      isValid = false;
     }
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = getTranslation('invalidEmail')
-      isValid = false
+      newErrors.email = getTranslation('invalidEmail');
+      isValid = false;
     }
     if (rating < 5 && !feedback) {
-        newErrors.feedback = getTranslation('requiredField');
-        isValid = false;
+      newErrors.feedback = getTranslation('requiredField');
+      isValid = false;
     }
     if (!privacyPolicy) {
-      newErrors.privacy = getTranslation('requiredField')
-      isValid = false
+      newErrors.privacy = getTranslation('requiredField');
+      isValid = false;
     }
-    setErrors(newErrors)
-    return isValid
+    
+    setErrors(newErrors);
+    return isValid;
   }
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
