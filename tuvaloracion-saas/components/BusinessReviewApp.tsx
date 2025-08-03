@@ -20,6 +20,57 @@ interface ErrorState {
   rating: string;
 }
 
+const ORIGINAL_PRIZES: Prize[] = [
+    { index: 0, translations: { 
+        es: { name: 'CENA (VALOR 60€)', emoji: '🍽️' },
+        en: { name: 'DINNER (VALUE 60€)', emoji: '🍽️' },
+        de: { name: 'ABENDESSEN (WERT 60€)', emoji: '🍽️' },
+        fr: { name: 'DÎNER (VALEUR 60€)', emoji: '🍽️' }
+    }},
+    { index: 1, translations: { 
+        es: { name: '30€ DESCUENTO', emoji: '💰' },
+        en: { name: '30€ DISCOUNT', emoji: '💰' },
+        de: { name: '30€ RABATT', emoji: '💰' },
+        fr: { name: '30€ DE RÉDUCTION', emoji: '💰' }
+    }},
+    { index: 2, translations: { 
+        es: { name: 'BOTELLA VINO', emoji: '🍾' },
+        en: { name: 'BOTTLE OF WINE', emoji: '🍾' },
+        de: { name: 'FLASCHE WEIN', emoji: '🍾' },
+        fr: { name: 'BOUTEILLE DE VIN', emoji: '🍾' }
+    }},
+    { index: 3, translations: { 
+        es: { name: 'HELADO', emoji: '🍦' },
+        en: { name: 'ICE CREAM', emoji: '🍦' },
+        de: { name: 'EIS', emoji: '🍦' },
+        fr: { name: 'GLACE', emoji: '🍦' }
+    }},
+    { index: 4, translations: { 
+        es: { name: 'CERVEZA', emoji: '🍺' },
+        en: { name: 'BEER', emoji: '🍺' },
+        de: { name: 'BIER', emoji: '🍺' },
+        fr: { name: 'BIÈRE', emoji: '🍺' }
+    }},
+    { index: 5, translations: { 
+        es: { name: 'REFRESCO', emoji: '🥤' },
+        en: { name: 'SOFT DRINK', emoji: '🥤' },
+        de: { name: 'ERFRISCHUNGSGETRÄNK', emoji: '🥤' },
+        fr: { name: 'BOISSON GAZEUSE', emoji: '🥤' }
+    }},
+    { index: 6, translations: { 
+        es: { name: 'MOJITO', emoji: '🍹' },
+        en: { name: 'MOJITO', emoji: '🍹' },
+        de: { name: 'MOJITO', emoji: '🍹' },
+        fr: { name: 'MOJITO', emoji: '🍹' }
+    }},
+    { index: 7, translations: { 
+        es: { name: 'CHUPITO', emoji: '🥃' },
+        en: { name: 'SHOT', emoji: '🥃' },
+        de: { name: 'SCHNAPS', emoji: '🥃' },
+        fr: { name: 'SHOT', emoji: '🥃' }
+    }},
+];
+
 export default function BusinessReviewApp({ business }: BusinessReviewAppProps) {
   const [currentLanguage, setCurrentLanguage] = useState<string>(() => 
     getBrowserLanguage(business.config.languages)
@@ -171,7 +222,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   }
 
   const handleSpinComplete = async (prizeIndex: number) => {
-    const prize = business.config.prizes[prizeIndex];
+    const prize = ORIGINAL_PRIZES[prizeIndex];
     setPrizeWon(prize);
     const generatedCode = `${business.subdomain.toUpperCase()}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
     setRewardCode(generatedCode);
@@ -243,7 +294,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
 
             <p className="prizes-subtitle"><span>{getTranslation('prizes_subtitle')}</span></p>
             <div className="big-prizes-preview">
-              {business.config.prizes.slice(0, 3).map((p, i) => (
+              {ORIGINAL_PRIZES.slice(0, 3).map((p, i) => (
                 <div className="prize-preview-item" key={i}>
                   <span className="prize-icon">{p.translations[currentLanguage]?.emoji || p.translations['es']?.emoji}</span>
                   <span className="prize-text">{p.translations[currentLanguage]?.name || p.translations['es']?.name}</span>
@@ -334,7 +385,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       {currentView === 'roulette' && (
         <div className="roulette-screen">
           <RouletteWheel
-            prizes={business.config.prizes}
+            prizes={ORIGINAL_PRIZES}
             language={currentLanguage}
             onSpinComplete={handleSpinComplete}
             getTranslation={getTranslation}
