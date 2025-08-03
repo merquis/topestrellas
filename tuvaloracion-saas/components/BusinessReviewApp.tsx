@@ -74,9 +74,11 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
 
   const handleSpinComplete = async (prizeIndex: number) => {
     const prize = business.config.prizes[prizeIndex]
+    // Usar español como fallback si no existe la traducción para el idioma actual
+    const translation = prize.translations[currentLanguage] || prize.translations['es'] || { name: 'Premio', emoji: '🎁' }
     const prizeData = {
       index: prizeIndex,
-      ...prize.translations[currentLanguage],
+      ...translation,
       value: prize.value
     }
     
