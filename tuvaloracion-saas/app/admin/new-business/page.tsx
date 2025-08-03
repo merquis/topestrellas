@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Toast from '@/components/Toast';
 
 export default function NewBusinessPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [formData, setFormData] = useState({
     subdomain: '',
     name: '',
@@ -36,13 +38,16 @@ export default function NewBusinessPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(`Negocio creado exitosamente! Subdominio: ${data.subdomain}.tuvaloracion.com`);
-        router.push('/admin');
+        setToast({ 
+          message: `Negocio creado exitosamente! Subdominio: ${data.subdomain}.tuvaloracion.com`, 
+          type: 'success' 
+        });
+        setTimeout(() => router.push('/admin'), 2000);
       } else {
-        alert(`Error: ${data.error}`);
+        setToast({ message: `Error: ${data.error}`, type: 'error' });
       }
     } catch (error) {
-      alert('Error al crear el negocio');
+      setToast({ message: 'Error al crear el negocio', type: 'error' });
       console.error(error);
     } finally {
       setLoading(false);
@@ -268,6 +273,13 @@ export default function NewBusinessPage() {
           </form>
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

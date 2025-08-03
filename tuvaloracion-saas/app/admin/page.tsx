@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Toast from '@/components/Toast';
 
 export default function AdminPage() {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const router = useRouter();
 
   // Simple autenticación (en producción usar NextAuth)
@@ -34,7 +36,7 @@ export default function AdminPage() {
       setAuthenticated(true);
       loadBusinesses();
     } else {
-      alert('Contraseña incorrecta');
+      setToast({ message: 'Contraseña incorrecta', type: 'error' });
     }
   };
 
@@ -82,6 +84,13 @@ export default function AdminPage() {
             </button>
           </form>
         </div>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
       </div>
     );
   }
