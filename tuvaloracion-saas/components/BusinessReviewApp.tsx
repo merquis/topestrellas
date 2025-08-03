@@ -141,7 +141,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       case 2: return '😕';
       case 3: return '😐';
       case 4: return '🙂';
-      case 5: return '😊';
+      case 5: return '😍';
       default: return '🤔';
     }
   }
