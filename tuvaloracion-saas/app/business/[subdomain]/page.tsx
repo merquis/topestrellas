@@ -23,6 +23,11 @@ async function getBusinessBySubdomain(subdomain: string): Promise<{ business: Bu
     // Verificar si está suspendido
     const isSuspended = !business.isActive
     
+    // Log para depuración
+    console.log('Business subdomain:', subdomain)
+    console.log('Business isActive:', business.isActive)
+    console.log('Is suspended:', isSuspended)
+    
     // Convertir ObjectId a string para serialización
     return { 
       business: JSON.parse(JSON.stringify(business)),
