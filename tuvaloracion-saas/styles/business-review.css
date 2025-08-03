@@ -1,0 +1,20 @@
+/* Importar los estilos originales solo para las páginas de negocios */
+@import './style.css';
+@import './roulette.css';
+
+/* Aplicar el fondo oscuro solo a las páginas de negocios */
+.business-review-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-primary, #1a1a2e) 0%, var(--bg-secondary, #16213e) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Sobrescribir el body solo dentro de business-review-page */
+.business-review-page body {
+  background: transparent;
+}
