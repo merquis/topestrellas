@@ -149,6 +149,8 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const handleStarClick = (value: number) => {
     setRating(value)
     setRatingFace(getFaceForRating(value))
+    // Limpiar el error de rating cuando se selecciona una estrella
+    setErrors(prev => ({ ...prev, rating: '' }))
     const stars = document.querySelectorAll('.star');
     stars.forEach(star => {
       const starValue = parseInt(star.getAttribute('data-value') || '0', 10);
