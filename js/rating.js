@@ -111,9 +111,19 @@ export class RatingManager {
    */
   showFaceForRating(value) {
     let face = '';
+    
+    // Si el valor es 0, verificar si hay alguna estrella activa
+    if (value === 0) {
+      const hasActiveStars = Array.from(this.stars).some(star => star.classList.contains('active'));
+      if (hasActiveStars) {
+        // Si hay estrellas activas, no mostrar nada o mantener la cara actual
+        return;
+      }
+    }
+    
     switch (value) {
       case 0:
-        face = '🤔'; // Cara pensativa/interrogación para estado inicial
+        face = '🤔'; // Cara pensativa/interrogación SOLO cuando todas las estrellas están apagadas
         break;
       case 1:
         face = '😞'; // Cara triste/decepcionada
