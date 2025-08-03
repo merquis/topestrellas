@@ -1,266 +1,173 @@
-/* POPUP POLÍTICA DE PRIVACIDAD */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+/* Contenedor de todo el contenido de la ruleta */
+.roulette-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  z-index: 20000;
-}
-
-.popup-content {
-  background: #1a1a2e;
-  padding: 30px;
-  border-radius: 15px;
-  width: 90%;
-  max-width: 800px;
-  max-height: 80vh;
-  overflow-y: auto;
-  position: relative;
-  border: 1px solid #ffd700;
-}
-
-.popup-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.popup-content h2 {
-  margin-bottom: 15px;
-  color: #ffd700;
-}
-
-.popup-content h3 {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  color: #ffed4e;
-}
-
-.popup-content p, .popup-content li {
-  line-height: 1.6;
-  margin-bottom: 10px;
-}
-
-.popup-content a {
-  color: #ffd700;
-}
-
-.privacy-policy-group {
-  display: flex;
-  flex-wrap: wrap; /* Permite que el mensaje de error se coloque debajo */
-  align-items: flex-start;
+  gap: 2rem;
   width: 100%;
+  max-width: 500px;
 }
 
-.privacy-check-wrapper {
-  display: flex;
-  align-items: flex-start; /* Alinea checkbox, texto y enlace en la parte superior */
-  gap: 8px;
-  width: 100%; /* El contenedor ocupa todo el ancho */
-}
-
-.privacy-check-wrapper label {
-  cursor: pointer; /* Muestra la manita al pasar el ratón */
-  flex-grow: 1; /* Hace que la etiqueta ocupe el espacio sobrante */
-}
-
-.privacy-link {
-  font-size: 0.9em;
-  white-space: nowrap;
-  color: #ccc;
-  text-decoration: underline;
-  flex-basis: 25%; /* Reserva el 25% del espacio para el enlace */
-  text-align: right; /* Alinea el texto a la derecha */
-  flex-shrink: 0; /* Evita que el enlace se encoja */
-}
-
-.popup-close-text-btn {
-  background: linear-gradient(135deg, #f39c12, #e67e22);
-  color: white;
-  border: none;
-  padding: 12px 25px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
-  text-transform: uppercase;
-  display: block;
-  width: fit-content;
-  margin: 20px auto 0;
-}
-
-.popup-close-text-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(243, 156, 18, 0.6);
-}
-
-/* CORRECCIÓN DE POSICIONAMIENTO DEL ERROR DE PRIVACIDAD */
-
-#privacy-error.field-error {
-  width: 100%; /* Ocupa todo el ancho para forzar el salto de línea */
-  flex-basis: 100%; /* Asegura que ocupe toda la línea en un contenedor flex */
-  margin-top: 10px; /* Añade un poco de espacio extra arriba */
-}
-
-/* PREMIO GRANDE - AJUSTE DE PALABRAS LARGAS */
-.premio-grande {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-  text-align: center;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  line-height: 1.1;
-  max-width: 100%;
-  display: block;
-}
-
-@media (max-width: 480px) {
-  .premio-grande {
-    font-size: 1.3rem;
-  }
-}
-
-/* ESTILOS DE LA RULETA */
+/* Contenedor principal de la ruleta */
 #rouletteContainer {
   position: relative;
-  width: 300px;
-  height: 300px;
-  margin: 0 auto 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
-.roulette-wheel {
-  width: 100%;
-  height: 100%;
+/* Ruleta principal */
+#rouletteWheel {
   position: relative;
-  transition: transform 4.3s cubic-bezier(.17,.67,.17,1);
-}
-
-.roulette-layer {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 320px;
+  height: 320px;
   border-radius: 50%;
+  overflow: hidden;
+  /* Gradiente cónico para los 8 premios */
+  background: conic-gradient(
+    #e67e22 0deg    45deg,   /* Cena para 2 */
+    #e74c3c 45deg   90deg,   /* 50€ Descuento */
+    #2980b9 90deg   135deg,  /* Botella Vino */
+    #8e44ad 135deg  180deg,  /* Helado */
+    #27ae60 180deg  225deg,  /* Chupito */
+    #f1c40f 225deg  270deg,  /* Refresco */
+    #3498db 270deg  315deg,  /* Mojito */
+    #9b59b6 315deg  360deg   /* Copa Vino */
+  );
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  border: 3px solid #fff;
 }
 
+/* Capa de textos */
+#rouletteTextLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Textos individuales en la ruleta */
+.roulette-text {
+  position: absolute;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  user-select: none;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-size: 0.8rem;
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 2;
+  text-align: center;
+}
+
+/* Flecha indicadora - única y bien posicionada */
 .roulette-pointer {
   position: absolute;
-  top: -20px;
+  top: -25px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-top: 40px solid #ffd700;
+  /* Triángulo más grande y visible */
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+  border-top: 40px solid #ffc107;
   z-index: 10;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  /* Sombra para mejor visibilidad */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-/* Contenedor de la ruleta */
-.roulette-content {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(255, 215, 0, 0.3);
-  max-width: 90%;
-  width: 400px;
+/* Pantalla de la ruleta */
+.roulette-screen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
 }
 
-/* Animación de entrada */
-.roulette-screen.show {
-  animation: fadeIn 0.3s ease-out;
+/* Animación de entrada para la ruleta */
+.roulette-screen:not(.hidden) #rouletteContainer {
+  animation: zoomIn 0.5s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes zoomIn {
   from {
     opacity: 0;
+    transform: scale(0.8);
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* Responsive para móviles */
-@media (max-width: 768px) {
-  #rouletteContainer {
-    width: 250px;
-    height: 250px;
+/* Responsive */
+@media (max-width: 480px) {
+  #rouletteWheel {
+    width: 90vw;
+    height: 90vw;
   }
   
-  .roulette-content {
-    padding: 30px 20px;
-    width: 90%;
+  .roulette-text {
+    font-size: 0.75rem;
   }
   
   .roulette-pointer {
-    border-left-width: 15px;
-    border-right-width: 15px;
-    border-top-width: 30px;
-    top: -15px;
+    border-left-width: 20px;
+    border-right-width: 20px;
+    border-top-width: 35px;
+    top: -20px;
   }
 }
 
-/* Animación de giro */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+/* Estilos para móviles en horizontal */
+@media (max-height: 500px) and (orientation: landscape) {
+  .roulette-content {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    max-width: 95vw;
   }
-  to {
-    transform: rotate(360deg);
+
+  #rouletteContainer {
+    flex: 0 0 60%;
+  }
+
+  #rouletteWheel {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1; /* Mantener la proporción cuadrada */
+    max-width: 300px;
+  }
+
+  .roulette-right-column {
+    flex: 0 0 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .roulette-header {
+    position: static; /* Quitar posicionamiento absoluto */
+    transform: none;
+    width: auto;
+    margin-bottom: 0; /* Resetear margen */
+  }
+
+  #spinBtn {
+    margin-top: 0; /* Resetear margen superior */
+    flex-shrink: 0; /* Evitar que el botón se encoja */
+    padding: 15px 20px;
+    font-size: 18px;
   }
 }
-
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
-/* Efecto de brillo en el botón de girar */
-.spin-premium:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(243, 156, 18, 0.6);
-}
-
-.spin-premium:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  animation: none;
-}
-
-/* Texto del premio en la ruleta */
-.prize-text-roulette {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: center;
-  font-weight: bold;
-  font-size: 12px;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-/* Colores personalizables de la ruleta */
-.roulette-segment-0 { fill: var(--roulette-color-0, #e67e22); }
-.roulette-segment-1 { fill: var(--roulette-color-1, #e74c3c); }
-.roulette-segment-2 { fill: var(--roulette-color-2, #2980b9); }
-.roulette-segment-3 { fill: var(--roulette-color-3, #8e44ad); }
-.roulette-segment-4 { fill: var(--roulette-color-4, #27ae60); }
-.roulette-segment-5 { fill: var(--roulette-color-5, #f1c40f); }
-.roulette-segment-6 { fill: var(--roulette-color-6, #3498db); }
-.roulette-segment-7 { fill: var(--roulette-color-7, #9b59b6); }
