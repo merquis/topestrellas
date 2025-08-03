@@ -11,9 +11,11 @@ export default function AdminPage() {
   const router = useRouter();
 
   // Simple autenticación (en producción usar NextAuth)
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
-  console.log('Admin password from env:', process.env.NEXT_PUBLIC_ADMIN_PASSWORD);
-  console.log('Using password:', ADMIN_PASSWORD);
+  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+  
+  if (!ADMIN_PASSWORD) {
+    throw new Error('NEXT_PUBLIC_ADMIN_PASSWORD no está configurada');
+  }
 
   useEffect(() => {
     const isAuth = sessionStorage.getItem('adminAuth') === 'true';
