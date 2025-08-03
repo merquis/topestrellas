@@ -24,8 +24,8 @@ async function getBusinessBySubdomain(subdomain: string): Promise<{ business: Bu
     const serializedBusiness = JSON.parse(JSON.stringify(business))
     
     // Verificar si está suspendido
-    // Solo suspender si isActive es explícitamente false
-    const isSuspended = serializedBusiness.isActive === false
+    // Solo suspender si active es explícitamente false (en la BD se llama "active", no "isActive")
+    const isSuspended = serializedBusiness.active === false
     
     return { 
       business: serializedBusiness,

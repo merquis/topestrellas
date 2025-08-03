@@ -11,10 +11,10 @@ export interface Business {
   email: string
   address: string
   googleReviewUrl: string
-  plan: 'trial' | 'basic' | 'premium' | 'enterprise'
-  isActive: boolean
-  createdAt?: Date
-  updatedAt?: Date
+  plan: 'trial' | 'basic' | 'premium'
+  active: boolean  // Cambiado de isActive a active para coincidir con la BD
+  createdAt: Date
+  updatedAt: Date
   config: {
     theme: {
       primaryColor: string
