@@ -47,8 +47,8 @@ export default function RatingSection({
 
   // Emoji de cara según la calificación
   const getFaceEmoji = (rating: number) => {
-    const faces = ['', '😢', '😕', '😐', '😊', '😍']
-    return faces[rating] || ''
+    const faces = ['🤔', '😢', '😕', '😐', '😊', '😍']
+    return faces[rating] || '🤔'
   }
 
   return (
