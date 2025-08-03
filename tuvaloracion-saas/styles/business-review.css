@@ -287,6 +287,12 @@ body {
   animation: starActivate 0.3s ease;
 }
 
+.star.hover {
+  color: #ffd700;
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+}
+
 @keyframes starActivate {
   0% {
     transform: scale(1);

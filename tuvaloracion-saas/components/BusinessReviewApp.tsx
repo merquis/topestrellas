@@ -146,6 +146,25 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     }
   }
 
+  const handleStarHover = (value: number) => {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+      const starValue = parseInt(star.getAttribute('data-value') || '0', 10);
+      if (starValue <= value) {
+        star.classList.add('hover');
+      } else {
+        star.classList.remove('hover');
+      }
+    });
+  }
+
+  const handleStarLeave = () => {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+      star.classList.remove('hover');
+    });
+  }
+
   const handleStarClick = (value: number) => {
     setRating(value)
     setRatingFace(getFaceForRating(value))
@@ -427,7 +446,14 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             <p className="rating-instruction">{getTranslation('ratingInstruction')}</p>
             <div className="stars">
               {[1, 2, 3, 4, 5].map(v => (
-                <span key={v} className="star" data-value={v} onClick={() => handleStarClick(v)}>★</span>
+                <span 
+                  key={v} 
+                  className="star" 
+                  data-value={v} 
+                  onClick={() => handleStarClick(v)}
+                  onMouseEnter={() => handleStarHover(v)}
+                  onMouseLeave={handleStarLeave}
+                >★</span>
               ))}
               <span className="rating-face">{ratingFace}</span>
             </div>
