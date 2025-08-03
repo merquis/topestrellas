@@ -12,6 +12,14 @@ interface BusinessReviewAppProps {
   business: Business
 }
 
+interface ErrorState {
+  name: string;
+  email: string;
+  feedback: string;
+  privacy: string;
+  rating: string;
+}
+
 export default function BusinessReviewApp({ business }: BusinessReviewAppProps) {
   const [currentLanguage, setCurrentLanguage] = useState<string>(() => 
     getBrowserLanguage(business.config.languages)
@@ -24,7 +32,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [email, setEmail] = useState('')
   const [feedback, setFeedback] = useState('')
   const [privacyPolicy, setPrivacyPolicy] = useState(false)
-  const [errors, setErrors] = useState({ name: '', email: '', feedback: '', privacy: '', rating: '' })
+  const [errors, setErrors] = useState<ErrorState>({ name: '', email: '', feedback: '', privacy: '', rating: '' })
   const [rewardCode, setRewardCode] = useState('')
 
   // Efectos para tema y contador de personas (se mantienen)
