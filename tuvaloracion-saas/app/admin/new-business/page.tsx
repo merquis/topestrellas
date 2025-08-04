@@ -260,7 +260,7 @@ export default function NewBusinessPage() {
                   name="tripadvisorReviewUrl"
                   value={formData.tripadvisorReviewUrl}
                   onChange={handleChange}
-                  placeholder="https://www.tripadvisor.com/UserReviewEdit-..."
+                  placeholder="https://www.tripadvisor.es/UserReviewEdit-..."
                   className="w-full p-2 border rounded h-20"
                   rows={3}
                 />
