@@ -92,6 +92,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [ratingFace, setRatingFace] = useState('🤔')
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false)
   const [buttonText, setButtonText] = useState('')
+  const [reviewButtonDisabled, setReviewButtonDisabled] = useState(false)
 
   // Usar los premios del negocio o fallback a los por defecto
   const businessPrizes = business.config.prizes && business.config.prizes.length > 0 
@@ -452,6 +453,15 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   }
 
   const handleReviewClick = async () => {
+    // Deshabilitar el botón inmediatamente para evitar múltiples clics
+    if (reviewButtonDisabled) {
+      console.log(`[${business.subdomain}] Button already disabled, ignoring click`);
+      return;
+    }
+    
+    setReviewButtonDisabled(true);
+    console.log(`[${business.subdomain}] Button disabled after first click`);
+    
     const reviewPlatform = business.config?.reviewPlatform;
     
     if (reviewPlatform === 'alternating') {
@@ -678,9 +688,10 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               <button 
                 onClick={handleReviewClick}
                 className="google-btn premium-google"
-                style={{ border: 'none', background: 'inherit', width: '100%', cursor: 'pointer' }}
+                disabled={reviewButtonDisabled}
+                style={{ border: 'none', background: 'inherit', width: '100%', cursor: reviewButtonDisabled ? 'not-allowed' : 'pointer' }}
               >
-                <span>{getTranslation('reviewBtn')}</span>
+                <span>{reviewButtonDisabled ? getTranslation('reviewBtn') + ' ✓' : getTranslation('reviewBtn')}</span>
               </button>
             </div>
           </div>
@@ -728,8 +739,14 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         }}>
           {getTranslation('submitBtn')}
         </button>
-        <button className="confirmation-btn" id="fixed-cta-btn-review" onClick={handleReviewClick}>
-          {getTranslation('reviewBtn')}
+        <button 
+          className="confirmation-btn" 
+          id="fixed-cta-btn-review" 
+          onClick={handleReviewClick}
+          disabled={reviewButtonDisabled}
+          style={{ cursor: reviewButtonDisabled ? 'not-allowed' : 'pointer' }}
+        >
+          {reviewButtonDisabled ? getTranslation('reviewBtn') + ' ✓' : getTranslation('reviewBtn')}
         </button>
       </div>
     </div>
