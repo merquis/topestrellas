@@ -607,7 +607,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
           </div>
           <div className="form-section final-step">
             <h3 className="urgent-final"><span>{getTranslation('googleReviewTitle')}</span></h3>
-            <GoogleTimer getTranslation={getTranslation} />
+            <GoogleTimer getTranslation={getTranslation} startTimer={currentView === 'review'} />
             <div id="googleBtnContainer">
               <a href={business.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="google-btn premium-google">
                 <span>{getTranslation('googleBtn')}</span>

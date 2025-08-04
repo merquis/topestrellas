@@ -5,13 +5,18 @@ import { useState, useEffect } from 'react'
 interface GoogleTimerProps {
   getTranslation: (key: string) => string
   onExpired?: () => void
+  startTimer?: boolean
 }
 
-export default function GoogleTimer({ getTranslation, onExpired }: GoogleTimerProps) {
+export default function GoogleTimer({ getTranslation, onExpired, startTimer = true }: GoogleTimerProps) {
   const [timeLeft, setTimeLeft] = useState(5 * 60) // 5 minutos en segundos
   const [isExpired, setIsExpired] = useState(false)
+  const [hasStarted, setHasStarted] = useState(false)
 
   useEffect(() => {
+    if (!startTimer || hasStarted) return
+
+    setHasStarted(true)
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -25,7 +30,7 @@ export default function GoogleTimer({ getTranslation, onExpired }: GoogleTimerPr
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [onExpired])
+  }, [startTimer, onExpired, hasStarted])
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
