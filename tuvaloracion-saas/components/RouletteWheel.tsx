@@ -144,7 +144,9 @@ export default function RouletteWheel({
           <div id="rouletteTextLayer" ref={textLayerRef}>
             {prizes.map((prize, index) => (
               <div key={index} className="roulette-text">
-                <span>{prize.translations[language]?.name || prize.translations['en']?.name}</span>
+                <span>
+                  {prize.translations[language]?.emoji || prize.translations['en']?.emoji || '🎁'} {prize.translations[language]?.name || prize.translations['en']?.name}
+                </span>
               </div>
             ))}
           </div>
