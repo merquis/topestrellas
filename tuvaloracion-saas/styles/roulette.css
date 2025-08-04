@@ -26,14 +26,14 @@
   overflow: hidden;
   /* Gradiente cónico para los 8 premios */
 background: conic-gradient(
-  #3A78D1 0deg 45deg,
-  #79C58E 45deg 90deg,
-  #F0C27B 90deg 135deg,
+  #ed5a49 0deg 45deg,
+  #eda63b 45deg 90deg,
+  #57a1e2 90deg 135deg,
   #449c70 135deg 180deg,
-  #F1975A 180deg 225deg,
-  #C74F56 225deg 270deg,
-  #6a93ce 270deg 315deg,
-  #df8dac 315deg 360deg
+  #5e4b8b 180deg 225deg,
+  #dbc81b 225deg 270deg,
+  #f17b4d 270deg 315deg,
+  #3997a3 315deg 360deg
 );
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   border: 3px solid #fff;
