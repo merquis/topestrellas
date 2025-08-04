@@ -295,7 +295,7 @@ class App {
   }
 
   /**
-   * Inicia el timer de Google - Implementación desde cero
+   * Inicia el timer de Google - Copiado de la aplicación SaaS
    */
   startGoogleTimer() {
     // Limpiar cualquier temporizador previo
@@ -312,40 +312,53 @@ class App {
     }
 
     // Configurar tiempo inicial (5 minutos = 300 segundos)
-    let totalSeconds = 300;
+    let timeLeft = 5 * 60; // 5 minutos en segundos
+    let isExpired = false;
 
-    // Función para actualizar el display del temporizador
+    // Función para formatear el tiempo
+    const formatTime = (seconds) => {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    // Función para actualizar el display
     const updateDisplay = () => {
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      
-      // Formatear con ceros a la izquierda
-      const displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      timerElement.textContent = displayTime;
+      if (isExpired) {
+        timerElement.textContent = languageManager.getTranslation('expired') || '00:00';
+        timerElement.style.color = '#ff0000';
+        return;
+      }
+
+      // Mostrar el tiempo formateado
+      timerElement.textContent = formatTime(timeLeft);
       
       // Cambiar color cuando quede menos de 1 minuto
-      if (totalSeconds <= 60) {
+      if (timeLeft <= 60) {
         timerElement.style.color = '#ff0000';
         timerElement.style.fontWeight = 'bold';
-      }
-      
-      // Decrementar el tiempo
-      totalSeconds--;
-      
-      // Si el tiempo se agotó
-      if (totalSeconds < 0) {
-        clearInterval(this.googleTimerInterval);
-        this.googleTimerInterval = null;
-        timerElement.textContent = '00:00';
-        timerElement.style.color = '#ff0000';
+      } else {
+        timerElement.style.color = '#fff';
+        timerElement.style.fontWeight = 'bold';
       }
     };
 
-    // Actualizar inmediatamente
+    // Mostrar el tiempo inicial inmediatamente
     updateDisplay();
-    
-    // Configurar el intervalo para actualizar cada segundo
-    this.googleTimerInterval = setInterval(updateDisplay, 1000);
+
+    // Configurar el intervalo - IGUAL QUE EN LA APLICACIÓN SAAS
+    this.googleTimerInterval = setInterval(() => {
+      if (timeLeft <= 1) {
+        isExpired = true;
+        timeLeft = 0;
+        updateDisplay();
+        clearInterval(this.googleTimerInterval);
+        this.googleTimerInterval = null;
+        return;
+      }
+      timeLeft = timeLeft - 1;
+      updateDisplay();
+    }, 1000);
   }
 
   /**
