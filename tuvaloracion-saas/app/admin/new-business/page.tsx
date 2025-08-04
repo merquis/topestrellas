@@ -19,7 +19,27 @@ export default function NewBusinessPage() {
     googleReviewUrl: '',
     primaryColor: '#f97316',
     secondaryColor: '#ea580c',
-    plan: 'trial'
+    plan: 'trial',
+    prizes: [
+      'CENA PARA 2',
+      '30€ DESCUENTO', 
+      'BOTELLA VINO',
+      'HELADO',
+      'CERVEZA',
+      'REFRESCO',
+      'MOJITO',
+      'CHUPITO'
+    ],
+    prizeValues: [
+      '60€',
+      '30€',
+      '25€',
+      '10€',
+      '5€',
+      '3€',
+      '8€',
+      '2€'
+    ]
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +79,19 @@ export default function NewBusinessPage() {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handlePrizeChange = (index: number, field: 'name' | 'value', value: string) => {
+    const newPrizes = [...formData.prizes];
+    const newValues = [...formData.prizeValues];
+    
+    if (field === 'name') {
+      newPrizes[index] = value;
+      setFormData({ ...formData, prizes: newPrizes });
+    } else {
+      newValues[index] = value;
+      setFormData({ ...formData, prizeValues: newValues });
+    }
   };
 
   return (
@@ -176,6 +209,54 @@ export default function NewBusinessPage() {
                   placeholder="Calle Principal 123, Ciudad"
                   className="w-full p-2 border rounded"
                 />
+              </div>
+
+              {/* Sección de Premios */}
+              <div className="md:col-span-2 mt-6">
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4">🎁 Premios de la Ruleta</h3>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-yellow-800">
+                      <strong>⚠️ IMPORTANTE:</strong> Los primeros 3 premios deben ser los más grandes y valiosos (tienen menor probabilidad de salir).
+                      Los premios se traducirán automáticamente a 4 idiomas y se generarán emojis apropiados con IA.
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-3">
+                    {formData.prizes.map((prize, index) => (
+                      <div key={index} className={`flex gap-2 items-center p-3 rounded-lg ${index < 3 ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <div className="flex-shrink-0 w-20">
+                          <span className={`text-sm font-medium ${index < 3 ? 'text-orange-700' : 'text-gray-600'}`}>
+                            Premio {index + 1}:
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            value={prize}
+                            onChange={(e) => handlePrizeChange(index, 'name', e.target.value)}
+                            placeholder={`Ej: ${index === 0 ? 'CENA PARA 2' : index === 1 ? '30€ DESCUENTO' : 'HELADO'}`}
+                            className="w-full p-2 border rounded text-sm"
+                            required
+                          />
+                        </div>
+                        <div className="flex-shrink-0 w-20">
+                          <input
+                            type="text"
+                            value={formData.prizeValues[index]}
+                            onChange={(e) => handlePrizeChange(index, 'value', e.target.value)}
+                            placeholder="Valor"
+                            className="w-full p-2 border rounded text-sm text-center"
+                          />
+                        </div>
+                        <div className="flex-shrink-0 w-12 text-center">
+                          <span className="text-lg">🤖</span>
+                          <div className="text-xs text-gray-500">IA</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="md:col-span-2">

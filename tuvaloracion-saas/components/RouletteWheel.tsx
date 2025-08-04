@@ -151,6 +151,14 @@ export default function RouletteWheel({
         <h2 className="roulette-title" id="whichPrizeTitle">
           {getTranslation('whichPrize')}
         </h2>
+        <button 
+          id="spinBtn" 
+          className="confirmation-btn spin-premium"
+          onClick={spinWheel}
+          disabled={isSpinning}
+        >
+          {getTranslation('spinBtn')}
+        </button>
       </div>
       
       <div id="rouletteContainer">
@@ -165,15 +173,6 @@ export default function RouletteWheel({
           </div>
         </div>
       </div>
-      
-      <button 
-        id="spinBtn" 
-        className="confirmation-btn spin-premium"
-        onClick={spinWheel}
-        disabled={isSpinning}
-      >
-        {getTranslation('spinBtn')}
-      </button>
     </div>
   )
 }
