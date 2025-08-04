@@ -14,7 +14,6 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     subdomain: '',
     name: '',
     type: 'restaurante',
-    category: '',
     phone: '',
     email: '',
     address: '',
@@ -51,7 +50,6 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           subdomain: business.subdomain,
           name: business.name,
           type: business.type || 'restaurante',
-          category: business.category || '',
           phone: business.contact?.phone || '',
           email: business.contact?.email || '',
           address: business.contact?.address || '',
@@ -180,19 +178,6 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Categoría
-                </label>
-                <input
-                  type="text"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  placeholder="Ej: Italiano, Mexicano..."
-                  className="w-full p-2 border rounded"
-                />
-              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">

@@ -13,7 +13,6 @@ export default function NewBusinessPage() {
     subdomain: '',
     name: '',
     type: 'restaurante',
-    category: '',
     phone: '',
     email: '',
     address: '',
@@ -216,19 +215,6 @@ export default function NewBusinessPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Categoría
-                </label>
-                <input
-                  type="text"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  placeholder="Ej: Italiano, Mexicano..."
-                  className="w-full p-2 border rounded"
-                />
-              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">
