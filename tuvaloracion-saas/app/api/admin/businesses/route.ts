@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     }
     
     // Procesar premios con IA
-    const translatedPrizes = await translatePrizesWithAI(data.prizes, data.prizeValues);
+    const translatedPrizes = await translatePrizesWithAI(data.prizes);
 
     // Estructura del nuevo negocio
     const newBusiness = {
