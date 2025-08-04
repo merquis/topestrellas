@@ -796,7 +796,7 @@ body {
 @media (max-width: 480px) {
   .main-wrapper {
     padding: 10px;
-    padding-top: 70px;
+    padding-top: 20px;
   }
   
   .container {
