@@ -342,6 +342,7 @@
   overflow: hidden;
   white-space: normal; /* Permitir que el texto del botón se divida en varias líneas */
   line-height: 1.2; /* Mejorar el espaciado cuando el texto se divide */
+  text-align: center; /* Centrar el texto del botón */
 }
 
 .premium-btn {
