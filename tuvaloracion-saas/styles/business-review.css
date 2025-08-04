@@ -1108,7 +1108,7 @@ body {
 
 .privacy-check-wrapper {
   display: flex;
-  align-items: flex-start; /* Alinea checkbox, texto y enlace en la parte superior */
+  align-items: center; /* Alinea checkbox y texto en el centro verticalmente */
   gap: 8px;
   flex-basis: 75%; /* El contenedor del checkbox y label ocupa el 75% del ancho */
 }
