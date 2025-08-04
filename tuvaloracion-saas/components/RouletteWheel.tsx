@@ -125,20 +125,6 @@ export default function RouletteWheel({
 
   return (
     <div className="roulette-content">
-      <div className="roulette-header">
-        <h2 className="roulette-title" id="whichPrizeTitle">
-          {getTranslation('whichPrize')}
-        </h2>
-        <button 
-          id="spinBtn" 
-          className="confirmation-btn spin-premium"
-          onClick={spinWheel}
-          disabled={isSpinning}
-        >
-          {getTranslation('spinBtn')}
-        </button>
-      </div>
-      
       <div id="rouletteContainer">
         <div className="roulette-pointer"></div>
         <div id="rouletteWheel" ref={wheelRef}>
@@ -152,6 +138,20 @@ export default function RouletteWheel({
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="roulette-header">
+        <h2 className="roulette-title" id="whichPrizeTitle">
+          {getTranslation('whichPrize')}
+        </h2>
+        <button 
+          id="spinBtn" 
+          className="confirmation-btn spin-premium"
+          onClick={spinWheel}
+          disabled={isSpinning}
+        >
+          {getTranslation('spinBtn')}
+        </button>
       </div>
     </div>
   )
