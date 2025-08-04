@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import clientPromise from '@/lib/mongodb';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { subdomain: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db('tuvaloracion');
     
     // Incrementar el contador atómicamente y devolver el nuevo valor
     const result = await db.collection('businesses').findOneAndUpdate(
