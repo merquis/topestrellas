@@ -59,8 +59,8 @@ export default function RouletteWheel({
       const angleDeg = -90 + (i * sliceAngle) + (sliceAngle / 2)
       const angleRad = angleDeg * Math.PI / 180
 
-      // Acercar el texto al centro con un pequeño margen (~5px desde el centro)
-      const textRadius = 0.25 * R // Reducido de 0.55 a 0.25 para acercarlo al centro
+      // Posicionar el texto con margen adecuado desde el centro (~25px)
+      const textRadius = 0.4 * R // Ajustado para dar más espacio desde el centro
       const x = cx + textRadius * Math.cos(angleRad)
       const y = cy + textRadius * Math.sin(angleRad)
 
