@@ -23,54 +23,55 @@ interface ErrorState {
   rating: string;
 }
 
-const ORIGINAL_PRIZES: Prize[] = [
-    { index: 0, translations: { 
-        es: { name: 'CENA (VALOR 60€)', emoji: '🍽️' },
-        en: { name: 'DINNER (VALUE 60€)', emoji: '🍽️' },
-        de: { name: 'ABENDESSEN (WERT 60€)', emoji: '🍽️' },
-        fr: { name: 'DÎNER (VALEUR 60€)', emoji: '🍽️' }
+// Premios por defecto como fallback si no hay premios configurados
+const DEFAULT_PRIZES: Prize[] = [
+    { index: 0, value: '60€', translations: { 
+        es: { name: 'CENA PARA 2', emoji: '🍽️' },
+        en: { name: 'DINNER FOR 2', emoji: '🍽️' },
+        de: { name: 'ABENDESSEN FÜR 2', emoji: '🍽️' },
+        fr: { name: 'DÎNER POUR 2', emoji: '🍽️' }
     }},
-    { index: 1, translations: { 
-        es: { name: '30€ DESCUENTO', emoji: '💰' },
-        en: { name: '30€ DISCOUNT', emoji: '💰' },
-        de: { name: '30€ RABATT', emoji: '💰' },
-        fr: { name: '30€ DE RÉDUCTION', emoji: '💰' }
+    { index: 1, value: '30€', translations: { 
+        es: { name: '30€ DESCUENTO', emoji: '💸' },
+        en: { name: '30€ DISCOUNT', emoji: '💸' },
+        de: { name: '30€ RABATT', emoji: '💸' },
+        fr: { name: '30€ DE REMISE', emoji: '💸' }
     }},
-    { index: 2, translations: { 
-        es: { name: 'BOTELLA VINO', emoji: '🍾' },
-        en: { name: 'BOTTLE OF WINE', emoji: '🍾' },
-        de: { name: 'FLASCHE WEIN', emoji: '🍾' },
-        fr: { name: 'BOUTEILLE DE VIN', emoji: '🍾' }
+    { index: 2, value: '25€', translations: { 
+        es: { name: 'BOTELLA VINO', emoji: '🍷' },
+        en: { name: 'WINE BOTTLE', emoji: '🍷' },
+        de: { name: 'WEINFLASCHE', emoji: '🍷' },
+        fr: { name: 'BOUTEILLE DE VIN', emoji: '🍷' }
     }},
-    { index: 3, translations: { 
+    { index: 3, value: '10€', translations: { 
         es: { name: 'HELADO', emoji: '🍦' },
         en: { name: 'ICE CREAM', emoji: '🍦' },
         de: { name: 'EIS', emoji: '🍦' },
         fr: { name: 'GLACE', emoji: '🍦' }
     }},
-    { index: 4, translations: { 
+    { index: 4, value: '5€', translations: { 
         es: { name: 'CERVEZA', emoji: '🍺' },
         en: { name: 'BEER', emoji: '🍺' },
         de: { name: 'BIER', emoji: '🍺' },
         fr: { name: 'BIÈRE', emoji: '🍺' }
     }},
-    { index: 5, translations: { 
+    { index: 5, value: '3€', translations: { 
         es: { name: 'REFRESCO', emoji: '🥤' },
         en: { name: 'SOFT DRINK', emoji: '🥤' },
         de: { name: 'ERFRISCHUNGSGETRÄNK', emoji: '🥤' },
-        fr: { name: 'BOISSON GAZEUSE', emoji: '🥤' }
+        fr: { name: 'SODA', emoji: '🥤' }
     }},
-    { index: 6, translations: { 
+    { index: 6, value: '8€', translations: { 
         es: { name: 'MOJITO', emoji: '🍹' },
         en: { name: 'MOJITO', emoji: '🍹' },
         de: { name: 'MOJITO', emoji: '🍹' },
         fr: { name: 'MOJITO', emoji: '🍹' }
     }},
-    { index: 7, translations: { 
+    { index: 7, value: '2€', translations: { 
         es: { name: 'CHUPITO', emoji: '🥃' },
         en: { name: 'SHOT', emoji: '🥃' },
-        de: { name: 'SCHNAPS', emoji: '🥃' },
-        fr: { name: 'SHOT', emoji: '🥃' }
+        de: { name: 'SHOT', emoji: '🥃' },
+        fr: { name: 'SHOOTER', emoji: '🥃' }
     }},
 ];
 
@@ -91,6 +92,11 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [ratingFace, setRatingFace] = useState('🤔')
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false)
   const [buttonText, setButtonText] = useState('')
+
+  // Usar los premios del negocio o fallback a los por defecto
+  const businessPrizes = business.config.prizes && business.config.prizes.length > 0 
+    ? business.config.prizes 
+    : DEFAULT_PRIZES
 
   // Efectos para tema y contador de personas (se mantienen)
   useEffect(() => {
@@ -402,7 +408,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   }
 
   const handleSpinComplete = async (prizeIndex: number) => {
-    const prize = ORIGINAL_PRIZES[prizeIndex];
+    const prize = businessPrizes[prizeIndex];
     setPrizeWon(prize);
     
     // Generar código como en la versión original: EURO-XXXX donde el último dígito es el rating
@@ -477,7 +483,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
 
             <p className="prizes-subtitle"><span>{getTranslation('prizes_subtitle')}</span></p>
             <div className="big-prizes-preview">
-              {ORIGINAL_PRIZES.slice(0, 3).map((p, i) => (
+              {businessPrizes.slice(0, 3).map((p, i) => (
                 <div className="prize-preview-item" key={i}>
                   <span className="prize-icon">{p.translations[currentLanguage]?.emoji || p.translations['es']?.emoji}</span>
                   <span className="prize-text">{p.translations[currentLanguage]?.name || p.translations['es']?.name}</span>
@@ -617,7 +623,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       {currentView === 'roulette' && (
         <div className="roulette-screen">
           <RouletteWheel
-            prizes={ORIGINAL_PRIZES}
+            prizes={businessPrizes}
             language={currentLanguage}
             onSpinComplete={handleSpinComplete}
             getTranslation={getTranslation}

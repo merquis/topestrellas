@@ -77,48 +77,25 @@ export default function RouletteWheel({
     
     setIsSpinning(true)
     
-    // Lógica de probabilidades controladas basada en el rating
+    // NUEVA LÓGICA DE PROBABILIDADES SIMPLIFICADA
     let prizeIndex: number;
     const random = Math.random();
     
-    // Obtener el rating desde localStorage o asumir 5 por defecto
-    const currentRating = parseInt(localStorage.getItem('currentRating') || '5');
+    // Probabilidades fijas independientes del rating:
+    // Premio 0, 1, 2: 0.01% cada uno
+    // Premios 3, 4, 5, 6, 7: se reparten el 99.97% restante (19.994% cada uno)
     
-    if (currentRating >= 1 && currentRating <= 4) {
-      // LÓGICA PARA 1-4 ESTRELLAS
-      const lowTierPrizes = [3, 4, 7]; // Índices para HELADO, CERVEZA, CHUPITO
-      
-      // Comprobamos las probabilidades fijas del 0.01% cada una
-      if (random < 0.0001) {        // 0.01%
-        prizeIndex = 0; // CENA
-      } else if (random < 0.0002) { // 0.01%
-        prizeIndex = 1; // 30€ DESCUENTO
-      } else if (random < 0.0003) { // 0.01%
-        prizeIndex = 2; // BOTELLA VINO
-      } else if (random < 0.0004) { // 0.01%
-        prizeIndex = 5; // REFRESCO
-      } else if (random < 0.0005) { // 0.01%
-        prizeIndex = 6; // MOJITO
-      } else {
-        // El 99.95% restante se reparte entre los 3 premios menores
-        const randomIndex = Math.floor(Math.random() * lowTierPrizes.length);
-        prizeIndex = lowTierPrizes[randomIndex];
-      }
+    if (random < 0.0001) {        // 0.01%
+      prizeIndex = 0; // Premio más valioso (index 0)
+    } else if (random < 0.0002) { // 0.01%
+      prizeIndex = 1; // Segundo más valioso (index 1)
+    } else if (random < 0.0003) { // 0.01%
+      prizeIndex = 2; // Tercer más valioso (index 2)
     } else {
-      // LÓGICA PARA 5 ESTRELLAS
-      // Comprobamos las probabilidades fijas del 0.1% cada una
-      if (random < 0.001) {        // 0.1%
-        prizeIndex = 0; // CENA
-      } else if (random < 0.002) { // 0.1%
-        prizeIndex = 1; // 30€ DESCUENTO
-      } else if (random < 0.003) { // 0.1%
-        prizeIndex = 2; // BOTELLA VINO
-      } else {
-        // El 99.7% restante se reparte entre los 5 premios restantes
-        const highTierLowPrizes = [3, 4, 5, 6, 7]; // Helado, Cerveza, Refresco, Mojito, Chupito
-        const randomIndex = Math.floor(Math.random() * highTierLowPrizes.length);
-        prizeIndex = highTierLowPrizes[randomIndex];
-      }
+      // El 99.97% restante se reparte entre los premios 3, 4, 5, 6, 7
+      const remainingPrizes = [3, 4, 5, 6, 7];
+      const randomIndex = Math.floor(Math.random() * remainingPrizes.length);
+      prizeIndex = remainingPrizes[randomIndex];
     }
     
     // Calcular rotación para que la ruleta pare en el premio seleccionado
