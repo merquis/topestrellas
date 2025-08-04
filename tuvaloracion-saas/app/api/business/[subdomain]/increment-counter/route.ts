@@ -9,12 +9,11 @@ export async function POST(
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
     
-    // Incrementar el contador atómicamente y devolver el nuevo valor
-    const result = await db.collection('businesses').findOneAndUpdate(
+    // Primero, incrementar el contador atómicamente
+    const updateResult = await db.collection('businesses').findOneAndUpdate(
       { subdomain: params.subdomain },
       { 
-        $inc: { 'config.reviewClickCounter': 1 },
-        $setOnInsert: { 'config.reviewClickCounter': 0 }
+        $inc: { 'config.reviewClickCounter': 1 }
       },
       { 
         returnDocument: 'after',
@@ -22,19 +21,28 @@ export async function POST(
       }
     );
 
-    if (!result) {
+    if (!updateResult) {
       return NextResponse.json(
         { error: 'Negocio no encontrado' },
         { status: 404 }
       );
     }
 
-    const newCounter = result.config?.reviewClickCounter || 0;
+    // Obtener el contador actualizado
+    const newCounter = updateResult.config?.reviewClickCounter || 1;
+    
+    // Determinar qué plataforma usar basado en el contador
+    // Contador 1,3,5... (impar) = Google
+    // Contador 2,4,6... (par) = TripAdvisor
+    const useGoogle = newCounter % 2 === 1;
+
+    console.log(`[${params.subdomain}] Counter: ${newCounter}, Use Google: ${useGoogle}`);
 
     return NextResponse.json({
       success: true,
       counter: newCounter,
-      useGoogle: newCounter % 2 === 0
+      useGoogle: useGoogle,
+      platform: useGoogle ? 'google' : 'tripadvisor'
     });
 
   } catch (error) {
