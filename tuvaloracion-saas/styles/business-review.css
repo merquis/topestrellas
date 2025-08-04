@@ -1109,7 +1109,7 @@ body {
   display: flex;
   align-items: center; /* Alinea verticalmente todos los elementos */
   width: 100%;
-  flex-wrap: nowrap; /* No permite que se vayan a la siguiente línea */
+  flex-wrap: wrap; /* Permite que el error vaya a la siguiente línea */
 }
 
 .privacy-check-wrapper {
@@ -1145,9 +1145,11 @@ body {
 }
 
 /* Asegurar que los errores aparezcan debajo */
-.privacy-policy-group + .field-error {
+.privacy-policy-group .field-error {
   width: 100%;
+  flex-basis: 100%; /* Fuerza que ocupe toda la línea */
   margin-top: 5px;
+  order: 3; /* Lo coloca después del checkbox y el enlace */
 }
 
 .popup-close-text-btn {
