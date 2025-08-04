@@ -47,8 +47,18 @@ export default function PrizeDisplay({
           {prize.emoji} {prize.name}
         </div>
         
-        <div className="code premium-code codigo-premio" id="codigoRecompensa">
-          {prizeCode}
+        <div className="email-message">
+          {language === 'es' 
+            ? `Se va a generar el código de tu premio. Lo recibirás en ` 
+            : `Your prize code will be generated. You will receive it at `}
+          <span className="highlight-email">{email}</span>
+          {language === 'es' 
+            ? ` en unos minutos, con formato ` 
+            : ` in a few minutes, with format `}
+          <span className="codigo-premio">{prizeCode}</span>
+          {language === 'es' 
+            ? `. Preséntalo en el local para obtener tu regalo.` 
+            : `. Present it at the location to get your gift.`}
         </div>
         
         <div className="expiry-warning">
@@ -56,13 +66,6 @@ export default function PrizeDisplay({
           <p id="currentDate" style={{ color: 'white', fontSize: '0.9rem', marginTop: '5px' }}>
             {currentDate}
           </p>
-        </div>
-        
-        <div className="email-message">
-          {language === 'es' 
-            ? `Hemos enviado el código a: ` 
-            : `We have sent the code to: `}
-          <span className="highlight-email">{email}</span>
         </div>
       </div>
     </div>
