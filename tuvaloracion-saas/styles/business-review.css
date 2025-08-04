@@ -1107,9 +1107,9 @@ body {
 
 .privacy-policy-group {
   display: flex;
-  align-items: flex-start; /* Alinea verticalmente todos los elementos */
+  align-items: center; /* Alinea verticalmente todos los elementos */
   width: 100%;
-  flex-wrap: wrap; /* Permite que el error vaya a la siguiente línea */
+  flex-wrap: nowrap; /* NO permite que nada vaya a la siguiente línea */
   position: relative;
 }
 
@@ -1143,15 +1143,23 @@ body {
   width: 25%; /* Fija exactamente el 25% del ancho */
   text-align: right; /* Alinea el texto a la derecha */
   flex-shrink: 0; /* No se encoge */
-  align-self: center; /* Se alinea verticalmente con el checkbox */
 }
 
-/* Asegurar que los errores aparezcan debajo */
-.privacy-policy-group .field-error {
+/* Asegurar que los errores aparezcan debajo - FUERA del contenedor flex */
+.form-group.privacy-policy-group + .field-error,
+.privacy-policy-group + .field-error {
   width: 100%;
-  flex-basis: 100%; /* Fuerza que ocupe toda la línea */
   margin-top: 5px;
-  order: 3; /* Lo coloca después del checkbox y el enlace */
+  display: block;
+}
+
+/* Si el error está dentro del grupo, forzarlo a aparecer debajo */
+.privacy-policy-group .field-error {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 5px;
 }
 
 .popup-close-text-btn {
