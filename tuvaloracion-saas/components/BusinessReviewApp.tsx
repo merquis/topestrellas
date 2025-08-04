@@ -576,7 +576,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               Se va a generar el código de tu premio. Lo recibirás en <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{email}</span> en unos minutos, con formato <span style={{ color: '#00ff00', fontWeight: 'bold' }}>{rewardCode}</span>. Preséntalo en el local para obtener tu regalo.
             </div>
             <div className="expiry-warning">
-              <span>⏰ {getTranslation('todayOnly')}</span>
+              <span>{getTranslation('todayOnly')}</span>
             </div>
           </div>
         </div>
@@ -596,7 +596,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               </div>
             )}
             <div className="expiry-warning">
-              <span>⏰ {getTranslation('todayOnly')}</span>
+              <span>{getTranslation('todayOnly')}</span>
             </div>
             <div style={{ 
               fontSize: '14px', 
