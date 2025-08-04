@@ -8,7 +8,6 @@ interface PrizeTranslation {
 
 interface TranslatedPrize {
   index: number;
-  value?: string;
   translations: {
     [lang: string]: PrizeTranslation;
   };
@@ -81,12 +80,11 @@ export class AITranslationService {
   /**
    * Procesa una lista completa de premios: genera emojis y traduce
    */
-  async processAllPrizes(prizeNames: string[], prizeValues?: string[]): Promise<TranslatedPrize[]> {
+  async processAllPrizes(prizeNames: string[]): Promise<TranslatedPrize[]> {
     const results: TranslatedPrize[] = [];
     
     for (let i = 0; i < prizeNames.length; i++) {
       const prizeName = prizeNames[i];
-      const prizeValue = prizeValues?.[i];
       
       try {
         // Generar emoji
@@ -97,7 +95,6 @@ export class AITranslationService {
         
         results.push({
           index: i,
-          value: prizeValue,
           translations: translations
         });
         
@@ -110,7 +107,6 @@ export class AITranslationService {
         // Premio por defecto en caso de error
         results.push({
           index: i,
-          value: prizeValue,
           translations: {
             es: { name: prizeName, emoji: '🎁' },
             en: { name: prizeName, emoji: '🎁' },
@@ -211,10 +207,10 @@ export class AITranslationService {
 export const aiTranslationService = new AITranslationService();
 
 // Función helper para usar en los API routes
-export async function translatePrizesWithAI(prizeNames: string[], prizeValues?: string[]): Promise<TranslatedPrize[]> {
+export async function translatePrizesWithAI(prizeNames: string[]): Promise<TranslatedPrize[]> {
   if (!aiTranslationService.isConfigured()) {
     throw new Error('OpenAI API key no está configurada');
   }
   
-  return await aiTranslationService.processAllPrizes(prizeNames, prizeValues);
+  return await aiTranslationService.processAllPrizes(prizeNames);
 }

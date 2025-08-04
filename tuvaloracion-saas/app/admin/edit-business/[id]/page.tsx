@@ -23,7 +23,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     secondaryColor: '#ea580c',
     plan: 'trial',
     active: true,
-    prizes: Array(8).fill({ name: '', value: '' })
+    prizes: Array(8).fill({ name: '' })
   });
 
   useEffect(() => {
@@ -41,11 +41,10 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           const prize = existingPrizes[index];
           if (prize && prize.translations && prize.translations.es) {
             return {
-              name: prize.translations.es.name || '',
-              value: prize.value || ''
+              name: prize.translations.es.name || ''
             };
           }
-          return { name: '', value: '' };
+          return { name: '' };
         });
 
         setFormData({
@@ -108,11 +107,10 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     });
   };
 
-  const handlePrizeChange = (index: number, field: 'name' | 'value', value: string) => {
+  const handlePrizeChange = (index: number, value: string) => {
     const newPrizes = [...formData.prizes];
     newPrizes[index] = {
-      ...newPrizes[index],
-      [field]: value
+      name: value
     };
     setFormData({ ...formData, prizes: newPrizes });
   };
@@ -260,19 +258,10 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                           <input
                             type="text"
                             value={prize.name}
-                            onChange={(e) => handlePrizeChange(index, 'name', e.target.value)}
+                            onChange={(e) => handlePrizeChange(index, e.target.value)}
                             placeholder={`Ej: ${index === 0 ? 'CENA PARA 2' : index === 1 ? '30€ DESCUENTO' : 'HELADO'}`}
                             className="w-full p-2 border rounded text-sm"
                             required
-                          />
-                        </div>
-                        <div className="flex-shrink-0 w-20">
-                          <input
-                            type="text"
-                            value={prize.value}
-                            onChange={(e) => handlePrizeChange(index, 'value', e.target.value)}
-                            placeholder="Valor"
-                            className="w-full p-2 border rounded text-sm text-center"
                           />
                         </div>
                         <div className="flex-shrink-0 w-12 text-center">

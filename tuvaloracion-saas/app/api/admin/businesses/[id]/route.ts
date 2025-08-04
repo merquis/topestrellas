@@ -83,7 +83,6 @@ export async function PUT(
     let translatedPrizes = currentBusiness.config?.prizes || [];
     if (data.prizes && Array.isArray(data.prizes)) {
       const newPrizeNames = data.prizes.map((p: any) => p.name).filter(Boolean);
-      const newPrizeValues = data.prizes.map((p: any) => p.value);
       
       // Obtener premios actuales para comparar
       const currentPrizeNames = (currentBusiness.config?.prizes || []).map((p: any) => {
@@ -96,7 +95,7 @@ export async function PUT(
       if (newPrizeNames.length > 0 && prizesChanged) {
         console.log('🤖 Premios modificados, ejecutando IA para traducir...');
         try {
-          translatedPrizes = await translatePrizesWithAI(newPrizeNames, newPrizeValues);
+          translatedPrizes = await translatePrizesWithAI(newPrizeNames);
         } catch (error) {
           console.error('Error traduciendo premios:', error);
           // Continuar con los premios existentes si falla la IA
