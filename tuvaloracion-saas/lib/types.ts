@@ -29,7 +29,8 @@ export interface Business {
     prizes: Prize[]
     googleReviewUrl?: string
     tripadvisorReviewUrl?: string
-    reviewPlatform?: 'google' | 'tripadvisor'
+    reviewPlatform?: 'google' | 'tripadvisor' | 'alternating'
+    reviewClickCounter?: number
     features?: {
       showScarcityIndicators?: boolean
       showPrizeWheel?: boolean

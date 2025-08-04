@@ -312,7 +312,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                 <label className="block text-sm font-medium mb-2">
                   Plataforma de Reviews Activa
                 </label>
-                <div className="flex gap-4">
+                <div className="flex flex-col gap-2">
                   <label className="flex items-center">
                     <input
                       type="radio"
@@ -335,9 +335,25 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                     />
                     TripAdvisor Reviews
                   </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="reviewPlatform"
+                      value="alternating"
+                      checked={formData.reviewPlatform === 'alternating'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="flex items-center gap-2">
+                      Alternado Automático 
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        🔄 Google → TripAdvisor → Google...
+                      </span>
+                    </span>
+                  </label>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Selecciona qué plataforma se abrirá cuando los usuarios den 5 estrellas
+                  Selecciona qué plataforma se abrirá cuando los usuarios den 5 estrellas. El alternado automático rota entre ambas plataformas.
                 </p>
               </div>
 

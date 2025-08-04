@@ -451,6 +451,54 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     }
   }
 
+  const handleReviewClick = async () => {
+    const reviewPlatform = business.config?.reviewPlatform;
+    
+    if (reviewPlatform === 'alternating') {
+      try {
+        // Llamar a la API para incrementar el contador
+        const response = await fetch(`/api/business/${business.subdomain}/increment-counter`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          const useGoogle = result.useGoogle;
+          
+          // Abrir la URL correspondiente según el contador
+          const url = useGoogle 
+            ? business.config?.googleReviewUrl 
+            : business.config?.tripadvisorReviewUrl;
+            
+          if (url) {
+            window.open(url, '_blank');
+          }
+        } else {
+          // Fallback a Google si falla la API
+          if (business.config?.googleReviewUrl) {
+            window.open(business.config.googleReviewUrl, '_blank');
+          }
+        }
+      } catch (error) {
+        console.error('Error incrementing counter:', error);
+        // Fallback a Google si hay error
+        if (business.config?.googleReviewUrl) {
+          window.open(business.config.googleReviewUrl, '_blank');
+        }
+      }
+    } else {
+      // Lógica original para plataformas fijas
+      const url = reviewPlatform === 'tripadvisor' 
+        ? business.config?.tripadvisorReviewUrl 
+        : business.config?.googleReviewUrl;
+        
+      if (url) {
+        window.open(url, '_blank');
+      }
+    }
+  }
+
   return (
     <div className="main-wrapper">
       <div className="restaurant-title">
@@ -604,9 +652,13 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             <h3 className="urgent-final"><span>{getTranslation('googleReviewTitle')}</span></h3>
             <GoogleTimer getTranslation={getTranslation} startTimer={currentView === 'review'} />
             <div id="googleBtnContainer">
-              <a href={business.config?.reviewPlatform === 'tripadvisor' ? business.config?.tripadvisorReviewUrl : business.config?.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="google-btn premium-google">
+              <button 
+                onClick={handleReviewClick}
+                className="google-btn premium-google"
+                style={{ border: 'none', background: 'inherit', width: '100%', cursor: 'pointer' }}
+              >
                 <span>{getTranslation('reviewBtn')}</span>
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -653,12 +705,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         }}>
           {getTranslation('submitBtn')}
         </button>
-        <button className="confirmation-btn" id="fixed-cta-btn-review" onClick={() => {
-          const reviewUrl = business.config?.reviewPlatform === 'tripadvisor' ? business.config?.tripadvisorReviewUrl : business.config?.googleReviewUrl;
-          if (reviewUrl) {
-            window.open(reviewUrl, '_blank');
-          }
-        }}>
+        <button className="confirmation-btn" id="fixed-cta-btn-review" onClick={handleReviewClick}>
           {getTranslation('reviewBtn')}
         </button>
       </div>

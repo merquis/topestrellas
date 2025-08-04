@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         googleReviewUrl: data.googleReviewUrl || '',
         tripadvisorReviewUrl: data.tripadvisorReviewUrl || '',
         reviewPlatform: data.reviewPlatform || 'google',
+        reviewClickCounter: 0,
         theme: {
         },
         prizes: translatedPrizes,
