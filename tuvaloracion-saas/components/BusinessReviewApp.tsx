@@ -411,9 +411,9 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     const prize = businessPrizes[prizeIndex];
     setPrizeWon(prize);
     
-    // Generar código como en la versión original: EURO-XXXX donde el último dígito es el rating
+    // Generar código como en la versión original: PR-XXXX donde el último dígito es el rating
     const randomPart = Math.random().toString().slice(2, 5); // 3 dígitos aleatorios
-    const generatedCode = `EURO-${randomPart}${rating}`;
+    const generatedCode = `PR-${randomPart}${rating}`;
     setRewardCode(generatedCode);
 
     const leadData = {

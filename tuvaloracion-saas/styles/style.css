@@ -926,6 +926,9 @@
     background: var(--bg-primary, #181E37);
     z-index: 1000;
     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .fixed-cta-container button {
