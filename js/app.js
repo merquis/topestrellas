@@ -295,60 +295,57 @@ class App {
   }
 
   /**
-   * Inicia el timer de Google
+   * Inicia el timer de Google - Implementación desde cero
    */
   startGoogleTimer() {
-    console.log('Iniciando temporizador de Google...');
-    const googleTimerEl = document.getElementById('googleTimer');
-    if (!googleTimerEl) {
-      console.error('Elemento googleTimer no encontrado');
+    // Limpiar cualquier temporizador previo
+    if (this.googleTimerInterval) {
+      clearInterval(this.googleTimerInterval);
+      this.googleTimerInterval = null;
+    }
+
+    // Buscar el elemento del temporizador
+    const timerElement = document.getElementById('googleTimer');
+    if (!timerElement) {
+      console.error('No se encontró el elemento googleTimer');
       return;
     }
 
-    console.log('Elemento googleTimer encontrado:', googleTimerEl);
-    let timeLeft = 5 * 60; // 5 minutos en segundos
+    // Configurar tiempo inicial (5 minutos = 300 segundos)
+    let totalSeconds = 300;
 
-    // Limpiar cualquier intervalo previo
-    if (this.googleTimerInterval) {
-      clearInterval(this.googleTimerInterval);
-      console.log('Intervalo previo limpiado');
-    }
-
-    // Actualizar inmediatamente el display
-    const updateTimer = () => {
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = timeLeft % 60;
-      const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // Función para actualizar el display del temporizador
+    const updateDisplay = () => {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
       
-      console.log('Actualizando temporizador:', timeString);
-      googleTimerEl.textContent = timeString;
+      // Formatear con ceros a la izquierda
+      const displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      timerElement.textContent = displayTime;
       
-      if (timeLeft <= 60) { // Resaltar en el último minuto
-        googleTimerEl.style.color = '#ff0000';
+      // Cambiar color cuando quede menos de 1 minuto
+      if (totalSeconds <= 60) {
+        timerElement.style.color = '#ff0000';
+        timerElement.style.fontWeight = 'bold';
       }
       
-      timeLeft--;
+      // Decrementar el tiempo
+      totalSeconds--;
       
-      if (timeLeft < 0) {
+      // Si el tiempo se agotó
+      if (totalSeconds < 0) {
         clearInterval(this.googleTimerInterval);
-        googleTimerEl.textContent = languageManager.getTranslation('expired');
-        console.log('Temporizador expirado');
-        return false;
+        this.googleTimerInterval = null;
+        timerElement.textContent = '00:00';
+        timerElement.style.color = '#ff0000';
       }
-      return true;
     };
 
     // Actualizar inmediatamente
-    updateTimer();
-
-    // Configurar el intervalo
-    this.googleTimerInterval = setInterval(() => {
-      if (!updateTimer()) {
-        clearInterval(this.googleTimerInterval);
-      }
-    }, 1000);
+    updateDisplay();
     
-    console.log('Intervalo configurado con ID:', this.googleTimerInterval);
+    // Configurar el intervalo para actualizar cada segundo
+    this.googleTimerInterval = setInterval(updateDisplay, 1000);
   }
 
   /**
