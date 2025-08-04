@@ -27,7 +27,7 @@
   /* Gradiente cónico para los 8 premios */
   background: conic-gradient(
     #1F78B4 0deg    45deg,   /* Cena para 2 */
-    #33A02C, 45deg   90deg,   /* 50€ Descuento */
+    #33A02C 45deg   90deg,   /* 50€ Descuento */
     #FF7F00 90deg   135deg,  /* Botella Vino */
     #E31A1C 135deg  180deg,  /* Helado */
     #A6CEE3 180deg  225deg,  /* Chupito */
