@@ -69,7 +69,7 @@ export default function RouletteWheel({
       textDiv.style.position = 'absolute'
       textDiv.style.left = `${x}px`
       textDiv.style.top = `${y}px`
-      textDiv.style.transform = `translate(50%, 0%) rotate(${textRotation}deg)`
+      textDiv.style.transform = `translate(0%, 0%) rotate(${textRotation}deg)`
     })
   }
 
