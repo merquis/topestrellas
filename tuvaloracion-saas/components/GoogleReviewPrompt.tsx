@@ -1,39 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import GoogleTimer from './GoogleTimer'
 
 interface GoogleReviewPromptProps {
   googleReviewUrl: string
   language: string
   getTranslation: (key: string) => string
+  startTimer: boolean
 }
 
 export default function GoogleReviewPrompt({ 
   googleReviewUrl, 
   language, 
-  getTranslation 
+  getTranslation,
+  startTimer
 }: GoogleReviewPromptProps) {
-  const [timeLeft, setTimeLeft] = useState(300) // 5 minutos
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 0) {
-          clearInterval(timer)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
 
   const goToReview = () => {
     window.open(googleReviewUrl, '_blank')
@@ -46,9 +27,7 @@ export default function GoogleReviewPrompt({
           <span>{getTranslation('googleReviewTitle')}</span>
         </h3>
         
-        <div className="google-timer" id="googleTimer">
-          {formatTime(timeLeft)}
-        </div>
+        <GoogleTimer getTranslation={getTranslation} startTimer={startTimer} />
         
         <div id="googleBtnContainer">
           <button 

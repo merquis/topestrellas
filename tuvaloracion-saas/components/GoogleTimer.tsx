@@ -11,12 +11,10 @@ interface GoogleTimerProps {
 export default function GoogleTimer({ getTranslation, onExpired, startTimer = true }: GoogleTimerProps) {
   const [timeLeft, setTimeLeft] = useState(5 * 60) // 5 minutos en segundos
   const [isExpired, setIsExpired] = useState(false)
-  const [hasStarted, setHasStarted] = useState(false)
 
   useEffect(() => {
-    if (!startTimer || hasStarted) return
+    if (!startTimer) return
 
-    setHasStarted(true)
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -30,7 +28,7 @@ export default function GoogleTimer({ getTranslation, onExpired, startTimer = tr
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [startTimer, onExpired, hasStarted])
+  }, [startTimer, onExpired])
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
