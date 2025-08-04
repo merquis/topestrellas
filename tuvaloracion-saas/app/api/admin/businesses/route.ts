@@ -30,7 +30,8 @@ export async function POST(request: Request) {
     const data = await request.json();
     
     // Validar datos requeridos
-    if (!data.subdomain || !data.name) {
+    const businessName = data.businessName || data.name;
+    if (!data.subdomain || !businessName) {
       return NextResponse.json(
         { error: 'Subdominio y nombre son requeridos' },
         { status: 400 }
@@ -50,12 +51,22 @@ export async function POST(request: Request) {
     }
     
     // Procesar premios con IA
-    const translatedPrizes = await translatePrizesWithAI(data.prizes);
+    const prizesToTranslate = data.prizes || [
+      'CENA Max 60€',
+      'DESCUENTO 30€', 
+      'BOTELLA VINO',
+      'HELADO',
+      'CERVEZA',
+      'REFRESCO',
+      'MOJITO',
+      'CHUPITO'
+    ];
+    const translatedPrizes = await translatePrizesWithAI(prizesToTranslate);
 
     // Estructura del nuevo negocio
     const newBusiness = {
       subdomain: data.subdomain.toLowerCase(),
-      name: data.name,
+      name: data.businessName || data.name,
       type: data.type || 'restaurante',
       category: data.category || '',
       config: {

@@ -15,7 +15,8 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
 
   const handleLogout = () => {
     clearAuth();
-    router.push('/admin');
+    // Usar window.location.href para forzar una recarga completa
+    window.location.href = '/admin';
   };
 
   return (
