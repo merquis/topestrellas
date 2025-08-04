@@ -152,9 +152,25 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     let text;
     if (rating > 0) {
       if (rating === 1) {
-        text = getTranslation('rateWithStar', { count: '1' });
+        // Para 1 estrella, usar singular
+        const starWord = currentLanguage === 'es' ? 'ESTRELLA' : 
+                         currentLanguage === 'en' ? 'STAR' :
+                         currentLanguage === 'de' ? 'STERN' :
+                         currentLanguage === 'fr' ? 'ÉTOILE' : 'ESTRELLA';
+        text = `VALORAR CON 1 ${starWord}`;
+        if (currentLanguage === 'en') text = `RATE WITH 1 ${starWord}`;
+        if (currentLanguage === 'de') text = `MIT 1 ${starWord} BEWERTEN`;
+        if (currentLanguage === 'fr') text = `ÉVALUER AVEC 1 ${starWord}`;
       } else {
-        text = getTranslation('rateWithStars', { count: rating.toString() });
+        // Para múltiples estrellas, usar plural
+        const starWord = currentLanguage === 'es' ? 'ESTRELLAS' : 
+                         currentLanguage === 'en' ? 'STARS' :
+                         currentLanguage === 'de' ? 'STERNEN' :
+                         currentLanguage === 'fr' ? 'ÉTOILES' : 'ESTRELLAS';
+        text = `VALORAR CON ${rating} ${starWord}`;
+        if (currentLanguage === 'en') text = `RATE WITH ${rating} ${starWord}`;
+        if (currentLanguage === 'de') text = `MIT ${rating} ${starWord} BEWERTEN`;
+        if (currentLanguage === 'fr') text = `ÉVALUER AVEC ${rating} ${starWord}`;
       }
     } else {
       text = getTranslation('rateNow');
