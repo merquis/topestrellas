@@ -30,10 +30,10 @@
     #e74c3c 45deg   90deg,   /* 50€ Descuento */
     #2980b9 90deg   135deg,  /* Botella Vino */
     #8e44ad 135deg  180deg,  /* Helado */
-    #27ae60 180deg  225deg,  /* Chupito */
-    #f1c40f 225deg  270deg,  /* Refresco */
-    #e47bb5 270deg  315deg,  /* Mojito */
-    #60a0f3 315deg  360deg   /* Copa Vino */
+    hsl(145, 44%, 56%) 180deg  225deg,  /* Chupito */
+    #d1ab11 225deg  270deg,  /* Refresco */
+    #338f3f 270deg  315deg,  /* Mojito */
+    #451cb4 315deg  360deg   /* Copa Vino */
   );
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   border: 3px solid #fff;
