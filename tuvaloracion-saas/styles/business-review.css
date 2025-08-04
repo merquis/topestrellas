@@ -1101,7 +1101,7 @@ body {
 .privacy-policy-group {
   display: flex;
   flex-wrap: wrap; /* Permite que el mensaje de error se coloque debajo */
-  align-items: flex-start;
+  align-items: center; /* Alinea verticalmente todos los elementos */
   width: 100%;
   justify-content: space-between;
 }
@@ -1113,9 +1113,16 @@ body {
   flex-basis: 75%; /* El contenedor del checkbox y label ocupa el 75% del ancho */
 }
 
+.privacy-check-wrapper input[type="checkbox"] {
+  margin: 0; /* Elimina márgenes por defecto */
+  vertical-align: middle; /* Alineación vertical del checkbox */
+}
+
 .privacy-check-wrapper label {
   cursor: pointer; /* Muestra la manita al pasar el ratón */
   flex-grow: 1; /* Hace que la etiqueta ocupe el espacio sobrante */
+  margin: 0; /* Elimina márgenes por defecto */
+  line-height: 1.2; /* Ajusta la altura de línea */
 }
 
 .privacy-link {
@@ -1127,6 +1134,7 @@ body {
   text-align: right; /* Alinea el texto a la derecha */
   flex-shrink: 0; /* Evita que el enlace se encoja */
   cursor: pointer;
+  align-self: center; /* Asegura que el enlace esté centrado verticalmente */
 }
 
 .popup-close-text-btn {
