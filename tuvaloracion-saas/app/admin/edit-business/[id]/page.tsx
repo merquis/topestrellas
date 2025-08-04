@@ -172,6 +172,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                   className="w-full p-2 border rounded"
                 >
                   <option value="restaurante">Restaurante</option>
+                  <option value="cafeteria">Cafetería</option>
                   <option value="peluqueria">Peluquería</option>
                   <option value="hotel">Hotel</option>
                   <option value="tienda">Tienda</option>

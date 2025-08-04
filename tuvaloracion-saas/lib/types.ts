@@ -184,6 +184,18 @@ export const BUSINESS_TEMPLATES = {
       { index: 7, value: '2€', emoji: '🥃' }
     ]
   },
+  cafeteria: {
+    prizes: [
+      { index: 0, value: '30€', emoji: '☕' },
+      { index: 1, value: '20€', emoji: '💰' },
+      { index: 2, value: '15€', emoji: '🥐' },
+      { index: 3, value: '8€', emoji: '🧁' },
+      { index: 4, value: '5€', emoji: '🍰' },
+      { index: 5, value: '3€', emoji: '🥤' },
+      { index: 6, value: '6€', emoji: '🥪' },
+      { index: 7, value: '2€', emoji: '🍪' }
+    ]
+  },
   peluqueria: {
     prizes: [
       { index: 0, value: '45€', emoji: '✂️' },

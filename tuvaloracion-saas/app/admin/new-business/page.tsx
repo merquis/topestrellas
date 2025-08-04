@@ -22,8 +22,8 @@ export default function NewBusinessPage() {
     reviewPlatform: 'google',
     plan: 'trial',
     prizes: [
-      'CENA PARA 2',
-      '30€ DESCUENTO', 
+      'CENA Max 60€',
+      'DESCUENTO 30€', 
       'BOTELLA VINO',
       'HELADO',
       'CERVEZA',
@@ -32,6 +32,70 @@ export default function NewBusinessPage() {
       'CHUPITO'
     ]
   });
+
+  // Premios por tipo de negocio
+  const prizesByType = {
+    restaurante: [
+      'CENA Max 60€',
+      'DESCUENTO 30€', 
+      'BOTELLA VINO',
+      'HELADO',
+      'CERVEZA',
+      'REFRESCO',
+      'MOJITO',
+      'CHUPITO'
+    ],
+    cafeteria: [
+      'Upgrade gratis',
+      'Shot extra',
+      'Sirope adicional',
+      'Descuento 15%',
+      'Crema extra',
+      '2x1 futuro',
+      'Topping gratis',
+      'Azúcar premium'
+    ],
+    peluqueria: [
+      'CORTE GRATIS',
+      'DESCUENTO 30€',
+      'MASAJE CAPILAR',
+      'MANICURA',
+      'PRODUCTOS',
+      'PEINADO',
+      'TRATAMIENTO',
+      'REGALO'
+    ],
+    hotel: [
+      'NOCHE GRATIS',
+      'UPGRADE SUITE',
+      'DESAYUNO',
+      'SPA GRATIS',
+      'CENA',
+      'BEBIDA',
+      'LATE CHECKOUT',
+      'DESCUENTO'
+    ],
+    tienda: [
+      'DESCUENTO 50%',
+      'PRODUCTO GRATIS',
+      'VALE 20€',
+      'OFERTA 2x1',
+      'DESCUENTO 15%',
+      'REGALO',
+      'VALE 10€',
+      'DESCUENTO 5%'
+    ],
+    otro: [
+      'PREMIO 1',
+      'PREMIO 2',
+      'PREMIO 3',
+      'PREMIO 4',
+      'PREMIO 5',
+      'PREMIO 6',
+      'PREMIO 7',
+      'PREMIO 8'
+    ]
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,10 +130,21 @@ export default function NewBusinessPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    
+    // Si se cambia el tipo de negocio, actualizar los premios automáticamente
+    if (name === 'type' && prizesByType[value as keyof typeof prizesByType]) {
+      setFormData({
+        ...formData,
+        [name]: value,
+        prizes: prizesByType[value as keyof typeof prizesByType]
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   const handlePrizeChange = (index: number, value: string) => {
@@ -133,6 +208,7 @@ export default function NewBusinessPage() {
                   className="w-full p-2 border rounded"
                 >
                   <option value="restaurante">Restaurante</option>
+                  <option value="cafeteria">Cafetería</option>
                   <option value="peluqueria">Peluquería</option>
                   <option value="hotel">Hotel</option>
                   <option value="tienda">Tienda</option>
