@@ -115,8 +115,6 @@ export async function PUT(
         ...currentBusiness.config, // Preservar configuración existente
         googleReviewUrl: data.googleReviewUrl || '',
         theme: {
-          primaryColor: data.primaryColor || '#f97316',
-          secondaryColor: data.secondaryColor || '#ea580c'
         },
         prizes: translatedPrizes
       },

@@ -75,8 +75,6 @@ Para crear el negocio de Euromania:
     defaultLanguage: 'es',
     googleReviewUrl: 'https://g.page/r/CRLLlgC0hMYDEBM/review',
     theme: {
-      primaryColor: '#f97316',
-      secondaryColor: '#ea580c'
     },
     prizes: [
       // Copiar la configuración actual de premios

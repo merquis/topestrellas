@@ -63,8 +63,6 @@ export async function POST(request: Request) {
         defaultLanguage: 'es',
         googleReviewUrl: data.googleReviewUrl || '',
         theme: {
-          primaryColor: data.primaryColor || '#f97316',
-          secondaryColor: data.secondaryColor || '#ea580c'
         },
         prizes: translatedPrizes,
         features: {

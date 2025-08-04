@@ -82,8 +82,6 @@ Se ha migrado completamente el diseño visual de la aplicación original (HTML/C
 ```javascript
 config: {
   theme: {
-    primaryColor: '#f97316',
-    secondaryColor: '#ea580c',
     bgPrimary: '#1a1a2e',
     bgSecondary: '#16213e',
     buttonPrimary: '#5a6c7d',

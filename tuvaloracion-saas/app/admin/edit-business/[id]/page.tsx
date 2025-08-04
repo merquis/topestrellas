@@ -19,8 +19,6 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     email: '',
     address: '',
     googleReviewUrl: '',
-    primaryColor: '#f97316',
-    secondaryColor: '#ea580c',
     plan: 'trial',
     active: true,
     prizes: Array(8).fill({ name: '' })
@@ -56,8 +54,6 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           email: business.contact?.email || '',
           address: business.contact?.address || '',
           googleReviewUrl: business.config?.googleReviewUrl || '',
-          primaryColor: business.config?.theme?.primaryColor || '#f97316',
-          secondaryColor: business.config?.theme?.secondaryColor || '#ea580c',
           plan: business.subscription?.plan || 'trial',
           active: business.active !== false,
           prizes: prizes
@@ -288,47 +284,6 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Color Principal
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    name="primaryColor"
-                    value={formData.primaryColor}
-                    onChange={handleChange}
-                    className="h-10 w-20"
-                  />
-                  <input
-                    type="text"
-                    value={formData.primaryColor}
-                    readOnly
-                    className="p-2 border rounded bg-gray-50"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Color Secundario
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    name="secondaryColor"
-                    value={formData.secondaryColor}
-                    onChange={handleChange}
-                    className="h-10 w-20"
-                  />
-                  <input
-                    type="text"
-                    value={formData.secondaryColor}
-                    readOnly
-                    className="p-2 border rounded bg-gray-50"
-                  />
-                </div>
-              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">

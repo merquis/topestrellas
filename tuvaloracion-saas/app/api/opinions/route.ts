@@ -127,16 +127,16 @@ async function sendPrizeEmail(
     subject: `¡${name}, aquí está tu premio! 🎁`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(to right, #f97316, #ea580c); color: white; padding: 20px; text-align: center;">
+        <div style="background: #007bff; color: white; padding: 20px; text-align: center;">
           <h1 style="margin: 0;">¡Felicidades ${name}!</h1>
         </div>
         
         <div style="padding: 20px; background-color: #f9f9f9;">
           <h2 style="color: #333;">Has ganado: ${prizeName}</h2>
           
-          <div style="background-color: #fff; border: 2px dashed #f97316; padding: 20px; margin: 20px 0; text-align: center;">
+          <div style="background-color: #fff; border: 2px dashed #007bff; padding: 20px; margin: 20px 0; text-align: center;">
             <p style="margin: 0; font-size: 14px; color: #666;">Tu código de premio es:</p>
-            <h3 style="font-size: 32px; color: #f97316; margin: 10px 0; letter-spacing: 2px;">
+            <h3 style="font-size: 32px; color: #007bff; margin: 10px 0; letter-spacing: 2px;">
               ${prizeCode}
             </h3>
           </div>

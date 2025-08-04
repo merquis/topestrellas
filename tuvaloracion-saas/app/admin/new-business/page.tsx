@@ -18,8 +18,6 @@ export default function NewBusinessPage() {
     email: '',
     address: '',
     googleReviewUrl: '',
-    primaryColor: '#f97316',
-    secondaryColor: '#ea580c',
     plan: 'trial',
     prizes: [
       'CENA PARA 2',
@@ -252,47 +250,6 @@ export default function NewBusinessPage() {
                 </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Color Principal
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    name="primaryColor"
-                    value={formData.primaryColor}
-                    onChange={handleChange}
-                    className="h-10 w-20"
-                  />
-                  <input
-                    type="text"
-                    value={formData.primaryColor}
-                    readOnly
-                    className="p-2 border rounded bg-gray-50"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Color Secundario
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    name="secondaryColor"
-                    value={formData.secondaryColor}
-                    onChange={handleChange}
-                    className="h-10 w-20"
-                  />
-                  <input
-                    type="text"
-                    value={formData.secondaryColor}
-                    readOnly
-                    className="p-2 border rounded bg-gray-50"
-                  />
-                </div>
-              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">

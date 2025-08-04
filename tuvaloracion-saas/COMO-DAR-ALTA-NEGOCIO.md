@@ -231,8 +231,6 @@ Para facilitar este proceso, se recomienda desarrollar:
     "defaultLanguage": "es",
     "googleReviewUrl": "https://g.page/r/example",
     "theme": {
-      "primaryColor": "#f97316",
-      "secondaryColor": "#ea580c"
     },
     "prizes": [
       {"index": 0, "value": "60€", "translations": {"es": {"name": "Cena para 2", "emoji": "🍽️"}, "en": {"name": "Dinner for 2", "emoji": "🍽️"}}},
