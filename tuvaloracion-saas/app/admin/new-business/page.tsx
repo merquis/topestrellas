@@ -30,16 +30,6 @@ export default function NewBusinessPage() {
       'REFRESCO',
       'MOJITO',
       'CHUPITO'
-    ],
-    prizeValues: [
-      '60€',
-      '30€',
-      '25€',
-      '10€',
-      '5€',
-      '3€',
-      '8€',
-      '2€'
     ]
   });
 
@@ -82,17 +72,10 @@ export default function NewBusinessPage() {
     });
   };
 
-  const handlePrizeChange = (index: number, field: 'name' | 'value', value: string) => {
+  const handlePrizeChange = (index: number, value: string) => {
     const newPrizes = [...formData.prizes];
-    const newValues = [...formData.prizeValues];
-    
-    if (field === 'name') {
-      newPrizes[index] = value;
-      setFormData({ ...formData, prizes: newPrizes });
-    } else {
-      newValues[index] = value;
-      setFormData({ ...formData, prizeValues: newValues });
-    }
+    newPrizes[index] = value;
+    setFormData({ ...formData, prizes: newPrizes });
   };
 
   return (
@@ -219,8 +202,8 @@ export default function NewBusinessPage() {
                   <h3 className="text-lg font-semibold mb-4">🎁 Premios de la Ruleta</h3>
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                     <p className="text-sm text-yellow-800">
-                      <strong>⚠️ IMPORTANTE:</strong> Los primeros 3 premios deben ser los más grandes y valiosos (tienen menor probabilidad de salir).
-                      Los premios se traducirán automáticamente a 4 idiomas y se generarán emojis apropiados con IA.
+                      <strong>⚠️ IMPORTANTE:</strong> Los primeros 3 premios deben ser los más grandes y valiosos ya que tienen menor probabilidad de salir (<strong>0.01% cada uno</strong>). 
+                      Los premios 4-8 tienen mayor probabilidad (<strong>19.994% cada uno</strong>). Los premios se traducirán automáticamente a <strong>inglés, alemán y francés</strong> además del español, y se generarán emojis apropiados con IA.
                     </p>
                   </div>
                   
@@ -236,19 +219,10 @@ export default function NewBusinessPage() {
                           <input
                             type="text"
                             value={prize}
-                            onChange={(e) => handlePrizeChange(index, 'name', e.target.value)}
+                            onChange={(e) => handlePrizeChange(index, e.target.value)}
                             placeholder={`Ej: ${index === 0 ? 'CENA PARA 2' : index === 1 ? '30€ DESCUENTO' : 'HELADO'}`}
                             className="w-full p-2 border rounded text-sm"
                             required
-                          />
-                        </div>
-                        <div className="flex-shrink-0 w-20">
-                          <input
-                            type="text"
-                            value={formData.prizeValues[index]}
-                            onChange={(e) => handlePrizeChange(index, 'value', e.target.value)}
-                            placeholder="Valor"
-                            className="w-full p-2 border rounded text-sm text-center"
                           />
                         </div>
                         <div className="flex-shrink-0 w-12 text-center">

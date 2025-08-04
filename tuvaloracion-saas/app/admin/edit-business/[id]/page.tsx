@@ -241,8 +241,8 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                   <h3 className="text-lg font-semibold mb-4">🎁 Premios de la Ruleta</h3>
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                     <p className="text-sm text-yellow-800">
-                      <strong>⚠️ IMPORTANTE:</strong> Los primeros 3 premios deben ser los más grandes y valiosos (tienen menor probabilidad de salir).
-                      Los premios se traducirán automáticamente a 4 idiomas y se generarán emojis apropiados con IA.
+                      <strong>⚠️ IMPORTANTE:</strong> Los primeros 3 premios deben ser los más grandes y valiosos ya que tienen menor probabilidad de salir (<strong>0.01% cada uno</strong>). 
+                      Los premios 4-8 tienen mayor probabilidad (<strong>19.994% cada uno</strong>). Los premios se traducirán automáticamente a <strong>inglés, alemán y francés</strong> además del español, y se generarán emojis apropiados con IA.
                     </p>
                   </div>
                   
