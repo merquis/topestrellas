@@ -151,7 +151,11 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const updateButtonText = () => {
     let text;
     if (rating > 0) {
-      text = getTranslation('rateWithStars', { count: rating.toString() });
+      if (rating === 1) {
+        text = getTranslation('rateWithStar', { count: rating.toString() });
+      } else {
+        text = getTranslation('rateWithStars', { count: rating.toString() });
+      }
     } else {
       text = getTranslation('rateNow');
     }
