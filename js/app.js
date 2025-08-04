@@ -292,25 +292,46 @@ class App {
    */
   startGoogleTimer() {
     const googleTimerEl = document.getElementById('googleTimer');
+    if (!googleTimerEl) {
+      console.error('Elemento googleTimer no encontrado');
+      return;
+    }
+
     let timeLeft = 5 * 60; // 5 minutos en segundos
 
+    // Limpiar cualquier intervalo previo
+    if (this.googleTimerInterval) {
+      clearInterval(this.googleTimerInterval);
+    }
+
+    // Actualizar inmediatamente el display
+    const updateTimer = () => {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      
+      googleTimerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      
+      if (timeLeft <= 60) { // Resaltar en el último minuto
+        googleTimerEl.style.color = '#ff0000';
+      }
+      
+      timeLeft--;
+      
+      if (timeLeft < 0) {
+        clearInterval(this.googleTimerInterval);
+        googleTimerEl.textContent = languageManager.getTranslation('expired');
+        return false;
+      }
+      return true;
+    };
+
+    // Actualizar inmediatamente
+    updateTimer();
+
+    // Configurar el intervalo
     this.googleTimerInterval = setInterval(() => {
-      if (googleTimerEl) {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        
-        googleTimerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
-        if (timeLeft <= 60) { // Resaltar en el último minuto
-          googleTimerEl.style.color = '#ff0000';
-        }
-        
-        timeLeft--;
-        
-        if (timeLeft < 0) {
-          clearInterval(this.googleTimerInterval);
-          googleTimerEl.textContent = languageManager.getTranslation('expired');
-        }
+      if (!updateTimer()) {
+        clearInterval(this.googleTimerInterval);
       }
     }, 1000);
   }
