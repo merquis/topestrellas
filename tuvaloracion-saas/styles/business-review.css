@@ -1107,9 +1107,10 @@ body {
 
 .privacy-policy-group {
   display: flex;
-  align-items: center; /* Alinea verticalmente todos los elementos */
+  align-items: flex-start; /* Alinea verticalmente todos los elementos */
   width: 100%;
   flex-wrap: wrap; /* Permite que el error vaya a la siguiente línea */
+  position: relative;
 }
 
 .privacy-check-wrapper {
@@ -1142,6 +1143,7 @@ body {
   width: 25%; /* Fija exactamente el 25% del ancho */
   text-align: right; /* Alinea el texto a la derecha */
   flex-shrink: 0; /* No se encoge */
+  align-self: center; /* Se alinea verticalmente con el checkbox */
 }
 
 /* Asegurar que los errores aparezcan debajo */
