@@ -557,7 +557,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         <div id="codigoContainer" className={currentView !== 'code' ? 'hidden' : ''}>
           <div className="reward-code premium-reward">
             <div className="description">
-              <span>🎁 {getTranslation('rewardCode')}</span>
+              <span>{getTranslation('rewardCode')}</span>
             </div>
             {prizeWon && (
               <div className="premio-grande">
@@ -585,7 +585,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
         <div id="resenaBtn" className={currentView !== 'review' ? 'hidden' : ''}>
           <div className="reward-code premium-reward">
             <div className="description">
-              <span>🎁 {getTranslation('rewardCode')}</span>
+              <span>{getTranslation('rewardCode')}</span>
             </div>
             {prizeWon && (
               <div className="premio-grande">
