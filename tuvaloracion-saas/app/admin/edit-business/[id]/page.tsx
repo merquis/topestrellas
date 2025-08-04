@@ -19,6 +19,8 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     email: '',
     address: '',
     googleReviewUrl: '',
+    tripadvisorReviewUrl: '',
+    reviewPlatform: 'google',
     plan: 'trial',
     active: true,
     prizes: Array(8).fill({ name: '' })
@@ -54,6 +56,8 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           email: business.contact?.email || '',
           address: business.contact?.address || '',
           googleReviewUrl: business.config?.googleReviewUrl || '',
+          tripadvisorReviewUrl: business.config?.tripadvisorReviewUrl || '',
+          reviewPlatform: business.config?.reviewPlatform || 'google',
           plan: business.subscription?.plan || 'trial',
           active: business.active !== false,
           prizes: prizes
@@ -95,7 +99,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData({
       ...formData,
@@ -274,14 +278,67 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                 <label className="block text-sm font-medium mb-2">
                   URL de Google Reviews
                 </label>
-                <input
-                  type="url"
+                <textarea
                   name="googleReviewUrl"
                   value={formData.googleReviewUrl}
                   onChange={handleChange}
-                  placeholder="https://g.page/r/..."
-                  className="w-full p-2 border rounded"
+                  placeholder="https://search.google.com/local/writereview?placeid=..."
+                  className="w-full p-2 border rounded h-20"
+                  rows={3}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Obtén esta URL desde Google My Business
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">
+                  URL de TripAdvisor Reviews
+                </label>
+                <textarea
+                  name="tripadvisorReviewUrl"
+                  value={formData.tripadvisorReviewUrl}
+                  onChange={handleChange}
+                  placeholder="https://www.tripadvisor.com/UserReviewEdit-..."
+                  className="w-full p-2 border rounded h-20"
+                  rows={3}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Obtén esta URL desde TripAdvisor
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">
+                  Plataforma de Reviews Activa
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="reviewPlatform"
+                      value="google"
+                      checked={formData.reviewPlatform === 'google'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    Google Reviews
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="reviewPlatform"
+                      value="tripadvisor"
+                      checked={formData.reviewPlatform === 'tripadvisor'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    TripAdvisor Reviews
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Selecciona qué plataforma se abrirá cuando los usuarios den 5 estrellas
+                </p>
               </div>
 
 

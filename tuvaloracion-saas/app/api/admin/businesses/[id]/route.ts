@@ -114,6 +114,8 @@ export async function PUT(
       config: {
         ...currentBusiness.config, // Preservar configuración existente
         googleReviewUrl: data.googleReviewUrl || '',
+        tripadvisorReviewUrl: data.tripadvisorReviewUrl || '',
+        reviewPlatform: data.reviewPlatform || 'google',
         theme: {
         },
         prizes: translatedPrizes

@@ -62,6 +62,8 @@ export async function POST(request: Request) {
         languages: data.languages || ['es', 'en', 'de', 'fr'],
         defaultLanguage: 'es',
         googleReviewUrl: data.googleReviewUrl || '',
+        tripadvisorReviewUrl: data.tripadvisorReviewUrl || '',
+        reviewPlatform: data.reviewPlatform || 'google',
         theme: {
         },
         prizes: translatedPrizes,

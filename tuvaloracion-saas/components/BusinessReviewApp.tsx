@@ -604,8 +604,8 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             <h3 className="urgent-final"><span>{getTranslation('googleReviewTitle')}</span></h3>
             <GoogleTimer getTranslation={getTranslation} startTimer={currentView === 'review'} />
             <div id="googleBtnContainer">
-              <a href={business.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="google-btn premium-google">
-                <span>{getTranslation('googleBtn')}</span>
+              <a href={business.config?.reviewPlatform === 'tripadvisor' ? business.config?.tripadvisorReviewUrl : business.config?.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="google-btn premium-google">
+                <span>{getTranslation('reviewBtn')}</span>
               </a>
             </div>
           </div>
@@ -654,11 +654,12 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
           {getTranslation('submitBtn')}
         </button>
         <button className="confirmation-btn" id="fixed-cta-btn-review" onClick={() => {
-          if (business.googleReviewUrl) {
-            window.open(business.googleReviewUrl, '_blank');
+          const reviewUrl = business.config?.reviewPlatform === 'tripadvisor' ? business.config?.tripadvisorReviewUrl : business.config?.googleReviewUrl;
+          if (reviewUrl) {
+            window.open(reviewUrl, '_blank');
           }
         }}>
-          {getTranslation('googleBtn')}
+          {getTranslation('reviewBtn')}
         </button>
       </div>
     </div>
