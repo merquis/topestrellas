@@ -1102,15 +1102,15 @@ body {
   display: flex;
   align-items: center; /* Alinea verticalmente todos los elementos */
   width: 100%;
-  gap: 10px; /* Espacio entre las dos columnas */
+  flex-wrap: nowrap; /* No permite que se vayan a la siguiente línea */
 }
 
 .privacy-check-wrapper {
   display: flex;
   align-items: center; /* Alinea checkbox y texto en el centro verticalmente */
   gap: 8px;
-  flex: 1; /* Ocupa el espacio disponible */
-  min-width: 0; /* Permite que se encoja si es necesario */
+  width: 75%; /* Fija exactamente el 75% del ancho */
+  flex-shrink: 0; /* No se encoge */
 }
 
 .privacy-check-wrapper input[type="checkbox"] {
@@ -1123,7 +1123,7 @@ body {
   cursor: pointer; /* Muestra la manita al pasar el ratón */
   margin: 0; /* Elimina márgenes por defecto */
   line-height: 1.2; /* Ajusta la altura de línea */
-  flex: 1; /* Ocupa el espacio disponible */
+  flex: 1; /* Ocupa el espacio disponible dentro del 75% */
 }
 
 .privacy-link {
@@ -1132,6 +1132,8 @@ body {
   color: #ccc;
   text-decoration: underline;
   cursor: pointer;
+  width: 25%; /* Fija exactamente el 25% del ancho */
+  text-align: right; /* Alinea el texto a la derecha */
   flex-shrink: 0; /* No se encoge */
 }
 
