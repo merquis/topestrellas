@@ -61,7 +61,7 @@ export default function RouletteWheel({
 
       // Todos los textos a la misma distancia del centro
       //const textRadius = 0.50 * R;
-      const textRadius = 30;
+      const textRadius = 150;
       const x = cx + textRadius * Math.cos(angleRad)
       const y = cy + textRadius * Math.sin(angleRad)
 
