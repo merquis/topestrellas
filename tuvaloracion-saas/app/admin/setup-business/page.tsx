@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Toast from '@/components/Toast';
 import LoadingOverlay from '@/components/LoadingOverlay';
 
-export default function SetupBusinessPage() {
+function SetupBusinessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -437,5 +437,20 @@ export default function SetupBusinessPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function SetupBusinessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    }>
+      <SetupBusinessContent />
+    </Suspense>
   );
 }
