@@ -571,7 +571,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               {getTranslation('prizeCodeMessage1')}
               <span className="highlight-email">{email}</span>
               {getTranslation('prizeCodeMessage2')}
-              <span className="codigo-premio">{rewardCode}</span>
+              <span className="codigo-premio">PR‑XXXX</span>
               {getTranslation('prizeCodeMessage3')}
             </div>
             <div className="expiry-warning">
