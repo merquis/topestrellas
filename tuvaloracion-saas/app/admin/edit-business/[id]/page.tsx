@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import LoadingOverlay from '@/components/LoadingOverlay';
+import { checkAuth } from '@/lib/auth';
 
 export default function EditBusinessPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState({
     subdomain: '',
     name: '',
@@ -26,6 +30,16 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
   });
 
   useEffect(() => {
+    const authUser = checkAuth();
+    if (!authUser) {
+      router.push('/admin');
+      return;
+    }
+    if (authUser.role !== 'super_admin') {
+      router.push('/admin');
+      return;
+    }
+    setUser(authUser);
     loadBusiness();
   }, [params.id]);
 
@@ -85,7 +99,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
       if (response.ok) {
         setToast({ message: 'Negocio actualizado exitosamente', type: 'success' });
-        setTimeout(() => router.push('/admin'), 2000);
+        setTimeout(() => router.push('/admin/businesses'), 2000);
       } else {
         const data = await response.json();
         setToast({ message: `Error: ${data.error}`, type: 'error' });
@@ -113,131 +127,240 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     setFormData({ ...formData, prizes: newPrizes });
   };
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Cargando...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <AdminLayout user={user}>
       <LoadingOverlay isLoading={saving} text="Actualizando negocio y traduciendo premios con IA..." />
-      <div className="container mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Editar Negocio</h1>
-          
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-xl shadow-lg">
+          {/* Header */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Subdominio (no editable)
-                </label>
-                <input
-                  type="text"
-                  value={formData.subdomain}
-                  className="w-full p-2 border rounded bg-gray-100"
-                  disabled
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  URL: {formData.subdomain}.tuvaloracion.com
-                </p>
+                <h1 className="text-2xl font-bold text-gray-800">Editar Negocio</h1>
+                <p className="text-gray-600 mt-1">Actualiza la configuración del negocio</p>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Nombre del Negocio *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                  required
-                />
+              <div className="flex items-center gap-2">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  formData.active 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full mr-2 ${
+                    formData.active ? 'bg-green-500' : 'bg-red-500'
+                  }`}></span>
+                  {formData.active ? 'Activo' : 'Inactivo'}
+                </span>
               </div>
+            </div>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Tipo de Negocio
-                </label>
-                <select
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="restaurante">Restaurante</option>
-                  <option value="cafeteria">Cafetería</option>
-                  <option value="peluqueria">Peluquería</option>
-                  <option value="hotel">Hotel</option>
-                  <option value="tienda">Tienda</option>
-                  <option value="otro">Otro</option>
-                </select>
-              </div>
+          {/* Tabs */}
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('basic')}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === 'basic'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Información Básica
+              </button>
+              <button
+                onClick={() => setActiveTab('prizes')}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === 'prizes'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Premios
+              </button>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === 'reviews'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Reseñas
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === 'settings'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Configuración
+              </button>
+            </nav>
+          </div>
 
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+34 900 000 000"
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="info@minegocio.com"
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">
-                  Dirección
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Calle Principal 123, Ciudad"
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-
-              {/* Sección de Premios */}
-              <div className="md:col-span-2 mt-6">
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">🎁 Premios de la Ruleta</h3>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-yellow-800">
-                      <strong>⚠️ IMPORTANTE:</strong> Los primeros 3 premios deben ser los más grandes y valiosos ya que tienen menor probabilidad de salir (<strong>0.01% cada uno</strong>). 
-                      Los premios 4-8 tienen mayor probabilidad (<strong>19.994% cada uno</strong>). Los premios se traducirán automáticamente a <strong>inglés, alemán y francés</strong> además del español, y se generarán emojis apropiados con IA.
+          <form onSubmit={handleSubmit} className="p-6">
+            {/* Basic Info Tab */}
+            {activeTab === 'basic' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Subdominio
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formData.subdomain}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
+                        disabled
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <span className="text-gray-400">🔒</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      URL: {formData.subdomain}.tuvaloracion.com
                     </p>
                   </div>
-                  
-                  <div className="grid grid-cols-1 gap-3">
-                    {formData.prizes.map((prize, index) => (
-                      <div key={index} className={`flex gap-2 items-center p-3 rounded-lg ${index < 3 ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 border border-gray-200'}`}>
-                        <div className="flex-shrink-0 w-20">
-                          <span className={`text-sm font-medium ${index < 3 ? 'text-orange-700' : 'text-gray-600'}`}>
-                            Premio {index + 1}:
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nombre del Negocio *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo de Negocio
+                    </label>
+                    <select
+                      name="type"
+                      value={formData.type}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="restaurante">🍽️ Restaurante</option>
+                      <option value="cafeteria">☕ Cafetería</option>
+                      <option value="peluqueria">✂️ Peluquería</option>
+                      <option value="hotel">🏨 Hotel</option>
+                      <option value="tienda">🛍️ Tienda</option>
+                      <option value="otro">📦 Otro</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Plan de Suscripción
+                    </label>
+                    <select
+                      name="plan"
+                      value={formData.plan}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="trial">🎁 Prueba (7 días gratis)</option>
+                      <option value="basic">⭐ Básico</option>
+                      <option value="premium">💎 Premium</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Teléfono
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+34 900 000 000"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="info@minegocio.com"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Calle Principal 123, Ciudad"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Prizes Tab */}
+            {activeTab === 'prizes' && (
+              <div className="space-y-6">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <h3 className="font-medium text-amber-900 mb-2">⚠️ Configuración de Premios</h3>
+                  <p className="text-sm text-amber-800">
+                    Los primeros 3 premios tienen <strong>0.01% de probabilidad</strong> cada uno (premios grandes).
+                    Los premios 4-8 tienen <strong>19.994% de probabilidad</strong> cada uno.
+                  </p>
+                  <p className="text-sm text-amber-800 mt-2">
+                    Los premios se traducirán automáticamente a inglés, alemán y francés con IA.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {formData.prizes.map((prize, index) => (
+                    <div 
+                      key={index} 
+                      className={`p-4 rounded-lg border-2 ${
+                        index < 3 
+                          ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-300' 
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold ${
+                            index < 3 ? 'bg-orange-500 text-white' : 'bg-gray-300 text-gray-700'
+                          }`}>
+                            {index + 1}
                           </span>
                         </div>
                         <div className="flex-1">
@@ -245,157 +368,192 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                             type="text"
                             value={prize.name}
                             onChange={(e) => handlePrizeChange(index, e.target.value)}
-                            placeholder={`Ej: ${index === 0 ? 'CENA PARA 2' : index === 1 ? '30€ DESCUENTO' : 'HELADO'}`}
-                            className="w-full p-2 border rounded text-sm"
+                            placeholder={`Premio ${index + 1}`}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             required
                           />
                         </div>
-                        <div className="flex-shrink-0 w-12 text-center">
-                          <span className="text-lg">🤖</span>
-                          <div className="text-xs text-gray-500">IA</div>
+                        <div className="flex-shrink-0 text-center">
+                          <span className="text-2xl">🤖</span>
+                          <p className="text-xs text-gray-500">Auto IA</p>
                         </div>
                       </div>
-                    ))}
+                      {index < 3 && (
+                        <p className="text-xs text-orange-700 mt-2 ml-14">
+                          Premio especial - Baja probabilidad (0.01%)
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Reviews Tab */}
+            {activeTab === 'reviews' && (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    URL de Google Reviews
+                  </label>
+                  <textarea
+                    name="googleReviewUrl"
+                    value={formData.googleReviewUrl}
+                    onChange={handleChange}
+                    placeholder="https://search.google.com/local/writereview?placeid=..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Obtén esta URL desde Google My Business
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    URL de TripAdvisor Reviews
+                  </label>
+                  <textarea
+                    name="tripadvisorReviewUrl"
+                    value={formData.tripadvisorReviewUrl}
+                    onChange={handleChange}
+                    placeholder="https://www.tripadvisor.es/UserReviewEdit-..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Obtén esta URL desde TripAdvisor
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-4">
+                    Plataforma de Reviews Activa
+                  </label>
+                  <div className="space-y-3">
+                    <label className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="reviewPlatform"
+                        value="google"
+                        checked={formData.reviewPlatform === 'google'}
+                        onChange={handleChange}
+                        className="mr-3"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">Google Reviews</p>
+                        <p className="text-sm text-gray-500">Redirigir solo a Google</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="reviewPlatform"
+                        value="tripadvisor"
+                        checked={formData.reviewPlatform === 'tripadvisor'}
+                        onChange={handleChange}
+                        className="mr-3"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">TripAdvisor Reviews</p>
+                        <p className="text-sm text-gray-500">Redirigir solo a TripAdvisor</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="reviewPlatform"
+                        value="alternating"
+                        checked={formData.reviewPlatform === 'alternating'}
+                        onChange={handleChange}
+                        className="mr-3"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">Alternado Automático</p>
+                        <p className="text-sm text-gray-500">Rotar entre Google y TripAdvisor</p>
+                      </div>
+                      <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                        Recomendado
+                      </span>
+                    </label>
                   </div>
                 </div>
               </div>
+            )}
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">
-                  URL de Google Reviews
-                </label>
-                <textarea
-                  name="googleReviewUrl"
-                  value={formData.googleReviewUrl}
-                  onChange={handleChange}
-                  placeholder="https://search.google.com/local/writereview?placeid=..."
-                  className="w-full p-2 border rounded h-20"
-                  rows={3}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Obtén esta URL desde Google My Business
-                </p>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">
-                  URL de TripAdvisor Reviews
-                </label>
-                <textarea
-                  name="tripadvisorReviewUrl"
-                  value={formData.tripadvisorReviewUrl}
-                  onChange={handleChange}
-                  placeholder="https://www.tripadvisor.es/UserReviewEdit-..."
-                  className="w-full p-2 border rounded h-20"
-                  rows={3}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Obtén esta URL desde TripAdvisor
-                </p>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">
-                  Plataforma de Reviews Activa
-                </label>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center">
+            {/* Settings Tab */}
+            {activeTab === 'settings' && (
+              <div className="space-y-6">
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="font-medium text-gray-900 mb-4">Estado del Negocio</h3>
+                  <label className="flex items-center cursor-pointer">
                     <input
-                      type="radio"
-                      name="reviewPlatform"
-                      value="google"
-                      checked={formData.reviewPlatform === 'google'}
+                      type="checkbox"
+                      name="active"
+                      checked={formData.active}
                       onChange={handleChange}
-                      className="mr-2"
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    Google Reviews
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="reviewPlatform"
-                      value="tripadvisor"
-                      checked={formData.reviewPlatform === 'tripadvisor'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    TripAdvisor Reviews
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="reviewPlatform"
-                      value="alternating"
-                      checked={formData.reviewPlatform === 'alternating'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="flex items-center gap-2">
-                      Alternado Automático 
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        🔄 Google → TripAdvisor → Google...
-                      </span>
+                    <span className="ml-3 text-gray-700">
+                      Negocio activo
                     </span>
                   </label>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Si desactivas el negocio, los clientes no podrán acceder a la página de valoraciones.
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Selecciona qué plataforma se abrirá cuando los usuarios den 5 estrellas. El alternado automático rota entre ambas plataformas.
-                </p>
-              </div>
 
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Plan de Suscripción
-                </label>
-                <select
-                  name="plan"
-                  value={formData.plan}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="trial">Prueba (7 días gratis)</option>
-                  <option value="basic">Básico</option>
-                  <option value="premium">Premium</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Estado
-                </label>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="active"
-                    checked={formData.active}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <span>{formData.active ? 'Activo' : 'Inactivo'}</span>
+                <div className="bg-red-50 rounded-lg p-6">
+                  <h3 className="font-medium text-red-900 mb-4">Zona de Peligro</h3>
+                  <p className="text-sm text-red-700 mb-4">
+                    Las siguientes acciones son permanentes y no se pueden deshacer.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('¿Estás seguro de que quieres eliminar este negocio? Esta acción no se puede deshacer.')) {
+                        // Implementar eliminación
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Eliminar Negocio
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
 
-            <div className="mt-6 flex gap-4">
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:opacity-50"
-              >
-                {saving ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
+            {/* Actions */}
+            <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between">
               <button
                 type="button"
-                onClick={() => router.push('/admin')}
-                className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
+                onClick={() => router.push('/admin/businesses')}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
+              <div className="flex gap-3">
+                <a
+                  href={`https://${formData.subdomain}.tuvaloracion.com`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2"
+                >
+                  Ver Sitio <span className="text-sm">↗</span>
+                </a>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50"
+                >
+                  {saving ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </div>
+
       {toast && (
         <Toast
           message={toast.message}
@@ -403,6 +561,6 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           onClose={() => setToast(null)}
         />
       )}
-    </div>
+    </AdminLayout>
   );
 }

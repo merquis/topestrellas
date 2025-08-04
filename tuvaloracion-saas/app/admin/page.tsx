@@ -2,261 +2,322 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/admin/AdminLayout';
+import StatsCard from '@/components/admin/StatsCard';
 import Toast from '@/components/Toast';
+import { AuthUser, authenticateUser, checkAuth, saveAuth } from '@/lib/auth';
 
-export default function AdminPage() {
-  const [businesses, setBusinesses] = useState([]);
+export default function AdminDashboard() {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState('');
+  const [businesses, setBusinesses] = useState([]);
+  const [stats, setStats] = useState({
+    totalBusinesses: 0,
+    activeBusinesses: 0,
+    totalOpinions: 0,
+    totalPrizes: 0,
+    avgRating: 0,
+    monthlyGrowth: 0
+  });
   const router = useRouter();
 
-  // Simple autenticación (en producción usar NextAuth)
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-  
-  if (!ADMIN_PASSWORD) {
-    throw new Error('NEXT_PUBLIC_ADMIN_PASSWORD no está configurada');
-  }
-
   useEffect(() => {
-    const isAuth = sessionStorage.getItem('adminAuth') === 'true';
-    if (isAuth) {
-      setAuthenticated(true);
-      loadBusinesses();
-    } else {
-      setLoading(false);
+    const authUser = checkAuth();
+    if (authUser) {
+      setUser(authUser);
+      loadDashboardData(authUser);
     }
+    setLoading(false);
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem('adminAuth', 'true');
-      setAuthenticated(true);
-      loadBusinesses();
+    setLoginError('');
+    
+    const authUser = authenticateUser(email, password);
+    if (authUser) {
+      saveAuth(authUser);
+      setUser(authUser);
+      loadDashboardData(authUser);
     } else {
-      setToast({ message: 'Contraseña incorrecta', type: 'error' });
+      setLoginError('Credenciales incorrectas');
     }
   };
 
-  const loadBusinesses = async () => {
+  const loadDashboardData = async (authUser: AuthUser) => {
     try {
+      // Cargar negocios según el rol
       const response = await fetch('/api/admin/businesses');
       if (response.ok) {
         const data = await response.json();
-        setBusinesses(data);
+        
+        // Filtrar según el rol
+        const filteredBusinesses = authUser.role === 'super_admin' 
+          ? data 
+          : data.filter((b: any) => b._id === authUser.businessId);
+        
+        setBusinesses(filteredBusinesses);
+        
+        // Calcular estadísticas
+        const active = filteredBusinesses.filter((b: any) => b.active).length;
+        setStats({
+          totalBusinesses: filteredBusinesses.length,
+          activeBusinesses: active,
+          totalOpinions: 1247, // Simulado - conectar con API real
+          totalPrizes: 342, // Simulado - conectar con API real
+          avgRating: 4.7, // Simulado - conectar con API real
+          monthlyGrowth: 12.5 // Simulado - conectar con API real
+        });
       }
     } catch (error) {
-      console.error('Error loading businesses:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`¿Estás seguro de que quieres eliminar ${name}?`)) {
-      setDeletingId(id);
-      try {
-        const response = await fetch(`/api/admin/businesses?id=${id}`, {
-          method: 'DELETE',
-        });
-
-        if (response.ok) {
-          setToast({ message: 'Negocio eliminado exitosamente', type: 'success' });
-          loadBusinesses();
-        } else {
-          const data = await response.json();
-          setToast({ message: `Error: ${data.error}`, type: 'error' });
-        }
-      } catch (error) {
-        setToast({ message: 'Error al eliminar el negocio', type: 'error' });
-      } finally {
-        setDeletingId(null);
-      }
-    }
-  };
-
-  const handleEdit = (business: any) => {
-    router.push(`/admin/edit-business/${business._id}`);
-  };
-
-  const handleSuspend = async (id: string, name: string, currentStatus: boolean) => {
-    const action = currentStatus ? 'suspend' : 'activate';
-    const actionText = currentStatus ? 'suspender' : 'activar';
-    
-    if (confirm(`¿Estás seguro de que quieres ${actionText} ${name}?`)) {
-      try {
-        const response = await fetch(`/api/admin/businesses/${id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ action }),
-        });
-
-        if (response.ok) {
-          setToast({ 
-            message: `Negocio ${currentStatus ? 'suspendido' : 'activado'} exitosamente`, 
-            type: 'success' 
-          });
-          loadBusinesses();
-        } else {
-          const data = await response.json();
-          setToast({ message: `Error: ${data.error}`, type: 'error' });
-        }
-      } catch (error) {
-        setToast({ message: `Error al ${actionText} el negocio`, type: 'error' });
-      }
+      console.error('Error loading dashboard data:', error);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Cargando...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
       </div>
     );
   }
 
-  if (!authenticated) {
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md w-96">
-          <h1 className="text-2xl font-bold mb-6 text-center">Panel de Administración</h1>
-          <form onSubmit={handleLogin}>
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border rounded mb-4"
-              required
-            />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl text-white font-bold">TV</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800">TuValoración</h1>
+            <p className="text-gray-600 mt-2">Panel de Administración</p>
+          </div>
+          
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="admin@tuvaloracion.com"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            
+            {loginError && (
+              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
+                {loginError}
+              </div>
+            )}
+            
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02]"
             >
-              Entrar
+              Iniciar Sesión
             </button>
           </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-500">
+              ¿Necesitas ayuda? Contacta con soporte
+            </p>
+          </div>
         </div>
-        {toast && (
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            onClose={() => setToast(null)}
-          />
-        )}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-3xl font-bold mb-6">Panel de Administración</h1>
-          
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Estadísticas Generales</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-blue-100 p-4 rounded">
-                <div className="text-2xl font-bold">{businesses.length}</div>
-                <div className="text-gray-600">Negocios Activos</div>
-              </div>
-              <div className="bg-green-100 p-4 rounded">
-                <div className="text-2xl font-bold">-</div>
-                <div className="text-gray-600">Opiniones Totales</div>
-              </div>
-              <div className="bg-yellow-100 p-4 rounded">
-                <div className="text-2xl font-bold">-</div>
-                <div className="text-gray-600">Premios Entregados</div>
-              </div>
-            </div>
-          </div>
+    <AdminLayout user={user}>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard
+          title="Negocios Totales"
+          value={stats.totalBusinesses}
+          icon="🏢"
+          trend={{ value: stats.monthlyGrowth, isPositive: true }}
+          bgColor="bg-gradient-to-br from-blue-50 to-blue-100"
+          iconBgColor="bg-blue-500"
+        />
+        <StatsCard
+          title="Negocios Activos"
+          value={stats.activeBusinesses}
+          icon="✅"
+          bgColor="bg-gradient-to-br from-green-50 to-green-100"
+          iconBgColor="bg-green-500"
+        />
+        <StatsCard
+          title="Opiniones Totales"
+          value={stats.totalOpinions.toLocaleString()}
+          icon="⭐"
+          trend={{ value: 8.3, isPositive: true }}
+          bgColor="bg-gradient-to-br from-yellow-50 to-yellow-100"
+          iconBgColor="bg-yellow-500"
+        />
+        <StatsCard
+          title="Premios Entregados"
+          value={stats.totalPrizes}
+          icon="🎁"
+          bgColor="bg-gradient-to-br from-purple-50 to-purple-100"
+          iconBgColor="bg-purple-500"
+        />
+      </div>
 
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Negocios Registrados</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border p-2 text-left">Nombre</th>
-                    <th className="border p-2 text-left">Subdominio</th>
-                    <th className="border p-2 text-left">Plan</th>
-                    <th className="border p-2 text-left">Estado</th>
-                    <th className="border p-2 text-left">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {businesses.map((business: any) => (
-                    <tr key={business._id}>
-                      <td className="border p-2">{business.name}</td>
-                      <td className="border p-2">
-                        <a 
-                          href={`https://${business.subdomain}.tuvaloracion.com`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
-                        >
-                          {business.subdomain}
-                        </a>
-                      </td>
-                      <td className="border p-2">{business.subscription?.plan || 'N/A'}</td>
-                      <td className="border p-2">
-                        <span className={`px-2 py-1 rounded text-sm ${
-                          business.active ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
-                        }`}>
-                          {business.active ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      <td className="border p-2">
-                        <button 
-                          onClick={() => handleEdit(business)}
-                          className="text-blue-500 hover:underline mr-2"
-                        >
-                          Editar
-                        </button>
-                        <button 
-                          onClick={() => handleSuspend(business._id, business.name, business.active)}
-                          className={`${business.active ? 'text-orange-500' : 'text-green-500'} hover:underline mr-2`}
-                        >
-                          {business.active ? 'Suspender' : 'Activar'}
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(business._id, business.name)}
-                          disabled={deletingId === business._id}
-                          className="text-red-500 hover:underline disabled:opacity-50"
-                        >
-                          {deletingId === business._id ? 'Eliminando...' : 'Eliminar'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      {/* Recent Activity & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Recent Activity */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Actividad Reciente</h2>
+          <div className="space-y-4">
+            {[
+              { icon: '⭐', text: 'Nueva opinión 5 estrellas en Restaurante La Plaza', time: 'Hace 5 min' },
+              { icon: '🎁', text: 'Premio "Cena para 2" canjeado en Café Central', time: 'Hace 15 min' },
+              { icon: '🏢', text: 'Nuevo negocio registrado: Peluquería Style', time: 'Hace 1 hora' },
+              { icon: '📊', text: 'Informe mensual generado automáticamente', time: 'Hace 2 horas' },
+            ].map((activity, index) => (
+              <div key={index} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <span className="text-2xl">{activity.icon}</span>
+                <div className="flex-1">
+                  <p className="text-gray-800">{activity.text}</p>
+                  <p className="text-sm text-gray-500">{activity.time}</p>
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div className="mt-6">
-            <button 
-              onClick={() => router.push('/admin/new-business')}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Acciones Rápidas</h2>
+          <div className="space-y-3">
+            {user.role === 'super_admin' && (
+              <button
+                onClick={() => router.push('/admin/new-business')}
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
+              >
+                <span>➕</span> Añadir Negocio
+              </button>
+            )}
+            <button
+              onClick={() => router.push('/admin/opinions')}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2"
             >
-              + Añadir Nuevo Negocio
+              <span>📝</span> Ver Opiniones
+            </button>
+            <button
+              onClick={() => router.push('/admin/analytics')}
+              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
+            >
+              <span>📊</span> Estadísticas
+            </button>
+            <button
+              onClick={() => router.push('/admin/settings')}
+              className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-4 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all flex items-center justify-center gap-2"
+            >
+              <span>⚙️</span> Configuración
             </button>
           </div>
         </div>
       </div>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+
+      {/* Business Overview */}
+      {user.role === 'super_admin' && (
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-800">Vista General de Negocios</h2>
+            <button
+              onClick={() => router.push('/admin/businesses')}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Ver todos →
+            </button>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Negocio</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Estado</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Plan</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Opiniones</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Rating</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {businesses.slice(0, 5).map((business: any) => (
+                  <tr key={business._id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-4">
+                      <div>
+                        <p className="font-medium text-gray-800">{business.name}</p>
+                        <p className="text-sm text-gray-500">{business.subdomain}.tuvaloracion.com</p>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        business.active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {business.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm font-medium text-gray-700">
+                        {business.subscription?.plan || 'Trial'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm text-gray-700">247</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1">
+                        <span className="text-yellow-500">★</span>
+                        <span className="text-sm font-medium">4.8</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => router.push(`/admin/edit-business/${business._id}`)}
+                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      >
+                        Editar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }
