@@ -1100,29 +1100,30 @@ body {
 
 .privacy-policy-group {
   display: flex;
-  flex-wrap: wrap; /* Permite que el mensaje de error se coloque debajo */
   align-items: center; /* Alinea verticalmente todos los elementos */
   width: 100%;
-  justify-content: space-between;
+  gap: 10px; /* Espacio entre las dos columnas */
 }
 
 .privacy-check-wrapper {
   display: flex;
   align-items: center; /* Alinea checkbox y texto en el centro verticalmente */
   gap: 8px;
-  flex-basis: 75%; /* El contenedor del checkbox y label ocupa el 75% del ancho */
+  flex: 1; /* Ocupa el espacio disponible */
+  min-width: 0; /* Permite que se encoja si es necesario */
 }
 
 .privacy-check-wrapper input[type="checkbox"] {
   margin: 0; /* Elimina márgenes por defecto */
   vertical-align: middle; /* Alineación vertical del checkbox */
+  flex-shrink: 0; /* El checkbox no se encoge */
 }
 
 .privacy-check-wrapper label {
   cursor: pointer; /* Muestra la manita al pasar el ratón */
-  flex-grow: 1; /* Hace que la etiqueta ocupe el espacio sobrante */
   margin: 0; /* Elimina márgenes por defecto */
   line-height: 1.2; /* Ajusta la altura de línea */
+  flex: 1; /* Ocupa el espacio disponible */
 }
 
 .privacy-link {
@@ -1130,11 +1131,14 @@ body {
   white-space: nowrap;
   color: #ccc;
   text-decoration: underline;
-  flex-basis: 25%; /* Reserva el 25% del espacio para el enlace */
-  text-align: right; /* Alinea el texto a la derecha */
-  flex-shrink: 0; /* Evita que el enlace se encoja */
   cursor: pointer;
-  align-self: center; /* Asegura que el enlace esté centrado verticalmente */
+  flex-shrink: 0; /* No se encoge */
+}
+
+/* Asegurar que los errores aparezcan debajo */
+.privacy-policy-group + .field-error {
+  width: 100%;
+  margin-top: 5px;
 }
 
 .popup-close-text-btn {
