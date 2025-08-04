@@ -152,7 +152,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     let text;
     if (rating > 0) {
       if (rating === 1) {
-        text = getTranslation('rateWithStar', { count: rating.toString() });
+        text = getTranslation('rateWithStar', { count: '1' });
       } else {
         text = getTranslation('rateWithStars', { count: rating.toString() });
       }
@@ -160,6 +160,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       text = getTranslation('rateNow');
     }
     setButtonText(text);
+    console.log('Button text updated:', text, 'Rating:', rating); // Debug
   }
 
   // useEffect para actualizar el texto del botón cuando cambie el rating
