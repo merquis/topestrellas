@@ -354,7 +354,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                   onChange={handleChange}
                   className="w-full p-2 border rounded"
                 >
-                  <option value="trial">Trial (30 días gratis)</option>
+                  <option value="trial">Trial (7 días gratis)</option>
                   <option value="basic">Básico</option>
                   <option value="premium">Premium</option>
                 </select>
