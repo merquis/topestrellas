@@ -70,26 +70,6 @@ export default function RouletteWheel({
       textDiv.style.left = `${x}px`
       textDiv.style.top = `${y}px`
       textDiv.style.transform = `translate(-50%, -50%) rotate(${textRotation}deg)`
-      
-      // Ajustar la alineación basándose en la posición del segmento
-      // Para que el texto siempre se alinee hacia el centro de la ruleta
-      if (angleDeg >= -45 && angleDeg < 45) {
-        // Parte superior - alinear hacia abajo
-        textDiv.style.textAlign = 'center'
-        textDiv.style.transformOrigin = 'center top'
-      } else if (angleDeg >= 45 && angleDeg < 135) {
-        // Parte derecha - alinear hacia la izquierda
-        textDiv.style.textAlign = 'right'
-        textDiv.style.transformOrigin = 'right center'
-      } else if (angleDeg >= 135 || angleDeg < -135) {
-        // Parte inferior - alinear hacia arriba
-        textDiv.style.textAlign = 'center'
-        textDiv.style.transformOrigin = 'center bottom'
-      } else {
-        // Parte izquierda - alinear hacia la derecha
-        textDiv.style.textAlign = 'left'
-        textDiv.style.transformOrigin = 'left center'
-      }
     })
   }
 
