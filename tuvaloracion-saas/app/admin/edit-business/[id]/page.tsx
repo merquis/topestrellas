@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Toast from '@/components/Toast';
+import LoadingOverlay from '@/components/LoadingOverlay';
 
 export default function EditBusinessPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -21,7 +22,8 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     primaryColor: '#f97316',
     secondaryColor: '#ea580c',
     plan: 'trial',
-    active: true
+    active: true,
+    prizes: Array(8).fill({ name: '', value: '' })
   });
 
   useEffect(() => {
@@ -33,6 +35,19 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
       const response = await fetch(`/api/admin/businesses/${params.id}`);
       if (response.ok) {
         const business = await response.json();
+        // Extraer premios existentes
+        const existingPrizes = business.config?.prizes || [];
+        const prizes = Array(8).fill(null).map((_, index) => {
+          const prize = existingPrizes[index];
+          if (prize && prize.translations && prize.translations.es) {
+            return {
+              name: prize.translations.es.name || '',
+              value: prize.value || ''
+            };
+          }
+          return { name: '', value: '' };
+        });
+
         setFormData({
           subdomain: business.subdomain,
           name: business.name,
@@ -45,7 +60,8 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           primaryColor: business.config?.theme?.primaryColor || '#f97316',
           secondaryColor: business.config?.theme?.secondaryColor || '#ea580c',
           plan: business.subscription?.plan || 'trial',
-          active: business.active !== false
+          active: business.active !== false,
+          prizes: prizes
         });
       } else {
         setToast({ message: 'Error al cargar el negocio', type: 'error' });
@@ -92,6 +108,15 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     });
   };
 
+  const handlePrizeChange = (index: number, field: 'name' | 'value', value: string) => {
+    const newPrizes = [...formData.prizes];
+    newPrizes[index] = {
+      ...newPrizes[index],
+      [field]: value
+    };
+    setFormData({ ...formData, prizes: newPrizes });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -102,6 +127,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <LoadingOverlay isLoading={saving} text="Actualizando negocio y traduciendo premios con IA..." />
       <div className="container mx-auto p-6">
         <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Editar Negocio</h1>
@@ -209,6 +235,54 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                   placeholder="Calle Principal 123, Ciudad"
                   className="w-full p-2 border rounded"
                 />
+              </div>
+
+              {/* Sección de Premios */}
+              <div className="md:col-span-2 mt-6">
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4">🎁 Premios de la Ruleta</h3>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-yellow-800">
+                      <strong>⚠️ IMPORTANTE:</strong> Los primeros 3 premios deben ser los más grandes y valiosos (tienen menor probabilidad de salir).
+                      Los premios se traducirán automáticamente a 4 idiomas y se generarán emojis apropiados con IA.
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-3">
+                    {formData.prizes.map((prize, index) => (
+                      <div key={index} className={`flex gap-2 items-center p-3 rounded-lg ${index < 3 ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <div className="flex-shrink-0 w-20">
+                          <span className={`text-sm font-medium ${index < 3 ? 'text-orange-700' : 'text-gray-600'}`}>
+                            Premio {index + 1}:
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            value={prize.name}
+                            onChange={(e) => handlePrizeChange(index, 'name', e.target.value)}
+                            placeholder={`Ej: ${index === 0 ? 'CENA PARA 2' : index === 1 ? '30€ DESCUENTO' : 'HELADO'}`}
+                            className="w-full p-2 border rounded text-sm"
+                            required
+                          />
+                        </div>
+                        <div className="flex-shrink-0 w-20">
+                          <input
+                            type="text"
+                            value={prize.value}
+                            onChange={(e) => handlePrizeChange(index, 'value', e.target.value)}
+                            placeholder="Valor"
+                            className="w-full p-2 border rounded text-sm text-center"
+                          />
+                        </div>
+                        <div className="flex-shrink-0 w-12 text-center">
+                          <span className="text-lg">🤖</span>
+                          <div className="text-xs text-gray-500">IA</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="md:col-span-2">

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Toast from '@/components/Toast';
+import LoadingOverlay from '@/components/LoadingOverlay';
 
 export default function NewBusinessPage() {
   const router = useRouter();
@@ -96,6 +97,7 @@ export default function NewBusinessPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <LoadingOverlay isLoading={loading} text="Creando tu negocio y traduciendo premios con IA..." />
       <div className="container mx-auto p-6">
         <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Añadir Nuevo Negocio</h1>

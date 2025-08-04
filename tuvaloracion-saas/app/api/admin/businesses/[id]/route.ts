@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { translatePrizesWithAI } from '@/lib/ai-translation';
 
 export async function GET(
   request: Request,
@@ -77,6 +78,22 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    // Procesar premios con IA si se han proporcionado
+    let translatedPrizes = currentBusiness.config?.prizes || [];
+    if (data.prizes && Array.isArray(data.prizes)) {
+      const prizeNames = data.prizes.map((p: any) => p.name).filter(Boolean);
+      const prizeValues = data.prizes.map((p: any) => p.value);
+      
+      if (prizeNames.length > 0) {
+        try {
+          translatedPrizes = await translatePrizesWithAI(prizeNames, prizeValues);
+        } catch (error) {
+          console.error('Error traduciendo premios:', error);
+          // Continuar con los premios existentes si falla la IA
+        }
+      }
+    }
     
     // Preparar datos para actualizar
     const updateData = {
@@ -89,7 +106,8 @@ export async function PUT(
         theme: {
           primaryColor: data.primaryColor || '#f97316',
           secondaryColor: data.secondaryColor || '#ea580c'
-        }
+        },
+        prizes: translatedPrizes
       },
       contact: {
         phone: data.phone || '',
