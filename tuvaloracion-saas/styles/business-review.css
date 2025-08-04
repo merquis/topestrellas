@@ -1111,6 +1111,7 @@ body {
   width: 100%;
   flex-wrap: nowrap; /* NO permite que nada vaya a la siguiente línea */
   position: relative;
+  margin-bottom: 30px; /* ✅ Espacio extra para el mensaje de error */
 }
 
 .privacy-check-wrapper {
