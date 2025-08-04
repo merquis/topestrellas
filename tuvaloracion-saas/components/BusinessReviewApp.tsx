@@ -89,6 +89,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [errors, setErrors] = useState<ErrorState>({ name: '', email: '', feedback: '', privacy: '', rating: '' })
   const [rewardCode, setRewardCode] = useState('')
   const [ratingFace, setRatingFace] = useState('🤔')
+  const [showPrivacyPopup, setShowPrivacyPopup] = useState(false)
 
   // Efectos para tema y contador de personas (se mantienen)
   useEffect(() => {
@@ -492,6 +493,9 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               <div className="privacy-check-wrapper">
                 <input type="checkbox" id="privacyPolicy" name="privacyPolicy" required checked={privacyPolicy} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrivacyPolicy(e.target.checked)} />
                 <label htmlFor="privacyPolicy">{getTranslation('privacyPolicy')}</label>
+                <a href="#" className="privacy-link" onClick={(e) => { e.preventDefault(); setShowPrivacyPopup(true); }}>
+                  {getTranslation('privacyLinkText')}
+                </a>
               </div>
               {errors.privacy && <div className="field-error">{errors.privacy}</div>}
             </div>
@@ -576,6 +580,21 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             onSpinComplete={handleSpinComplete}
             getTranslation={getTranslation}
           />
+        </div>
+      )}
+
+      {/* POPUP DE POLÍTICA DE PRIVACIDAD */}
+      {showPrivacyPopup && (
+        <div className="popup-overlay" onClick={() => setShowPrivacyPopup(false)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <button className="popup-close" onClick={() => setShowPrivacyPopup(false)}>
+              &times;
+            </button>
+            <div dangerouslySetInnerHTML={{ __html: getTranslation('privacyPolicyFullText') }} />
+            <button className="popup-close-text-btn" onClick={() => setShowPrivacyPopup(false)}>
+              {getTranslation('closePrivacyPopupBtn')}
+            </button>
+          </div>
         </div>
       )}
 
