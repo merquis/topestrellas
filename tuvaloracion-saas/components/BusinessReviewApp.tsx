@@ -90,6 +90,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
   const [rewardCode, setRewardCode] = useState('')
   const [ratingFace, setRatingFace] = useState('🤔')
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false)
+  const [buttonText, setButtonText] = useState('')
 
   // Efectos para tema y contador de personas (se mantienen)
   useEffect(() => {
@@ -146,6 +147,26 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       default: return '🤔';
     }
   }
+
+  const updateButtonText = () => {
+    let text;
+    if (rating > 0) {
+      text = getTranslation('rateWithStars', { count: rating.toString() });
+    } else {
+      text = getTranslation('rateNow');
+    }
+    setButtonText(text);
+  }
+
+  // useEffect para actualizar el texto del botón cuando cambie el rating
+  useEffect(() => {
+    updateButtonText();
+  }, [rating, currentLanguage])
+
+  // useEffect para inicializar el texto del botón
+  useEffect(() => {
+    updateButtonText();
+  }, [])
 
   const handleStarHover = (value: number) => {
     const stars = document.querySelectorAll('.star');
@@ -465,7 +486,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
             {errors.rating && <div className="rating-error">{errors.rating}</div>}
             <div id="valorarBtnContainer">
               <button className="confirmation-btn premium-btn" onClick={handleRateNow}>
-                <span>{getTranslation('rateNow')}</span>
+                <span>{buttonText}</span>
               </button>
             </div>
           </div>
@@ -601,7 +622,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       {/* BARRA STICKY MÓVIL - ESTRUCTURA ORIGINAL */}
       <div className="fixed-cta-container hidden" id="fixed-cta-bar">
         <button className="confirmation-btn" id="fixed-cta-btn" onClick={handleRateNow}>
-          {getTranslation('rateNow')}
+          {buttonText}
         </button>
         <button className="confirmation-btn" id="fixed-cta-btn-form" onClick={() => {
           const form = document.querySelector('#formulario form') as HTMLFormElement;
