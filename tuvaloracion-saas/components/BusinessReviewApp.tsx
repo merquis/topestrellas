@@ -493,10 +493,10 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               <div className="privacy-check-wrapper">
                 <input type="checkbox" id="privacyPolicy" name="privacyPolicy" required checked={privacyPolicy} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrivacyPolicy(e.target.checked)} />
                 <label htmlFor="privacyPolicy">{getTranslation('privacyPolicy')}</label>
-                <a href="#" className="privacy-link" onClick={(e) => { e.preventDefault(); setShowPrivacyPopup(true); }}>
-                  {getTranslation('privacyLinkText')}
-                </a>
               </div>
+              <a href="#" className="privacy-link" onClick={(e) => { e.preventDefault(); setShowPrivacyPopup(true); }}>
+                {getTranslation('privacyLinkText')}
+              </a>
               {errors.privacy && <div className="field-error">{errors.privacy}</div>}
             </div>
             <button type="submit" className="submit-btn premium-submit">

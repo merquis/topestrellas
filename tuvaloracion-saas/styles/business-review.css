@@ -1103,13 +1103,14 @@ body {
   flex-wrap: wrap; /* Permite que el mensaje de error se coloque debajo */
   align-items: flex-start;
   width: 100%;
+  justify-content: space-between;
 }
 
 .privacy-check-wrapper {
   display: flex;
   align-items: flex-start; /* Alinea checkbox, texto y enlace en la parte superior */
   gap: 8px;
-  width: 100%; /* El contenedor ocupa todo el ancho */
+  flex-basis: 75%; /* El contenedor del checkbox y label ocupa el 75% del ancho */
 }
 
 .privacy-check-wrapper label {
@@ -1125,6 +1126,7 @@ body {
   flex-basis: 25%; /* Reserva el 25% del espacio para el enlace */
   text-align: right; /* Alinea el texto a la derecha */
   flex-shrink: 0; /* Evita que el enlace se encoja */
+  cursor: pointer;
 }
 
 .popup-close-text-btn {
