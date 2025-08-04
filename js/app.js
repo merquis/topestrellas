@@ -217,7 +217,7 @@ class App {
       } else if (rating === 5) {
         // Guardar el payload para el siguiente paso (botón completar reseña)
         this.pendingExternalReviewPayload = { ...payload };
-        this.startGoogleTimer();
+        
         // Mostrar tanto el mensaje de premio como el bloque de reseña
         showElement(document.getElementById('codigoContainer'));
         showElement(document.getElementById('resenaBtn'));
@@ -232,9 +232,16 @@ class App {
         showElement(document.getElementById('resenaBtn'));
         viewManager.updateFixedCta('review');
 
+        // Iniciar el temporizador después de que los elementos sean visibles
+        setTimeout(() => {
+          this.startGoogleTimer();
+        }, 100);
+
         // Hacemos scroll hacia la nueva sección en móviles
         if (window.innerWidth <= 768) {
-          this.resenaBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setTimeout(() => {
+            this.resenaBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 200);
         }
       }
       // Llamada al webhook SIEMPRE, con valoracion_externa = false
@@ -291,25 +298,30 @@ class App {
    * Inicia el timer de Google
    */
   startGoogleTimer() {
+    console.log('Iniciando temporizador de Google...');
     const googleTimerEl = document.getElementById('googleTimer');
     if (!googleTimerEl) {
       console.error('Elemento googleTimer no encontrado');
       return;
     }
 
+    console.log('Elemento googleTimer encontrado:', googleTimerEl);
     let timeLeft = 5 * 60; // 5 minutos en segundos
 
     // Limpiar cualquier intervalo previo
     if (this.googleTimerInterval) {
       clearInterval(this.googleTimerInterval);
+      console.log('Intervalo previo limpiado');
     }
 
     // Actualizar inmediatamente el display
     const updateTimer = () => {
       const minutes = Math.floor(timeLeft / 60);
       const seconds = timeLeft % 60;
+      const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       
-      googleTimerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      console.log('Actualizando temporizador:', timeString);
+      googleTimerEl.textContent = timeString;
       
       if (timeLeft <= 60) { // Resaltar en el último minuto
         googleTimerEl.style.color = '#ff0000';
@@ -320,6 +332,7 @@ class App {
       if (timeLeft < 0) {
         clearInterval(this.googleTimerInterval);
         googleTimerEl.textContent = languageManager.getTranslation('expired');
+        console.log('Temporizador expirado');
         return false;
       }
       return true;
@@ -334,6 +347,8 @@ class App {
         clearInterval(this.googleTimerInterval);
       }
     }, 1000);
+    
+    console.log('Intervalo configurado con ID:', this.googleTimerInterval);
   }
 
   /**
