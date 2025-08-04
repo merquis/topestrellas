@@ -793,6 +793,12 @@ body {
 
 
 /* RESPONSIVE */
+@media (max-width: 768px) {
+  .main-wrapper {
+    padding-top: 20px;
+  }
+}
+
 @media (max-width: 480px) {
   .main-wrapper {
     padding: 10px;
