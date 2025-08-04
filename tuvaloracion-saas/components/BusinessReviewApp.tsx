@@ -483,7 +483,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
 
             <p className="prizes-subtitle"><span>{getTranslation('prizes_subtitle')}</span></p>
             <div className="big-prizes-preview">
-              {businessPrizes.slice(0, 3).map((p, i) => (
+              {businessPrizes.filter(p => p.index === 0 || p.index === 1 || p.index === 2).map((p, i) => (
                 <div className="prize-preview-item" key={i}>
                   <span className="prize-icon">{p.translations[currentLanguage]?.emoji || p.translations['es']?.emoji}</span>
                   <span className="prize-text">{p.translations[currentLanguage]?.name || p.translations['es']?.name}</span>
