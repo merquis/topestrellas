@@ -27,6 +27,9 @@ export interface Business {
     rouletteColors?: string[]
     languages: string[]
     prizes: Prize[]
+    googleReviewUrl?: string
+    tripadvisorReviewUrl?: string
+    reviewPlatform?: 'google' | 'tripadvisor'
     features?: {
       showScarcityIndicators?: boolean
       showPrizeWheel?: boolean
