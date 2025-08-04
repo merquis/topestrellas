@@ -59,7 +59,8 @@ export default function RouletteWheel({
       const angleDeg = -90 + (i * sliceAngle) + (sliceAngle / 2)
       const angleRad = angleDeg * Math.PI / 180
 
-      const textRadius = 0.55 * R
+      // Acercar el texto al centro con un pequeño margen (~5px desde el centro)
+      const textRadius = 0.25 * R // Reducido de 0.55 a 0.25 para acercarlo al centro
       const x = cx + textRadius * Math.cos(angleRad)
       const y = cy + textRadius * Math.sin(angleRad)
 
@@ -69,6 +70,7 @@ export default function RouletteWheel({
       textDiv.style.left = `${x}px`
       textDiv.style.top = `${y}px`
       textDiv.style.transform = `translate(-50%, -50%) rotate(${textRotation}deg)`
+      textDiv.style.textAlign = 'left' // Alinear texto hacia el interior
     })
   }
 
@@ -145,7 +147,7 @@ export default function RouletteWheel({
             {prizes.map((prize, index) => (
               <div key={index} className="roulette-text">
                 <span>
-                  {prize.translations[language]?.name || prize.translations['en']?.name} {prize.translations[language]?.emoji || prize.translations['en']?.emoji || '🎁'}
+                  {prize.translations[language]?.emoji || prize.translations['en']?.emoji || '🎁'} {prize.translations[language]?.name || prize.translations['en']?.name}
                 </span>
               </div>
             ))}
