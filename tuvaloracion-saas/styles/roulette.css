@@ -25,16 +25,16 @@
   border-radius: 50%;
   overflow: hidden;
   /* Gradiente cónico para los 8 premios */
-  background: conic-gradient(
-    #1F78B4 0deg    45deg,   /* Cena para 2 */
-    #33A02C 45deg   90deg,   /* 50€ Descuento */
-    #FF7F00 90deg   135deg,  /* Botella Vino */
-    #E31A1C 135deg  180deg,  /* Helado */
-    #A6CEE3 180deg  225deg,  /* Chupito */
-    #B2DF8A 225deg  270deg,  /* Refresco */
-    #FDBF6F 270deg  315deg,  /* Mojito */
-    #FB9A99 315deg  360deg   /* Copa Vino */
-  );
+background: conic-gradient(
+  #3A78D1 0deg 45deg,
+  #79C58E 45deg 90deg,
+  #F0C27B 90deg 135deg,
+  #449c70 135deg 180deg,
+  #F1975A 180deg 225deg,
+  #C74F56 225deg 270deg,
+  #6a93ce 270deg 315deg,
+  #df8dac 315deg 360deg
+);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   border: 3px solid #fff;
 }
