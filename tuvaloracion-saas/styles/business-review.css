@@ -37,11 +37,12 @@ body {
 }
 
 .restaurant-title h2 {
-  font-size: 36px;
-  margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  width: 100%;
+  color: #fff;
+  font-size: 1.8rem;
+  margin: 0;
   text-align: center;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  font-weight: bold;
 }
 
 .vip-badge {
