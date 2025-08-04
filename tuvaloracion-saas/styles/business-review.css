@@ -766,8 +766,8 @@ body {
 }
 
 .language-flag-btn {
-  width: 35px; /* Tamaño unificado */
-  height: 26px; /* Tamaño unificado */
+  width: 40px; /* ✅ Un poco más grandes */
+  height: 30px; /* ✅ Un poco más grandes */
   background-color: rgba(0, 0, 0, 0.2); /* Fondo sutil para consistencia */
   border: 2px solid transparent;
   border-radius: 5px; /* Bordes un poco más redondeados */
