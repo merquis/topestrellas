@@ -60,9 +60,9 @@ export default function RouletteWheel({
       const angleRad = angleDeg * Math.PI / 180
 
       // Todos los textos a la misma distancia del centro
-      //const textRadius = 0.45 * R;
-      const x = cx + 0.55 * R * Math.cos(angleRad)
-      const y = cy + 0.50 * R * Math.sin(angleRad)
+      const textRadius = 0.35 * R;
+      const x = cx + textRadius * Math.cos(angleRad)
+      const y = cy + textRadius * Math.sin(angleRad)
 
       const textRotation = angleDeg // Ajuste para que el texto esté orientado radialmente
 
