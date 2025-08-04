@@ -79,19 +79,31 @@ export async function PUT(
       );
     }
 
-    // Procesar premios con IA si se han proporcionado
+    // Procesar premios con IA SOLO si han cambiado
     let translatedPrizes = currentBusiness.config?.prizes || [];
     if (data.prizes && Array.isArray(data.prizes)) {
-      const prizeNames = data.prizes.map((p: any) => p.name).filter(Boolean);
-      const prizeValues = data.prizes.map((p: any) => p.value);
+      const newPrizeNames = data.prizes.map((p: any) => p.name).filter(Boolean);
+      const newPrizeValues = data.prizes.map((p: any) => p.value);
       
-      if (prizeNames.length > 0) {
+      // Obtener premios actuales para comparar
+      const currentPrizeNames = (currentBusiness.config?.prizes || []).map((p: any) => {
+        return p.translations?.es?.name || '';
+      }).filter(Boolean);
+      
+      // Solo ejecutar IA si los premios han cambiado
+      const prizesChanged = JSON.stringify(newPrizeNames) !== JSON.stringify(currentPrizeNames);
+      
+      if (newPrizeNames.length > 0 && prizesChanged) {
+        console.log('🤖 Premios modificados, ejecutando IA para traducir...');
         try {
-          translatedPrizes = await translatePrizesWithAI(prizeNames, prizeValues);
+          translatedPrizes = await translatePrizesWithAI(newPrizeNames, newPrizeValues);
         } catch (error) {
           console.error('Error traduciendo premios:', error);
           // Continuar con los premios existentes si falla la IA
         }
+      } else if (!prizesChanged) {
+        console.log('✅ Premios sin cambios, manteniendo traducciones existentes');
+        // Mantener premios existentes si no han cambiado
       }
     }
     
