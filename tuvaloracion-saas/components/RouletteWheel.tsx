@@ -59,16 +59,8 @@ export default function RouletteWheel({
       const angleDeg = -90 + (i * sliceAngle) + (sliceAngle / 2)
       const angleRad = angleDeg * Math.PI / 180
 
-      // Ajustar el radio según la posición: parte derecha más alejada del centro
-      let textRadius;
-      if (Math.cos(angleRad) > 0) {
-        // Parte derecha del círculo - alejar más del centro
-        textRadius = 0.5 * R;
-      } else {
-        // Parte izquierda del círculo - mantener posición actual
-        textRadius = 0.4 * R;
-      }
-      
+      // Todos los textos a la misma distancia del centro
+      const textRadius = 0.45 * R;
       const x = cx + textRadius * Math.cos(angleRad)
       const y = cy + textRadius * Math.sin(angleRad)
 

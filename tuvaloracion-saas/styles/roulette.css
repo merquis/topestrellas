@@ -58,7 +58,7 @@
   transform-origin: center;
   pointer-events: none;
   z-index: 2;
-  text-align: left;
+  text-align: center;
 }
 
 /* Flecha indicadora - única y bien posicionada */
