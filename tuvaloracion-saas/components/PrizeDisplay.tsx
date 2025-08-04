@@ -62,7 +62,6 @@ export default function PrizeDisplay({
         </div>
         
         <div className="expiry-warning">
-          <span>{getTranslation('todayOnly')}</span>
           <p id="currentDate" style={{ color: 'white', fontSize: '0.9rem', marginTop: '5px' }}>
             {currentDate}
           </p>
