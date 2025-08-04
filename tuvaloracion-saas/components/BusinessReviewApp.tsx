@@ -567,13 +567,12 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
                 {prizeWon.translations[currentLanguage]?.name || prizeWon.translations['es']?.name}
               </div>
             )}
-            <div style={{ 
-              fontSize: '14px', 
-              color: '#fff', 
-              marginBottom: '10px',
-              opacity: 0.9 
-            }}>
-              Se va a generar el código de tu premio. Lo recibirás en <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{email}</span> en unos minutos, con formato <span style={{ color: '#00ff00', fontWeight: 'bold' }}>{rewardCode}</span>. Preséntalo en el local para obtener tu regalo.
+            <div className="email-message">
+              {getTranslation('prizeCodeMessage1')}
+              <span className="highlight-email">{email}</span>
+              {getTranslation('prizeCodeMessage2')}
+              <span className="codigo-premio">{rewardCode}</span>
+              {getTranslation('prizeCodeMessage3')}
             </div>
             <div className="expiry-warning">
               <span>{getTranslation('todayOnly')}</span>
@@ -596,17 +595,11 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
               </div>
             )}
             <div className="email-message">
-              {currentLanguage === 'es' 
-                ? `Se va a generar el código de tu premio. Lo recibirás en ` 
-                : `Your prize code will be generated. You will receive it at `}
+              {getTranslation('prizeCodeMessage1')}
               <span className="highlight-email">{email}</span>
-              {currentLanguage === 'es' 
-                ? ` en unos minutos, con formato ` 
-                : ` in a few minutes, with format `}
+              {getTranslation('prizeCodeMessage2')}
               <span className="codigo-premio">{rewardCode}</span>
-              {currentLanguage === 'es' 
-                ? `. Preséntalo en el local para obtener tu regalo.` 
-                : `. Present it at the location to get your gift.`}
+              {getTranslation('prizeCodeMessage3')}
             </div>
             <div className="expiry-warning">
               <span>{getTranslation('todayOnly')}</span>
