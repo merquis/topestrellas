@@ -64,15 +64,15 @@
 /* Flecha indicadora - única y bien posicionada */
 .roulette-pointer {
   position: absolute;
-  top: -25px;
+  top: -18px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  /* Triángulo más grande y visible */
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-top: 40px solid #ffc107;
+  /* Triángulo más pequeño y discreto */
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 28px solid #ffc107;
   z-index: 10;
   /* Sombra para mejor visibilidad */
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
@@ -118,10 +118,10 @@
   }
   
   .roulette-pointer {
-    border-left-width: 20px;
-    border-right-width: 20px;
-    border-top-width: 35px;
-    top: -20px;
+    border-left-width: 15px;
+    border-right-width: 15px;
+    border-top-width: 25px;
+    top: -15px;
   }
 }
 
