@@ -963,18 +963,6 @@ body {
     z-index: 1000;
     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
   }
-}
-
-/* AJUSTE ESPECÍFICO PARA ORIENTACIÓN HORIZONTAL */
-@media (max-width: 768px) and (orientation: landscape) {
-  .fixed-cta-container {
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 500px;
-    border-radius: 15px;
-    bottom: 15px;
-  }
 
   .fixed-cta-container button {
     display: none; /* Los botones internos se gestionan por JS */
