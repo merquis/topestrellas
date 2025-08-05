@@ -1,120 +1,109 @@
 const { MongoClient } = require('mongodb');
 
-// Mapeo de ciudades a zonas horarias
-const CITY_TIMEZONE_MAP = {
-  // Andalucía
-  'Sevilla': 'Europe/Madrid',
-  'Málaga': 'Europe/Madrid',
-  'Córdoba': 'Europe/Madrid',
-  'Granada': 'Europe/Madrid',
-  'Cádiz': 'Europe/Madrid',
-  'Almería': 'Europe/Madrid',
-  'Huelva': 'Europe/Madrid',
-  'Jaén': 'Europe/Madrid',
-  
-  // Madrid
-  'Madrid': 'Europe/Madrid',
-  'Alcalá de Henares': 'Europe/Madrid',
-  'Fuenlabrada': 'Europe/Madrid',
-  'Móstoles': 'Europe/Madrid',
-  'Alcorcón': 'Europe/Madrid',
-  'Leganés': 'Europe/Madrid',
-  'Getafe': 'Europe/Madrid',
-  
-  // Cataluña
-  'Barcelona': 'Europe/Madrid',
-  'Hospitalet de Llobregat': 'Europe/Madrid',
-  'Badalona': 'Europe/Madrid',
-  'Terrassa': 'Europe/Madrid',
-  'Sabadell': 'Europe/Madrid',
-  'Lleida': 'Europe/Madrid',
-  'Tarragona': 'Europe/Madrid',
-  'Girona': 'Europe/Madrid',
-  
-  // Valencia
-  'Valencia': 'Europe/Madrid',
-  'Alicante': 'Europe/Madrid',
-  'Elche': 'Europe/Madrid',
-  'Castellón de la Plana': 'Europe/Madrid',
-  'Torrevieja': 'Europe/Madrid',
-  'Orihuela': 'Europe/Madrid',
-  
-  // País Vasco
-  'Bilbao': 'Europe/Madrid',
-  'Vitoria-Gasteiz': 'Europe/Madrid',
-  'San Sebastián': 'Europe/Madrid',
-  'Barakaldo': 'Europe/Madrid',
-  
-  // Galicia
-  'Vigo': 'Europe/Madrid',
-  'A Coruña': 'Europe/Madrid',
-  'Ourense': 'Europe/Madrid',
-  'Lugo': 'Europe/Madrid',
-  'Santiago de Compostela': 'Europe/Madrid',
-  
-  // Canarias
-  'Las Palmas de Gran Canaria': 'Atlantic/Canary',
-  'Santa Cruz de Tenerife': 'Atlantic/Canary',
-  'San Cristóbal de La Laguna': 'Atlantic/Canary',
-  'Telde': 'Atlantic/Canary',
-  'Santa Lucía de Tirajana': 'Atlantic/Canary',
-  'Arona': 'Atlantic/Canary',
-  'Arrecife': 'Atlantic/Canary',
-  'Puerto del Rosario': 'Atlantic/Canary',
-  'Los Llanos de Aridane': 'Atlantic/Canary',
-  'San Sebastián de La Gomera': 'Atlantic/Canary',
-  'Valverde': 'Atlantic/Canary',
-  'Las Palmas': 'Atlantic/Canary',
-  
-  // Baleares
-  'Palma de Mallorca': 'Europe/Madrid',
-  'Ibiza': 'Europe/Madrid',
-  'Mahón': 'Europe/Madrid',
-  'Ciudadela de Menorca': 'Europe/Madrid',
-  
-  // Otras comunidades
-  'Zaragoza': 'Europe/Madrid',
-  'Murcia': 'Europe/Madrid',
-  'Valladolid': 'Europe/Madrid',
-  'Oviedo': 'Europe/Madrid',
-  'Pamplona': 'Europe/Madrid',
-  'Santander': 'Europe/Madrid',
-  'Toledo': 'Europe/Madrid',
-  'Badajoz': 'Europe/Madrid',
-  'Salamanca': 'Europe/Madrid',
-  'Mérida': 'Europe/Madrid',
-  'Ávila': 'Europe/Madrid',
-  'Cáceres': 'Europe/Madrid',
-  'Guadalajara': 'Europe/Madrid',
-  'Cuenca': 'Europe/Madrid',
-  'Soria': 'Europe/Madrid',
-  'Segovia': 'Europe/Madrid',
+// Mapeo de provincias a zonas horarias
+const PROVINCE_TIMEZONE_MAP = {
+  // Provincias peninsulares (mainland) - Europe/Madrid
+  'Álava': 'Europe/Madrid',
   'Albacete': 'Europe/Madrid',
+  'Alicante': 'Europe/Madrid',
+  'Almería': 'Europe/Madrid',
+  'Asturias': 'Europe/Madrid',
+  'Ávila': 'Europe/Madrid',
+  'Badajoz': 'Europe/Madrid',
+  'Barcelona': 'Europe/Madrid',
+  'Burgos': 'Europe/Madrid',
+  'Cáceres': 'Europe/Madrid',
+  'Cádiz': 'Europe/Madrid',
+  'Cantabria': 'Europe/Madrid',
+  'Castellón': 'Europe/Madrid',
   'Ciudad Real': 'Europe/Madrid',
-  'Logroño': 'Europe/Madrid',
+  'Córdoba': 'Europe/Madrid',
+  'Cuenca': 'Europe/Madrid',
+  'Girona': 'Europe/Madrid',
+  'Granada': 'Europe/Madrid',
+  'Guadalajara': 'Europe/Madrid',
+  'Guipúzcoa': 'Europe/Madrid',
+  'Huelva': 'Europe/Madrid',
   'Huesca': 'Europe/Madrid',
-  'Teruel': 'Europe/Madrid'
+  'Jaén': 'Europe/Madrid',
+  'La Coruña (A Coruña)': 'Europe/Madrid',
+  'La Rioja': 'Europe/Madrid',
+  'León': 'Europe/Madrid',
+  'Lleida': 'Europe/Madrid',
+  'Lugo': 'Europe/Madrid',
+  'Madrid': 'Europe/Madrid',
+  'Málaga': 'Europe/Madrid',
+  'Murcia': 'Europe/Madrid',
+  'Navarra': 'Europe/Madrid',
+  'Ourense': 'Europe/Madrid',
+  'Palencia': 'Europe/Madrid',
+  'Pontevedra': 'Europe/Madrid',
+  'Salamanca': 'Europe/Madrid',
+  'Segovia': 'Europe/Madrid',
+  'Sevilla': 'Europe/Madrid',
+  'Soria': 'Europe/Madrid',
+  'Tarragona': 'Europe/Madrid',
+  'Teruel': 'Europe/Madrid',
+  'Toledo': 'Europe/Madrid',
+  'Valencia': 'Europe/Madrid',
+  'Valladolid': 'Europe/Madrid',
+  'Zamora': 'Europe/Madrid',
+  'Zaragoza': 'Europe/Madrid',
+  
+  // Islas Canarias - Atlantic/Canary
+  'Tenerife': 'Atlantic/Canary',
+  'Gran Canaria': 'Atlantic/Canary',
+  'Lanzarote': 'Atlantic/Canary',
+  'Fuerteventura': 'Atlantic/Canary',
+  'La Palma': 'Atlantic/Canary',
+  'La Gomera': 'Atlantic/Canary',
+  'El Hierro': 'Atlantic/Canary',
+  
+  // Islas Baleares - Europe/Madrid
+  'Mallorca': 'Europe/Madrid',
+  'Menorca': 'Europe/Madrid',
+  'Ibiza (Eivissa)': 'Europe/Madrid',
+  'Formentera': 'Europe/Madrid',
+  
+  // Ciudades autónomas - Europe/Madrid
+  'Ceuta': 'Europe/Madrid',
+  'Melilla': 'Europe/Madrid'
 };
 
-// Función para detectar ciudad desde la dirección
-function detectCityFromAddress(address) {
+// Función para detectar provincia desde la dirección
+function detectProvinceFromAddress(address) {
   if (!address) return null;
   
   const addressLower = address.toLowerCase();
   
   // Buscar coincidencias exactas primero
-  for (const [city, timezone] of Object.entries(CITY_TIMEZONE_MAP)) {
-    if (addressLower.includes(city.toLowerCase())) {
-      return { city, timezone };
+  for (const [province, timezone] of Object.entries(PROVINCE_TIMEZONE_MAP)) {
+    if (addressLower.includes(province.toLowerCase())) {
+      return { province, timezone };
     }
   }
   
-  // Buscar palabras clave específicas
-  if (addressLower.includes('canarias') || addressLower.includes('tenerife') || 
-      addressLower.includes('gran canaria') || addressLower.includes('lanzarote') ||
-      addressLower.includes('fuerteventura') || addressLower.includes('la palma') ||
-      addressLower.includes('la gomera') || addressLower.includes('el hierro')) {
-    return { city: 'Las Palmas de Gran Canaria', timezone: 'Atlantic/Canary' };
+  // Buscar palabras clave específicas para Canarias
+  if (addressLower.includes('canarias') || addressLower.includes('tenerife')) {
+    return { province: 'Tenerife', timezone: 'Atlantic/Canary' };
+  }
+  if (addressLower.includes('gran canaria') || addressLower.includes('las palmas')) {
+    return { province: 'Gran Canaria', timezone: 'Atlantic/Canary' };
+  }
+  if (addressLower.includes('lanzarote')) {
+    return { province: 'Lanzarote', timezone: 'Atlantic/Canary' };
+  }
+  if (addressLower.includes('fuerteventura')) {
+    return { province: 'Fuerteventura', timezone: 'Atlantic/Canary' };
+  }
+  if (addressLower.includes('la palma')) {
+    return { province: 'La Palma', timezone: 'Atlantic/Canary' };
+  }
+  if (addressLower.includes('la gomera')) {
+    return { province: 'La Gomera', timezone: 'Atlantic/Canary' };
+  }
+  if (addressLower.includes('el hierro')) {
+    return { province: 'El Hierro', timezone: 'Atlantic/Canary' };
   }
   
   return null;
@@ -152,14 +141,14 @@ async function updateBusinessTimezones() {
         timezone: 'Europe/Madrid' // Default
       };
       
-      // Intentar detectar ciudad desde la dirección
-      const detectedLocation = detectCityFromAddress(business.contact?.address);
+      // Intentar detectar provincia desde la dirección
+      const detectedLocation = detectProvinceFromAddress(business.contact?.address);
       if (detectedLocation) {
-        locationData.city = detectedLocation.city;
+        locationData.city = detectedLocation.province;
         locationData.timezone = detectedLocation.timezone;
-        console.log(`🔍 ${business.name}: Detectada ciudad ${detectedLocation.city} -> ${detectedLocation.timezone}`);
+        console.log(`🔍 ${business.name}: Detectada provincia ${detectedLocation.province} -> ${detectedLocation.timezone}`);
       } else {
-        console.log(`⚠️  ${business.name}: No se pudo detectar ciudad, usando Madrid por defecto`);
+        console.log(`⚠️  ${business.name}: No se pudo detectar provincia, usando Madrid por defecto`);
       }
       
       // Actualizar el negocio

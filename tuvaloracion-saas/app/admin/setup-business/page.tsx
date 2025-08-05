@@ -42,102 +42,74 @@ function SetupBusinessContent() {
     ]
   });
 
-  // Lista de ciudades españolas principales con sus zonas horarias
-  const spanishCities = [
-    // Andalucía
-    { name: 'Sevilla', timezone: 'Europe/Madrid' },
-    { name: 'Málaga', timezone: 'Europe/Madrid' },
-    { name: 'Córdoba', timezone: 'Europe/Madrid' },
-    { name: 'Granada', timezone: 'Europe/Madrid' },
-    { name: 'Cádiz', timezone: 'Europe/Madrid' },
-    { name: 'Almería', timezone: 'Europe/Madrid' },
-    { name: 'Huelva', timezone: 'Europe/Madrid' },
-    { name: 'Jaén', timezone: 'Europe/Madrid' },
-    
-    // Madrid
-    { name: 'Madrid', timezone: 'Europe/Madrid' },
-    { name: 'Alcalá de Henares', timezone: 'Europe/Madrid' },
-    { name: 'Fuenlabrada', timezone: 'Europe/Madrid' },
-    { name: 'Móstoles', timezone: 'Europe/Madrid' },
-    { name: 'Alcorcón', timezone: 'Europe/Madrid' },
-    { name: 'Leganés', timezone: 'Europe/Madrid' },
-    { name: 'Getafe', timezone: 'Europe/Madrid' },
-    
-    // Cataluña
-    { name: 'Barcelona', timezone: 'Europe/Madrid' },
-    { name: 'Hospitalet de Llobregat', timezone: 'Europe/Madrid' },
-    { name: 'Badalona', timezone: 'Europe/Madrid' },
-    { name: 'Terrassa', timezone: 'Europe/Madrid' },
-    { name: 'Sabadell', timezone: 'Europe/Madrid' },
-    { name: 'Lleida', timezone: 'Europe/Madrid' },
-    { name: 'Tarragona', timezone: 'Europe/Madrid' },
-    { name: 'Girona', timezone: 'Europe/Madrid' },
-    
-    // Valencia
-    { name: 'Valencia', timezone: 'Europe/Madrid' },
-    { name: 'Alicante', timezone: 'Europe/Madrid' },
-    { name: 'Elche', timezone: 'Europe/Madrid' },
-    { name: 'Castellón de la Plana', timezone: 'Europe/Madrid' },
-    { name: 'Torrevieja', timezone: 'Europe/Madrid' },
-    { name: 'Orihuela', timezone: 'Europe/Madrid' },
-    
-    // País Vasco
-    { name: 'Bilbao', timezone: 'Europe/Madrid' },
-    { name: 'Vitoria-Gasteiz', timezone: 'Europe/Madrid' },
-    { name: 'San Sebastián', timezone: 'Europe/Madrid' },
-    { name: 'Barakaldo', timezone: 'Europe/Madrid' },
-    
-    // Galicia
-    { name: 'Vigo', timezone: 'Europe/Madrid' },
-    { name: 'A Coruña', timezone: 'Europe/Madrid' },
-    { name: 'Ourense', timezone: 'Europe/Madrid' },
-    { name: 'Lugo', timezone: 'Europe/Madrid' },
-    { name: 'Santiago de Compostela', timezone: 'Europe/Madrid' },
-    
-    // Canarias
-    { name: 'Las Palmas de Gran Canaria', timezone: 'Atlantic/Canary' },
-    { name: 'Santa Cruz de Tenerife', timezone: 'Atlantic/Canary' },
-    { name: 'San Cristóbal de La Laguna', timezone: 'Atlantic/Canary' },
-    { name: 'Telde', timezone: 'Atlantic/Canary' },
-    { name: 'Santa Lucía de Tirajana', timezone: 'Atlantic/Canary' },
-    { name: 'Arona', timezone: 'Atlantic/Canary' },
-    { name: 'Arrecife', timezone: 'Atlantic/Canary' },
-    { name: 'Puerto del Rosario', timezone: 'Atlantic/Canary' },
-    { name: 'Los Llanos de Aridane', timezone: 'Atlantic/Canary' },
-    { name: 'San Sebastián de La Gomera', timezone: 'Atlantic/Canary' },
-    { name: 'Valverde', timezone: 'Atlantic/Canary' },
-    
-    // Baleares
-    { name: 'Palma de Mallorca', timezone: 'Europe/Madrid' },
-    { name: 'Ibiza', timezone: 'Europe/Madrid' },
-    { name: 'Mahón', timezone: 'Europe/Madrid' },
-    { name: 'Ciudadela de Menorca', timezone: 'Europe/Madrid' },
-    
-    // Otras comunidades
-    { name: 'Zaragoza', timezone: 'Europe/Madrid' },
-    { name: 'Murcia', timezone: 'Europe/Madrid' },
-    { name: 'Palma de Mallorca', timezone: 'Europe/Madrid' },
-    { name: 'Las Palmas', timezone: 'Atlantic/Canary' },
-    { name: 'Valladolid', timezone: 'Europe/Madrid' },
-    { name: 'Oviedo', timezone: 'Europe/Madrid' },
-    { name: 'Pamplona', timezone: 'Europe/Madrid' },
-    { name: 'Santander', timezone: 'Europe/Madrid' },
-    { name: 'Toledo', timezone: 'Europe/Madrid' },
-    { name: 'Badajoz', timezone: 'Europe/Madrid' },
-    { name: 'Salamanca', timezone: 'Europe/Madrid' },
-    { name: 'Huelva', timezone: 'Europe/Madrid' },
-    { name: 'Mérida', timezone: 'Europe/Madrid' },
-    { name: 'Ávila', timezone: 'Europe/Madrid' },
-    { name: 'Cáceres', timezone: 'Europe/Madrid' },
-    { name: 'Guadalajara', timezone: 'Europe/Madrid' },
-    { name: 'Cuenca', timezone: 'Europe/Madrid' },
-    { name: 'Soria', timezone: 'Europe/Madrid' },
-    { name: 'Segovia', timezone: 'Europe/Madrid' },
+  // Lista de provincias españolas con sus zonas horarias
+  const spanishProvinces = [
+    // Provincias peninsulares (mainland) - Europe/Madrid
+    { name: 'Álava', timezone: 'Europe/Madrid' },
     { name: 'Albacete', timezone: 'Europe/Madrid' },
+    { name: 'Alicante', timezone: 'Europe/Madrid' },
+    { name: 'Almería', timezone: 'Europe/Madrid' },
+    { name: 'Asturias', timezone: 'Europe/Madrid' },
+    { name: 'Ávila', timezone: 'Europe/Madrid' },
+    { name: 'Badajoz', timezone: 'Europe/Madrid' },
+    { name: 'Barcelona', timezone: 'Europe/Madrid' },
+    { name: 'Burgos', timezone: 'Europe/Madrid' },
+    { name: 'Cáceres', timezone: 'Europe/Madrid' },
+    { name: 'Cádiz', timezone: 'Europe/Madrid' },
+    { name: 'Cantabria', timezone: 'Europe/Madrid' },
+    { name: 'Castellón', timezone: 'Europe/Madrid' },
     { name: 'Ciudad Real', timezone: 'Europe/Madrid' },
-    { name: 'Logroño', timezone: 'Europe/Madrid' },
+    { name: 'Córdoba', timezone: 'Europe/Madrid' },
+    { name: 'Cuenca', timezone: 'Europe/Madrid' },
+    { name: 'Girona', timezone: 'Europe/Madrid' },
+    { name: 'Granada', timezone: 'Europe/Madrid' },
+    { name: 'Guadalajara', timezone: 'Europe/Madrid' },
+    { name: 'Guipúzcoa', timezone: 'Europe/Madrid' },
+    { name: 'Huelva', timezone: 'Europe/Madrid' },
     { name: 'Huesca', timezone: 'Europe/Madrid' },
-    { name: 'Teruel', timezone: 'Europe/Madrid' }
+    { name: 'Jaén', timezone: 'Europe/Madrid' },
+    { name: 'La Coruña (A Coruña)', timezone: 'Europe/Madrid' },
+    { name: 'La Rioja', timezone: 'Europe/Madrid' },
+    { name: 'León', timezone: 'Europe/Madrid' },
+    { name: 'Lleida', timezone: 'Europe/Madrid' },
+    { name: 'Lugo', timezone: 'Europe/Madrid' },
+    { name: 'Madrid', timezone: 'Europe/Madrid' },
+    { name: 'Málaga', timezone: 'Europe/Madrid' },
+    { name: 'Murcia', timezone: 'Europe/Madrid' },
+    { name: 'Navarra', timezone: 'Europe/Madrid' },
+    { name: 'Ourense', timezone: 'Europe/Madrid' },
+    { name: 'Palencia', timezone: 'Europe/Madrid' },
+    { name: 'Pontevedra', timezone: 'Europe/Madrid' },
+    { name: 'Salamanca', timezone: 'Europe/Madrid' },
+    { name: 'Segovia', timezone: 'Europe/Madrid' },
+    { name: 'Sevilla', timezone: 'Europe/Madrid' },
+    { name: 'Soria', timezone: 'Europe/Madrid' },
+    { name: 'Tarragona', timezone: 'Europe/Madrid' },
+    { name: 'Teruel', timezone: 'Europe/Madrid' },
+    { name: 'Toledo', timezone: 'Europe/Madrid' },
+    { name: 'Valencia', timezone: 'Europe/Madrid' },
+    { name: 'Valladolid', timezone: 'Europe/Madrid' },
+    { name: 'Zamora', timezone: 'Europe/Madrid' },
+    { name: 'Zaragoza', timezone: 'Europe/Madrid' },
+    
+    // Islas Canarias - Atlantic/Canary
+    { name: 'Tenerife', timezone: 'Atlantic/Canary' },
+    { name: 'Gran Canaria', timezone: 'Atlantic/Canary' },
+    { name: 'Lanzarote', timezone: 'Atlantic/Canary' },
+    { name: 'Fuerteventura', timezone: 'Atlantic/Canary' },
+    { name: 'La Palma', timezone: 'Atlantic/Canary' },
+    { name: 'La Gomera', timezone: 'Atlantic/Canary' },
+    { name: 'El Hierro', timezone: 'Atlantic/Canary' },
+    
+    // Islas Baleares - Europe/Madrid
+    { name: 'Mallorca', timezone: 'Europe/Madrid' },
+    { name: 'Menorca', timezone: 'Europe/Madrid' },
+    { name: 'Ibiza (Eivissa)', timezone: 'Europe/Madrid' },
+    { name: 'Formentera', timezone: 'Europe/Madrid' },
+    
+    // Ciudades autónomas - Europe/Madrid
+    { name: 'Ceuta', timezone: 'Europe/Madrid' },
+    { name: 'Melilla', timezone: 'Europe/Madrid' }
   ].sort((a, b) => a.name.localeCompare(b.name));
 
   const plans = [
@@ -421,10 +393,10 @@ function SetupBusinessContent() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
-                    <option value="">Selecciona tu ciudad</option>
-                    {spanishCities.map((city) => (
-                      <option key={city.name} value={city.name}>
-                        {city.name}
+                    <option value="">Selecciona tu provincia</option>
+                    {spanishProvinces.map((province) => (
+                      <option key={province.name} value={province.name}>
+                        {province.name}
                       </option>
                     ))}
                   </select>
