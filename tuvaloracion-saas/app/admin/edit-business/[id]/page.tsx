@@ -489,11 +489,105 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                {/* Solo Super Admin puede activar/desactivar y eliminar */}
-                {user?.role === 'super_admin' ? (
+                {/* Gestión de Suscripción - Para TODOS los roles */}
+                <div className="bg-blue-50 rounded-lg p-6">
+                  <h3 className="font-medium text-blue-900 mb-4">📋 Gestión de Suscripción</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
+                      <div>
+                        <p className="font-medium text-gray-900">Plan Actual</p>
+                        <p className="text-sm text-gray-600">
+                          {formData.plan === 'trial' && '🎁 Prueba (7 días gratis)'}
+                          {formData.plan === 'basic' && '⭐ Básico'}
+                          {formData.plan === 'premium' && '💎 Premium'}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        formData.active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {formData.active ? 'Activo' : 'Suspendido'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // TODO: Implementar cancelación de suscripción
+                          alert('Funcionalidad de cancelación en desarrollo');
+                        }}
+                        className="p-4 border-2 border-orange-300 rounded-lg hover:bg-orange-50 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">⏸️</span>
+                          <div>
+                            <p className="font-medium text-orange-900">Cancelar Suscripción</p>
+                            <p className="text-sm text-orange-700">Pausar el servicio temporalmente</p>
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // TODO: Implementar renovación de suscripción
+                          alert('Funcionalidad de renovación en desarrollo');
+                        }}
+                        className="p-4 border-2 border-green-300 rounded-lg hover:bg-green-50 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">🔄</span>
+                          <div>
+                            <p className="font-medium text-green-900">Renovar Suscripción</p>
+                            <p className="text-sm text-green-700">Reactivar el servicio</p>
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // TODO: Implementar cambio de plan
+                          alert('Funcionalidad de cambio de plan en desarrollo');
+                        }}
+                        className="p-4 border-2 border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">📈</span>
+                          <div>
+                            <p className="font-medium text-blue-900">Cambiar Plan</p>
+                            <p className="text-sm text-blue-700">Upgrade o downgrade</p>
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // TODO: Implementar historial de facturación
+                          alert('Funcionalidad de facturación en desarrollo');
+                        }}
+                        className="p-4 border-2 border-purple-300 rounded-lg hover:bg-purple-50 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">📊</span>
+                          <div>
+                            <p className="font-medium text-purple-900">Ver Facturación</p>
+                            <p className="text-sm text-purple-700">Historial de pagos</p>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Controles Administrativos - Solo Super Admin */}
+                {user?.role === 'super_admin' && (
                   <>
                     <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="font-medium text-gray-900 mb-4">Estado del Negocio</h3>
+                      <h3 className="font-medium text-gray-900 mb-4">⚙️ Estado del Negocio</h3>
                       <label className="flex items-center cursor-pointer">
                         <input
                           type="checkbox"
@@ -512,7 +606,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                     </div>
 
                     <div className="bg-red-50 rounded-lg p-6">
-                      <h3 className="font-medium text-red-900 mb-4">Zona de Peligro</h3>
+                      <h3 className="font-medium text-red-900 mb-4">⚠️ Zona de Peligro</h3>
                       <p className="text-sm text-red-700 mb-4">
                         Las siguientes acciones son permanentes y no se pueden deshacer.
                       </p>
@@ -529,111 +623,18 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                       </button>
                     </div>
                   </>
-                ) : (
-                  /* Admin normal - Solo gestión de suscripción */
-                  <>
-                    <div className="bg-blue-50 rounded-lg p-6">
-                      <h3 className="font-medium text-blue-900 mb-4">📋 Gestión de Suscripción</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
-                          <div>
-                            <p className="font-medium text-gray-900">Plan Actual</p>
-                            <p className="text-sm text-gray-600">
-                              {formData.plan === 'trial' && '🎁 Prueba (7 días gratis)'}
-                              {formData.plan === 'basic' && '⭐ Básico'}
-                              {formData.plan === 'premium' && '💎 Premium'}
-                            </p>
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            formData.active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {formData.active ? 'Activo' : 'Suspendido'}
-                          </span>
-                        </div>
+                )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              // TODO: Implementar cancelación de suscripción
-                              alert('Funcionalidad de cancelación en desarrollo');
-                            }}
-                            className="p-4 border-2 border-orange-300 rounded-lg hover:bg-orange-50 transition-colors text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">⏸️</span>
-                              <div>
-                                <p className="font-medium text-orange-900">Cancelar Suscripción</p>
-                                <p className="text-sm text-orange-700">Pausar el servicio temporalmente</p>
-                              </div>
-                            </div>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              // TODO: Implementar renovación de suscripción
-                              alert('Funcionalidad de renovación en desarrollo');
-                            }}
-                            className="p-4 border-2 border-green-300 rounded-lg hover:bg-green-50 transition-colors text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">🔄</span>
-                              <div>
-                                <p className="font-medium text-green-900">Renovar Suscripción</p>
-                                <p className="text-sm text-green-700">Reactivar el servicio</p>
-                              </div>
-                            </div>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              // TODO: Implementar cambio de plan
-                              alert('Funcionalidad de cambio de plan en desarrollo');
-                            }}
-                            className="p-4 border-2 border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">📈</span>
-                              <div>
-                                <p className="font-medium text-blue-900">Cambiar Plan</p>
-                                <p className="text-sm text-blue-700">Upgrade o downgrade</p>
-                              </div>
-                            </div>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              // TODO: Implementar historial de facturación
-                              alert('Funcionalidad de facturación en desarrollo');
-                            }}
-                            className="p-4 border-2 border-purple-300 rounded-lg hover:bg-purple-50 transition-colors text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">📊</span>
-                              <div>
-                                <p className="font-medium text-purple-900">Ver Facturación</p>
-                                <p className="text-sm text-purple-700">Historial de pagos</p>
-                              </div>
-                            </div>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-amber-50 rounded-lg p-6">
-                      <h3 className="font-medium text-amber-900 mb-2">ℹ️ Información</h3>
-                      <p className="text-sm text-amber-800">
-                        Como administrador de negocio, puedes gestionar la información, premios y reseñas, 
-                        pero no puedes activar/desactivar o eliminar el negocio. Para estas acciones, 
-                        contacta con el soporte técnico.
-                      </p>
-                    </div>
-                  </>
+                {/* Información para Admin Normal */}
+                {user?.role === 'admin' && (
+                  <div className="bg-amber-50 rounded-lg p-6">
+                    <h3 className="font-medium text-amber-900 mb-2">ℹ️ Información</h3>
+                    <p className="text-sm text-amber-800">
+                      Como administrador de negocio, puedes gestionar la información, premios y reseñas, 
+                      pero no puedes activar/desactivar o eliminar el negocio. Para estas acciones, 
+                      contacta con el soporte técnico.
+                    </p>
+                  </div>
                 )}
               </div>
             )}
