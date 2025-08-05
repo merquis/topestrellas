@@ -145,10 +145,36 @@ export async function POST(request: Request) {
     
     const result = await db.collection('businesses').insertOne(newBusiness);
     
+    // Crear usuario en la base de datos si no existe
+    if (data.email && data.ownerName) {
+      const existingUser = await db.collection('users').findOne({ email: data.email });
+      
+      if (!existingUser) {
+        const newUser = {
+          email: data.email,
+          name: data.ownerName,
+          password: data.password || 'temp123', // Contraseña temporal si no se proporciona
+          role: 'admin',
+          businessId: result.insertedId.toString(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        await db.collection('users').insertOne(newUser);
+      }
+    }
+    
     return NextResponse.json({
       success: true,
       businessId: result.insertedId,
-      subdomain: newBusiness.subdomain
+      subdomain: newBusiness.subdomain,
+      user: {
+        id: result.insertedId.toString(),
+        email: data.email || '',
+        name: data.ownerName || '',
+        role: 'admin',
+        businessId: result.insertedId.toString()
+      }
     });
     
   } catch (error) {

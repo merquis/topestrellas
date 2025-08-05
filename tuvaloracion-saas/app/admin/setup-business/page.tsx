@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Toast from '@/components/Toast';
 import LoadingOverlay from '@/components/LoadingOverlay';
+import { saveAuth } from '@/lib/auth';
 
 function SetupBusinessContent() {
   const router = useRouter();
@@ -16,6 +17,7 @@ function SetupBusinessContent() {
   // Datos del usuario desde los parámetros
   const userName = searchParams.get('name') || '';
   const userEmail = searchParams.get('email') || '';
+  const userPassword = searchParams.get('password') || '';
   const businessType = searchParams.get('type') || 'restaurante';
   
   const [formData, setFormData] = useState({
@@ -118,7 +120,8 @@ function SetupBusinessContent() {
         type: businessType,
         plan: selectedPlan,
         email: userEmail,
-        ownerName: userName
+        ownerName: userName,
+        password: userPassword
       };
       
       const response = await fetch('/api/admin/businesses', {
@@ -130,15 +133,22 @@ function SetupBusinessContent() {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        
+        // Guardar automáticamente la sesión del usuario
+        if (data.user) {
+          saveAuth(data.user);
+        }
+        
         setToast({ 
-          message: '¡Negocio creado exitosamente! Redirigiendo...', 
+          message: '¡Negocio creado exitosamente! Redirigiendo a tu panel...', 
           type: 'success' 
         });
         
-        // En producción aquí se autenticaría al usuario automáticamente
+        // Redirigir al panel de administración con sesión iniciada
         setTimeout(() => {
           router.push('/admin');
-        }, 2000);
+        }, 1500);
       } else {
         const data = await response.json();
         setToast({ message: `Error: ${data.error}`, type: 'error' });

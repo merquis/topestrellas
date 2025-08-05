@@ -7,31 +7,27 @@ export interface AuthUser {
   businessId?: string;
 }
 
-// Simulación de autenticación - En producción usar NextAuth o similar
-export const authenticateUser = (email: string, password: string): AuthUser | null => {
-  // Super Admin
-  const adminPassword = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_ADMIN_PASSWORD : '';
-  if (email === 'admin@tuvaloracion.com' && password === adminPassword) {
-    return {
-      id: '1',
-      email: 'admin@tuvaloracion.com',
-      name: 'Super Administrador',
-      role: 'super_admin'
-    };
+// Autenticación usando API
+export const authenticateUser = async (email: string, password: string): Promise<AuthUser | null> => {
+  try {
+    const response = await fetch('/api/auth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.user;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error authenticating user:', error);
+    return null;
   }
-  
-  // Admin de negocio específico (ejemplo)
-  if (email === 'restaurante@demo.com' && password === 'demo123') {
-    return {
-      id: '2',
-      email: 'restaurante@demo.com',
-      name: 'Admin Restaurante Demo',
-      role: 'admin',
-      businessId: 'demo-restaurant-id'
-    };
-  }
-  
-  return null;
 };
 
 export const checkAuth = (): AuthUser | null => {

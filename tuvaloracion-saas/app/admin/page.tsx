@@ -38,17 +38,24 @@ export default function AdminDashboard() {
     setLoading(false);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+    setLoading(true);
     
-    const authUser = authenticateUser(email, password);
-    if (authUser) {
-      saveAuth(authUser);
-      setUser(authUser);
-      loadDashboardData(authUser);
-    } else {
-      setLoginError('Credenciales incorrectas');
+    try {
+      const authUser = await authenticateUser(email, password);
+      if (authUser) {
+        saveAuth(authUser);
+        setUser(authUser);
+        loadDashboardData(authUser);
+      } else {
+        setLoginError('Credenciales incorrectas');
+      }
+    } catch (error) {
+      setLoginError('Error al iniciar sesión');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,9 +109,8 @@ export default function AdminDashboard() {
       return;
     }
     
-    // Por ahora redirigir a la página de selección de plan
-    // En producción, aquí se crearía el usuario en la base de datos
-    router.push(`/admin/setup-business?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&type=${businessType}`);
+    // Redirigir a la página de selección de plan con la contraseña
+    router.push(`/admin/setup-business?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&type=${businessType}&password=${encodeURIComponent(password)}`);
   };
 
   if (!user) {
