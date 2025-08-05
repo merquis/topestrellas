@@ -25,7 +25,8 @@ export default function AdminDashboard() {
     totalOpinions: 0,
     totalPrizes: 0,
     avgRating: 0,
-    monthlyGrowth: 0
+    monthlyGrowth: 0,
+    opinionsGrowth: 0
   });
   const router = useRouter();
 
@@ -62,9 +63,9 @@ export default function AdminDashboard() {
   const loadDashboardData = async (authUser: AuthUser) => {
     try {
       // Cargar negocios según el rol
-      const response = await fetch('/api/admin/businesses');
-      if (response.ok) {
-        const data = await response.json();
+      const businessesResponse = await fetch('/api/admin/businesses');
+      if (businessesResponse.ok) {
+        const data = await businessesResponse.json();
         
         // Filtrar según el rol
         const filteredBusinesses = authUser.role === 'super_admin' 
@@ -72,16 +73,26 @@ export default function AdminDashboard() {
           : data.filter((b: any) => b._id === authUser.businessId);
         
         setBusinesses(filteredBusinesses);
-        
-        // Calcular estadísticas
-        const active = filteredBusinesses.filter((b: any) => b.active).length;
+      }
+
+      // Cargar estadísticas reales
+      const statsParams = new URLSearchParams({
+        userEmail: authUser.email,
+        userRole: authUser.role,
+        ...(authUser.businessId && authUser.role !== 'super_admin' ? { businessId: authUser.businessId } : {})
+      });
+
+      const statsResponse = await fetch(`/api/admin/stats?${statsParams}`);
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
         setStats({
-          totalBusinesses: filteredBusinesses.length,
-          activeBusinesses: active,
-          totalOpinions: 1247, // Simulado - conectar con API real
-          totalPrizes: 342, // Simulado - conectar con API real
-          avgRating: 4.7, // Simulado - conectar con API real
-          monthlyGrowth: 12.5 // Simulado - conectar con API real
+          totalBusinesses: statsData.totalBusinesses,
+          activeBusinesses: statsData.activeBusinesses,
+          totalOpinions: statsData.totalOpinions,
+          totalPrizes: statsData.totalPrizes,
+          avgRating: statsData.avgRating,
+          monthlyGrowth: statsData.monthlyGrowth,
+          opinionsGrowth: statsData.opinionsGrowth
         });
       }
     } catch (error) {
@@ -344,7 +355,7 @@ export default function AdminDashboard() {
           title="Opiniones Totales"
           value={stats.totalOpinions.toLocaleString()}
           icon="⭐"
-          trend={{ value: 8.3, isPositive: true }}
+          trend={{ value: stats.opinionsGrowth, isPositive: stats.opinionsGrowth >= 0 }}
           bgColor="bg-gradient-to-br from-yellow-50 to-yellow-100"
           iconBgColor="bg-yellow-500"
         />
