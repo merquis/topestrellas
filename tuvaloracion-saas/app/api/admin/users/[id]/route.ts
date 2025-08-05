@@ -77,7 +77,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       // Verificar que todos los negocios existen
       if (businessIds.length > 0) {
         const existingBusinesses = await db.collection('businesses')
-          .find({ _id: { $in: businessIds.map(id => new ObjectId(id)) } })
+          .find({ _id: { $in: businessIds.map((id: string) => new ObjectId(id)) } })
           .toArray();
         
         if (existingBusinesses.length !== businessIds.length) {
