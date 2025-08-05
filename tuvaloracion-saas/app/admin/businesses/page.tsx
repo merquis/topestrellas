@@ -23,17 +23,29 @@ export default function BusinessesPage() {
       router.push('/admin');
       return;
     }
-    if (authUser.role !== 'super_admin') {
+    // Permitir acceso tanto a super_admin como a admin
+    if (!['super_admin', 'admin'].includes(authUser.role)) {
       router.push('/admin');
       return;
     }
     setUser(authUser);
-    loadBusinesses();
   }, []);
+
+  // Efecto separado para cargar negocios cuando el usuario esté disponible
+  useEffect(() => {
+    if (user) {
+      loadBusinesses();
+    }
+  }, [user]);
 
   const loadBusinesses = async () => {
     try {
-      const response = await fetch('/api/admin/businesses');
+      // Construir URL con parámetros del usuario para filtrado
+      const params = new URLSearchParams();
+      if (user?.email) params.append('userEmail', user.email);
+      if (user?.role) params.append('userRole', user.role);
+      
+      const response = await fetch(`/api/admin/businesses?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setBusinesses(data);

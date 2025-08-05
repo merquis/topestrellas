@@ -3,13 +3,40 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { translatePrizesWithAI } from '@/lib/ai-translation';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const userEmail = searchParams.get('userEmail');
+    const userRole = searchParams.get('userRole');
+    
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
     
+    let businessFilter = {};
+    
+    // Si es admin normal, filtrar solo sus negocios asignados
+    if (userRole === 'admin' && userEmail) {
+      // Obtener los negocios asignados al usuario
+      const user = await db.collection('users').findOne({ email: userEmail });
+      if (user && user.businessIds && user.businessIds.length > 0) {
+        // Filtrar por los negocios asignados al usuario
+        businessFilter = {
+          _id: { $in: user.businessIds.map((id: string) => new ObjectId(id)) }
+        };
+      } else if (user && user.businessId) {
+        // Compatibilidad con el campo legacy businessId
+        businessFilter = {
+          _id: new ObjectId(user.businessId)
+        };
+      } else {
+        // Si no tiene negocios asignados, devolver array vacío
+        return NextResponse.json([]);
+      }
+    }
+    // Si es super_admin, no aplicar filtro (mostrar todos)
+    
     const businesses = await db.collection('businesses')
-      .find({})
+      .find(businessFilter)
       .sort({ createdAt: -1 })
       .toArray();
     
