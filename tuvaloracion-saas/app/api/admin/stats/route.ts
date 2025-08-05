@@ -143,6 +143,15 @@ export async function GET(request: NextRequest) {
       ? Math.round((inactiveBusinessesThisMonth / inactiveBusinessesLastMonth) * 100 * 10) / 10
       : inactiveBusinessesThisMonth > 0 ? 100 : 0;
 
+    // Calcular porcentajes respecto al total de negocios
+    const activePercentage = totalBusinesses > 0 
+      ? Math.round((activeBusinesses / totalBusinesses) * 100 * 10) / 10
+      : 0;
+    
+    const inactivePercentage = totalBusinesses > 0 
+      ? Math.round((inactiveBusinesses / totalBusinesses) * 100 * 10) / 10
+      : 0;
+
     return NextResponse.json({
       totalBusinesses,
       activeBusinesses,
@@ -152,7 +161,9 @@ export async function GET(request: NextRequest) {
       avgRating,
       monthlyGrowth,
       opinionsGrowth,
-      inactiveGrowth
+      inactiveGrowth,
+      activePercentage,
+      inactivePercentage
     });
 
   } catch (error) {

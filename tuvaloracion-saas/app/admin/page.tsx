@@ -28,7 +28,9 @@ export default function AdminDashboard() {
     avgRating: 0,
     monthlyGrowth: 0,
     opinionsGrowth: 0,
-    inactiveGrowth: 0
+    inactiveGrowth: 0,
+    activePercentage: 0,
+    inactivePercentage: 0
   });
   const router = useRouter();
 
@@ -96,7 +98,9 @@ export default function AdminDashboard() {
           avgRating: statsData.avgRating,
           monthlyGrowth: statsData.monthlyGrowth,
           opinionsGrowth: statsData.opinionsGrowth,
-          inactiveGrowth: statsData.inactiveGrowth
+          inactiveGrowth: statsData.inactiveGrowth,
+          activePercentage: statsData.activePercentage,
+          inactivePercentage: statsData.inactivePercentage
         });
       }
     } catch (error) {
@@ -352,6 +356,7 @@ export default function AdminDashboard() {
           title="Negocios Activos"
           value={stats.activeBusinesses}
           icon="✅"
+          trend={{ value: stats.activePercentage, isPositive: true }}
           bgColor="bg-gradient-to-br from-green-50 to-green-100"
           iconBgColor="bg-green-500"
         />
@@ -359,7 +364,7 @@ export default function AdminDashboard() {
           title="Negocios Inactivos"
           value={stats.inactiveBusinesses}
           icon="❌"
-          trend={{ value: stats.inactiveGrowth, isPositive: false }}
+          trend={{ value: stats.inactivePercentage, isPositive: false }}
           bgColor="bg-gradient-to-br from-red-50 to-red-100"
           iconBgColor="bg-red-500"
         />
