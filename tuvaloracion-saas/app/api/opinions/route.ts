@@ -24,16 +24,26 @@ export async function POST(request: NextRequest) {
     // Generar código de premio
     const prizeCode = generatePrizeCode(data.subdomain, data.rating)
     
-    // Crear objeto de opinión
-    const opinion: Omit<Opinion, '_id'> = {
+    // Crear objeto de opinión con la estructura solicitada
+    const now = new Date();
+    const opinion = {
       businessId: new ObjectId(data.businessId),
-      subdomain: data.subdomain,
-      customer: {
-        name: data.name,
-        email: data.email,
-      },
-      rating: data.rating,
+      name: data.name,
+      email: data.email,
+      phone: data.phone || '',
       review: data.feedback || '',
+      rating: data.rating,
+      lang: data.language || 'es',
+      premio: data.prize.name,
+      codigoPremio: prizeCode,
+      date: now.toLocaleDateString('es-ES'),
+      time: now.toLocaleTimeString('es-ES'),
+      date_real: now,
+      subdomain: data.subdomain,
+      customerName: data.name,
+      customerEmail: data.email,
+      customerPhone: data.phone || '',
+      comment: data.feedback || '',
       prize: {
         index: data.prize.index,
         name: data.prize.name,
@@ -41,16 +51,16 @@ export async function POST(request: NextRequest) {
         value: data.prize.value,
       },
       metadata: {
-        language: data.language,
+        language: data.language || 'es',
         userAgent: request.headers.get('user-agent') || '',
         ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '',
       },
       externalReview: false,
-      createdAt: new Date(),
+      createdAt: now,
     }
     
     // Guardar en base de datos
-    const result = await db.collection<Opinion>('opinions').insertOne(opinion as Opinion)
+    const result = await db.collection('opinions').insertOne(opinion)
     
     // Actualizar estadísticas del negocio
     await db.collection('businesses').updateOne(

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import { checkAuth } from '@/lib/auth';
@@ -11,13 +11,35 @@ export default function OpinionsPage() {
   const [opinions, setOpinions] = useState([]);
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBusiness, setSelectedBusiness] = useState('all');
-  const [dateFilter, setDateFilter] = useState('todas');
-  const [ratingFilter, setRatingFilter] = useState('todas');
-  const [resultsPerPage, setResultsPerPage] = useState(100);
-  const [currentPage, setCurrentPage] = useState(1);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Obtener filtros de los parámetros de URL
+  const selectedBusiness = searchParams.get('business') || 'all';
+  const dateFilter = searchParams.get('date') || 'todas';
+  const ratingFilter = searchParams.get('rating') || 'todas';
+  const resultsPerPage = parseInt(searchParams.get('limit') || '100');
+  const currentPage = parseInt(searchParams.get('page') || '1');
+
+  // Funciones para actualizar los filtros en la URL
+  const updateUrlParams = (newParams: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === 'all' || value === 'todas' || value === '100' || value === '1') {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    router.push(`/admin/opinions?${params.toString()}`);
+  };
+
+  const setSelectedBusiness = (value: string) => updateUrlParams({ business: value });
+  const setDateFilter = (value: string) => updateUrlParams({ date: value, page: '1' });
+  const setRatingFilter = (value: string) => updateUrlParams({ rating: value, page: '1' });
+  const setResultsPerPage = (value: number) => updateUrlParams({ limit: value.toString(), page: '1' });
+  const setCurrentPage = (value: number) => updateUrlParams({ page: value.toString() });
 
   useEffect(() => {
     const authUser = checkAuth();
@@ -79,10 +101,24 @@ export default function OpinionsPage() {
       params.append('page', currentPage.toString());
       params.append('limit', resultsPerPage.toString());
       
+      console.log('Loading opinions with params:', params.toString());
+      
       const response = await fetch(`/api/admin/opinions?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Opinions response:', data);
         setOpinions(data.opinions || []);
+        
+        if (!data.opinions || data.opinions.length === 0) {
+          setToast({ 
+            message: `No se encontraron opiniones. Usuario: ${user.email}, Rol: ${user.role}`, 
+            type: 'info' 
+          });
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        setToast({ message: `Error: ${errorData.error || 'Error desconocido'}`, type: 'error' });
       }
     } catch (error) {
       console.error('Error loading opinions:', error);
