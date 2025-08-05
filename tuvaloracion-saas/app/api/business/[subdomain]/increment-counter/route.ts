@@ -40,20 +40,23 @@ export async function POST(
     // Incrementar el contador específico de la plataforma
     const platformField = useGoogle ? 'config.redirectionStats.googleRedirections' : 'config.redirectionStats.tripadvisorRedirections';
     
-    await db.collection('businesses').updateOne(
-      { subdomain: params.subdomain },
-      { 
-        $inc: { [platformField]: 1 },
-        $push: {
-          'config.redirectionStats.lastRedirections': {
-            $each: [{
-              platform: platform,
-              timestamp: new Date()
-            }],
-            $slice: -50 // Mantener solo las últimas 50 redirecciones
-          }
+    // Crear el objeto de actualización con tipos correctos
+    const updateDoc: any = {
+      $inc: { [platformField]: 1 },
+      $push: {
+        'config.redirectionStats.lastRedirections': {
+          $each: [{
+            platform: platform,
+            timestamp: new Date()
+          }],
+          $slice: -50 // Mantener solo las últimas 50 redirecciones
         }
       }
+    };
+    
+    await db.collection('businesses').updateOne(
+      { subdomain: params.subdomain },
+      updateDoc
     );
 
     console.log(`[${params.subdomain}] Counter: ${newCounter}, Platform: ${platform}, Use Google: ${useGoogle}`);
