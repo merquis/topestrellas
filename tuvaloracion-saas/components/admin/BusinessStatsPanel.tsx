@@ -465,10 +465,10 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
 
         {/* Call to action motivacional */}
         <div className="mt-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-4 text-white text-center">
-          <p className="font-bold text-sm">
+          <p className="font-bold text-base">
             💡 <strong>Cada día sin reseñas altas = dinero perdido</strong>
           </p>
-          <p className="text-xs mt-1 text-red-100">
+          <p className="text-sm mt-1 text-red-100">
             Tu competencia está ganando los clientes que deberían ser tuyos. ¡Es hora de cambiar eso!
           </p>
         </div>

@@ -160,24 +160,6 @@ export default function AnalyticsPage() {
           </div>
         )}
 
-        {/* Información adicional */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <div className="flex items-start space-x-4">
-            <div className="text-3xl">💡</div>
-            <div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                ¿Qué puedes ver en este panel?
-              </h3>
-              <ul className="text-blue-700 space-y-1">
-                <li>• <strong>Análisis de costes:</strong> Cuánto te cuesta cada reseña de 5 estrellas</li>
-                <li>• <strong>Comparación con competencia:</strong> Cuánto ahorras vs otros servicios</li>
-                <li>• <strong>Distribución de ratings:</strong> Porcentaje de cada tipo de reseña</li>
-                <li>• <strong>Tendencias temporales:</strong> Crecimiento en diferentes períodos</li>
-                <li>• <strong>Métricas de rendimiento:</strong> Tasa de conversión y eficiencia</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
     </AdminLayout>
   );
