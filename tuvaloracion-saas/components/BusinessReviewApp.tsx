@@ -420,29 +420,60 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     const leadData = {
       name,
       email,
+      phone: '', // Añadir campo phone vacío por defecto
       rating,
-      review: feedback,
-      premio: prize.translations[currentLanguage]?.name || prize.translations['es']?.name,
-      codigoPremio: generatedCode,
-      lang: currentLanguage,
-      businessName: business.name,
-      subdomain: business.subdomain
+      feedback,
+      businessId: business._id,
+      subdomain: business.subdomain,
+      language: currentLanguage,
+      prize: {
+        index: prizeIndex,
+        name: prize.translations[currentLanguage]?.name || prize.translations['es']?.name,
+        value: prize.value
+      }
     };
 
-    // Guardar lead con el webhook si está configurado
+    // Siempre guardar en la API interna
+    try {
+      const response = await fetch('/api/opinions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(leadData)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Opinion saved successfully:', result);
+      } else {
+        console.error('Error saving opinion:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error saving opinion:', error);
+    }
+
+    // También guardar con el webhook si está configurado (para compatibilidad)
     if (business.config.webhooks?.saveLeadUrl) {
       try {
+        const webhookData = {
+          name,
+          email,
+          rating,
+          review: feedback,
+          premio: prize.translations[currentLanguage]?.name || prize.translations['es']?.name,
+          codigoPremio: generatedCode,
+          lang: currentLanguage,
+          businessName: business.name,
+          subdomain: business.subdomain
+        };
+        
         await fetch(business.config.webhooks.saveLeadUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(leadData)
+          body: JSON.stringify(webhookData)
         });
       } catch (error) {
         console.error('Error saving lead via webhook:', error);
       }
-    } else {
-      // Fallback a la API interna si no hay webhook
-      console.log('Saving lead via internal API:', leadData);
     }
 
     if (rating === 5) {
