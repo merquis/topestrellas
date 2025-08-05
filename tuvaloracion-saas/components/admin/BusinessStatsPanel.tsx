@@ -148,32 +148,35 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
 
   // Función para calcular reseñas necesarias para subir 0.1 puntos
   const calculateReviewsNeeded = (currentRating: number, totalReviews: number) => {
-    if (currentRating >= 5.0) return { target: 5.0, reviewsNeeded: 0 };
-    
     // Calcular el siguiente objetivo (subir 0.1)
-    const targetRating = Math.min(5.0, Math.ceil(currentRating * 10) / 10);
+    const nextDecimal = Math.ceil(currentRating * 10) / 10;
+    const targetRating = currentRating === nextDecimal ? 
+      Math.min(5.0, nextDecimal + 0.1) : nextDecimal;
     
-    // Si ya está en una décima exacta, subir a la siguiente
-    const actualTarget = currentRating === targetRating ? 
-      Math.min(5.0, targetRating + 0.1) : targetRating;
+    // Si ya está en 5.0, el objetivo es mantener 5.0
+    const actualTarget = currentRating >= 5.0 ? 5.0 : targetRating;
     
     // Calcular suma actual de puntuaciones
     const currentSum = currentRating * totalReviews;
     
-    // Resolver ecuación: (currentSum + 5*x) / (totalReviews + x) = actualTarget
-    // currentSum + 5*x = actualTarget * (totalReviews + x)
-    // currentSum + 5*x = actualTarget * totalReviews + actualTarget * x
-    // 5*x - actualTarget * x = actualTarget * totalReviews - currentSum
-    // x * (5 - actualTarget) = actualTarget * totalReviews - currentSum
-    // x = (actualTarget * totalReviews - currentSum) / (5 - actualTarget)
+    // Si ya está en 5.0, calcular cuántas reseñas necesita para mantenerlo
+    if (currentRating >= 5.0) {
+      return {
+        target: 5.0,
+        reviewsNeeded: 0,
+        message: `¡Excelente! Mantén tu puntuación perfecta de 5.0⭐`
+      };
+    }
     
+    // Resolver ecuación: (currentSum + 5*x) / (totalReviews + x) = actualTarget
     const reviewsNeeded = Math.ceil(
       (actualTarget * totalReviews - currentSum) / (5 - actualTarget)
     );
     
     return {
       target: actualTarget,
-      reviewsNeeded: Math.max(0, reviewsNeeded)
+      reviewsNeeded: Math.max(0, reviewsNeeded),
+      message: `Para llegar a ${actualTarget.toFixed(1)}⭐: Te faltan ${Math.max(0, reviewsNeeded)} reseñas de 5⭐`
     };
   };
 
@@ -420,31 +423,18 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
                     stats.googleStats!.totalReviews
                   );
                   
-                  if (calculation.reviewsNeeded > 0) {
-                    return (
-                      <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-4 text-white">
-                        <div className="flex items-center space-x-2">
-                          <div className="text-2xl">🎯</div>
-                          <div>
-                            <p className="font-bold">
-                              Para llegar a {calculation.target.toFixed(1)}⭐
-                            </p>
-                            <p className="text-sm text-red-100">
-                              Te faltan <strong>{calculation.reviewsNeeded} reseñas de 5⭐</strong>
-                            </p>
-                          </div>
+                  return (
+                    <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-4 text-white">
+                      <div className="flex items-center space-x-2">
+                        <div className="text-2xl">🎯</div>
+                        <div>
+                          <p className="font-bold">
+                            {calculation.message}
+                          </p>
                         </div>
                       </div>
-                    );
-                  } else {
-                    return (
-                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg p-4 text-white text-center">
-                        <div className="text-2xl mb-2">🏆</div>
-                        <p className="font-bold">¡Puntuación perfecta!</p>
-                        <p className="text-sm text-green-100">Ya tienes 5.0⭐ en Google</p>
-                      </div>
-                    );
-                  }
+                    </div>
+                  );
                 })()}
               </div>
             </div>
@@ -483,31 +473,18 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
                     stats.tripadvisorStats!.totalReviews
                   );
                   
-                  if (calculation.reviewsNeeded > 0) {
-                    return (
-                      <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg p-4 text-white">
-                        <div className="flex items-center space-x-2">
-                          <div className="text-2xl">🎯</div>
-                          <div>
-                            <p className="font-bold">
-                              Para llegar a {calculation.target.toFixed(1)}⭐
-                            </p>
-                            <p className="text-sm text-green-100">
-                              Te faltan <strong>{calculation.reviewsNeeded} reseñas de 5⭐</strong>
-                            </p>
-                          </div>
+                  return (
+                    <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg p-4 text-white">
+                      <div className="flex items-center space-x-2">
+                        <div className="text-2xl">🎯</div>
+                        <div>
+                          <p className="font-bold">
+                            {calculation.message}
+                          </p>
                         </div>
                       </div>
-                    );
-                  } else {
-                    return (
-                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg p-4 text-white text-center">
-                        <div className="text-2xl mb-2">🏆</div>
-                        <p className="font-bold">¡Puntuación perfecta!</p>
-                        <p className="text-sm text-green-100">Ya tienes 5.0⭐ en TripAdvisor</p>
-                      </div>
-                    );
-                  }
+                    </div>
+                  );
                 })()}
               </div>
             </div>
