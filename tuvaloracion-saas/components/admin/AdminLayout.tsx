@@ -44,24 +44,21 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
 
   const loadUserBusinesses = async () => {
     try {
-      if (user.role === 'super_admin') {
-        // Super admin puede ver todos los negocios
-        const response = await fetch('/api/admin/businesses');
-        if (response.ok) {
-          const businesses = await response.json();
-          setUserBusinesses(businesses.map((b: any) => ({ id: b._id, name: b.name })));
+      // Usar la misma API para ambos roles, que ya filtra correctamente
+      const params = new URLSearchParams();
+      params.append('userEmail', user.email);
+      params.append('userRole', user.role);
+      
+      const response = await fetch(`/api/admin/businesses?${params.toString()}`);
+      if (response.ok) {
+        const businesses = await response.json();
+        const businessList = businesses.map((b: any) => ({ id: b._id, name: b.name }));
+        setUserBusinesses(businessList);
+        
+        if (user.role === 'super_admin') {
           setSelectedBusinessId('all'); // Por defecto "Todos los negocios"
-        }
-      } else {
-        // Admin regular solo ve sus negocios asignados
-        const response = await fetch('/api/admin/users');
-        if (response.ok) {
-          const users = await response.json();
-          const currentUser = users.find((u: any) => u.email === user.email);
-          if (currentUser && currentUser.businesses) {
-            setUserBusinesses(currentUser.businesses);
-            setSelectedBusinessId(currentUser.businesses[0]?.id || null);
-          }
+        } else {
+          setSelectedBusinessId(businessList[0]?.id || null); // Primer negocio asignado
         }
       }
     } catch (error) {
