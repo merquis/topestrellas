@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import StatsCard from '@/components/admin/StatsCard';
+import BusinessStatsPanel from '@/components/admin/BusinessStatsPanel';
 import { AuthUser } from '@/lib/auth';
 
 interface Business {
@@ -268,6 +269,26 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
           </div>
         </div>
       </div>
+
+      {/* Panel Empresarial Espectacular - Solo para admins con negocio seleccionado */}
+      {selectedBusiness && (
+        <div className="mb-8">
+          <BusinessStatsPanel 
+            businessId={selectedBusiness._id} 
+            businessName={selectedBusiness.name}
+          />
+        </div>
+      )}
+
+      {/* Panel Empresarial para usuarios con businessId directo */}
+      {!selectedBusiness && user.businessId && user.role === 'admin' && (
+        <div className="mb-8">
+          <BusinessStatsPanel 
+            businessId={user.businessId} 
+            businessName="Mi Negocio"
+          />
+        </div>
+      )}
     </>
   );
 }
