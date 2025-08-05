@@ -114,11 +114,11 @@ export async function GET(request: NextRequest) {
 
     // 2. ANÁLISIS POR RATING
     const ratingDistribution = {
-      1: currentOpinions.filter(o => o.rating === 1).length,
-      2: currentOpinions.filter(o => o.rating === 2).length,
-      3: currentOpinions.filter(o => o.rating === 3).length,
-      4: currentOpinions.filter(o => o.rating === 4).length,
-      5: currentOpinions.filter(o => o.rating === 5).length,
+      1: currentOpinions.filter((o: any) => o.rating === 1).length,
+      2: currentOpinions.filter((o: any) => o.rating === 2).length,
+      3: currentOpinions.filter((o: any) => o.rating === 3).length,
+      4: currentOpinions.filter((o: any) => o.rating === 4).length,
+      5: currentOpinions.filter((o: any) => o.rating === 5).length,
     };
 
     const totalReviews = currentOpinions.length;
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       .toArray();
 
     // Agrupar por días para tendencias
-    const dailyStats = {};
+    const dailyStats: { [key: string]: { total: number; fiveStar: number } } = {};
     recentOpinions.forEach(opinion => {
       const day = opinion.createdAt.toISOString().split('T')[0];
       if (!dailyStats[day]) {
