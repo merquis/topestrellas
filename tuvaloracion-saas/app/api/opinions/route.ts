@@ -35,19 +35,31 @@ export async function POST(request: NextRequest) {
     
     // Crear fecha y hora en la zona horaria del negocio
     const now = new Date();
-    const businessTime = new Intl.DateTimeFormat('es-ES', {
+    
+    // Formatear fecha y hora usando la zona horaria del negocio
+    const businessDate = new Intl.DateTimeFormat('en-US', {
       timeZone: businessTimezone,
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
+      year: 'numeric'
+    }).format(now);
+    
+    const businessTime = new Intl.DateTimeFormat('en-US', {
+      timeZone: businessTimezone,
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
-    }).formatToParts(now);
+      second: '2-digit',
+      hour12: false
+    }).format(now);
     
-    // Construir strings de fecha y hora
-    const dateStr = `${businessTime.find(p => p.type === 'day')?.value}/${businessTime.find(p => p.type === 'month')?.value}/${businessTime.find(p => p.type === 'year')?.value}`;
-    const timeStr = `${businessTime.find(p => p.type === 'hour')?.value}:${businessTime.find(p => p.type === 'minute')?.value}:${businessTime.find(p => p.type === 'second')?.value}`;
+    // Los formatos ya vienen correctos: MM/DD/YYYY y HH:MM:SS
+    const dateStr = businessDate; // Formato: MM/DD/YYYY
+    const timeStr = businessTime; // Formato: HH:MM:SS
+    
+    console.log(`📍 Negocio: ${business.name} (${business.location?.city || 'Sin ciudad'})`);
+    console.log(`🕐 Zona horaria: ${businessTimezone}`);
+    console.log(`📅 Fecha local del negocio: ${dateStr}`);
+    console.log(`⏰ Hora local del negocio: ${timeStr}`);
     
     // Crear objeto de opinión con la estructura solicitada
     const opinion = {
