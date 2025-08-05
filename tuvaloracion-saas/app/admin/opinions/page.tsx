@@ -280,7 +280,7 @@ export default function OpinionsPage() {
                         </div>
                         {businesses.length > 1 && (
                           <div className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            {businesses.find((b: any) => b._id === opinion.businessId)?.name || 'Negocio'}
+                            {(businesses as any[]).find((b: any) => b._id === opinion.businessId)?.name || 'Negocio'}
                           </div>
                         )}
                       </div>
