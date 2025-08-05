@@ -4,6 +4,7 @@ import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import BusinessSelector from './BusinessSelector';
+import SimpleBusinessSelector from './SimpleBusinessSelector';
 import { AuthUser, clearAuth } from '@/lib/auth';
 import { BusinessProvider, useBusinessContext } from '@/lib/business-context';
 
@@ -47,7 +48,7 @@ function AdminLayoutContent({ children, user }: AdminLayoutProps) {
                 </div>
                 
                 {/* Business Selector - Solo para admins normales */}
-                {user.role === 'admin' && <BusinessSelector />}
+                {user.role === 'admin' && <SimpleBusinessSelector user={user} />}
               </div>
               
               <div className="flex items-center gap-4">

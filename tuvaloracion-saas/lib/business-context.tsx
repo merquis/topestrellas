@@ -36,10 +36,19 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     
     if (user.role !== 'admin') {
       console.log('❌ User is not admin, skipping business loading');
+      setLoading(false);
       return; // Solo para admins normales
     }
     
     setLoading(true);
+    
+    // Timeout de seguridad para evitar loading infinito
+    const timeoutId = setTimeout(() => {
+      console.log('⏰ Timeout reached, stopping loading');
+      setLoading(false);
+      setBusinesses([]);
+    }, 10000); // 10 segundos máximo
+    
     try {
       // Enviar parámetros necesarios para el filtrado
       const params = new URLSearchParams({
@@ -48,28 +57,46 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
       });
       
       console.log('📡 Fetching businesses with params:', params.toString());
-      const response = await fetch(`/api/admin/businesses?${params}`);
+      const url = `/api/admin/businesses?${params}`;
+      console.log('🌐 Full URL:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
       
       if (response.ok) {
         const userBusinesses = await response.json();
+        console.log('✅ Raw response:', userBusinesses);
         console.log('✅ Businesses loaded:', userBusinesses.length, 'businesses');
-        console.log('📋 Business list:', userBusinesses.map((b: Business) => ({ id: b._id, name: b.name })));
         
-        setBusinesses(userBusinesses);
-        
-        // Seleccionar el primer negocio por defecto o el guardado en localStorage
-        const savedBusinessId = localStorage.getItem('selectedBusinessId');
-        console.log('💾 Saved business ID from localStorage:', savedBusinessId);
-        
-        const businessToSelect = savedBusinessId 
-          ? userBusinesses.find((b: Business) => b._id === savedBusinessId) || userBusinesses[0]
-          : userBusinesses[0];
+        if (Array.isArray(userBusinesses)) {
+          console.log('📋 Business list:', userBusinesses.map((b: Business) => ({ id: b._id, name: b.name })));
           
-        if (businessToSelect) {
-          console.log('🎯 Selected business:', { id: businessToSelect._id, name: businessToSelect.name });
-          setSelectedBusinessState(businessToSelect);
+          setBusinesses(userBusinesses);
+          
+          // Seleccionar el primer negocio por defecto o el guardado en localStorage
+          const savedBusinessId = localStorage.getItem('selectedBusinessId');
+          console.log('💾 Saved business ID from localStorage:', savedBusinessId);
+          
+          const businessToSelect = savedBusinessId 
+            ? userBusinesses.find((b: Business) => b._id === savedBusinessId) || userBusinesses[0]
+            : userBusinesses[0];
+            
+          if (businessToSelect) {
+            console.log('🎯 Selected business:', { id: businessToSelect._id, name: businessToSelect.name });
+            setSelectedBusinessState(businessToSelect);
+          } else {
+            console.log('❌ No business to select');
+          }
         } else {
-          console.log('❌ No business to select');
+          console.error('❌ Response is not an array:', userBusinesses);
+          setBusinesses([]);
         }
       } else {
         console.error('❌ Error response:', response.status, response.statusText);
@@ -81,8 +108,9 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
       console.error('❌ Error loading businesses:', error);
       setBusinesses([]);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
-      console.log('🏁 loadBusinesses finished');
+      console.log('🏁 loadBusinesses finished, loading set to false');
     }
   };
 
