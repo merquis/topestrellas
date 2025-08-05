@@ -36,7 +36,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout user={user}>
       <div className="space-y-6">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
