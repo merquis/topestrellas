@@ -120,35 +120,73 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
                 {/* Business Selector Dropdown for admin users */}
                 {user.role === 'admin' && (
                   <div className="relative">
-                    <label className="block text-xs text-gray-500 mb-1">Negocio actual:</label>
-                    <select
-                      value={selectedBusiness?._id || ''}
-                      onChange={(e) => {
-                        const businessId = e.target.value;
-                        if (businessId) {
-                          // Buscar el negocio completo
-                          const business = businesses.find(b => b._id === businessId);
-                          if (business) {
-                            handleBusinessSelect(business);
+                    <label className="block text-xs font-medium text-gray-600 mb-2 tracking-wide uppercase">
+                      Negocio actual
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedBusiness?._id || ''}
+                        onChange={(e) => {
+                          const businessId = e.target.value;
+                          if (businessId) {
+                            // Buscar el negocio completo
+                            const business = businesses.find(b => b._id === businessId);
+                            if (business) {
+                              handleBusinessSelect(business);
+                            }
                           }
-                        }
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm font-medium min-w-[200px] appearance-none cursor-pointer"
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
-                        backgroundPosition: 'right 0.5rem center',
-                        backgroundRepeat: 'no-repeat',
-                        backgroundSize: '1.5em 1.5em',
-                        paddingRight: '2.5rem'
-                      }}
-                    >
-                      <option value="">Seleccionar negocio...</option>
-                      {businesses.map((business) => (
-                        <option key={business._id} value={business._id}>
-                          🏪 {business.name} {business.active ? '(Activo)' : '(Inactivo)'}
+                        }}
+                        className="w-full pl-14 pr-10 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-sm font-semibold text-gray-800 min-w-[240px] appearance-none cursor-pointer shadow-sm hover:shadow-md"
+                        style={{
+                          backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234f46e5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                          backgroundPosition: 'right 0.75rem center',
+                          backgroundRepeat: 'no-repeat',
+                          backgroundSize: '1.25em 1.25em'
+                        }}
+                      >
+                        <option value="" className="text-gray-500">
+                          ✨ Seleccionar negocio...
                         </option>
-                      ))}
-                    </select>
+                        {businesses.map((business) => (
+                          <option key={business._id} value={business._id} className="py-2">
+                            🏪 {business.name}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {/* Status indicator overlay */}
+                      {selectedBusiness && (
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                          <div className={`w-2.5 h-2.5 rounded-full mr-2 ${
+                            selectedBusiness.active 
+                              ? 'bg-green-500 shadow-green-200 shadow-lg' 
+                              : 'bg-red-500 shadow-red-200 shadow-lg'
+                          }`}></div>
+                        </div>
+                      )}
+                      
+                      {/* Business icon overlay */}
+                      <div className="absolute left-8 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <span className="text-blue-600 text-lg">🏪</span>
+                      </div>
+                    </div>
+                    
+                    {/* Status text */}
+                    {selectedBusiness && (
+                      <div className="mt-1 flex items-center text-xs">
+                        <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                          selectedBusiness.active ? 'bg-green-500' : 'bg-red-500'
+                        }`}></div>
+                        <span className={`font-medium ${
+                          selectedBusiness.active ? 'text-green-700' : 'text-red-700'
+                        }`}>
+                          {selectedBusiness.active ? 'Activo' : 'Inactivo'}
+                        </span>
+                        <span className="text-gray-400 ml-2">
+                          {selectedBusiness.subdomain}.tuvaloracion.com
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
                 
