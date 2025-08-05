@@ -77,7 +77,7 @@ function AdminLayoutContent({ children, user }: AdminLayoutProps) {
 export default function AdminLayout({ children, user }: AdminLayoutProps) {
   return (
     <BusinessProvider>
-      <AdminLayoutContent user={user} children={children}>
+      <AdminLayoutContent user={user}>
         {children}
       </AdminLayoutContent>
     </BusinessProvider>
