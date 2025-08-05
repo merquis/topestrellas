@@ -4,13 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import StatsCard from '@/components/admin/StatsCard';
 import { AuthUser } from '@/lib/auth';
+
+interface Business {
+  _id: string;
+  name: string;
+  subdomain: string;
+  active: boolean;
+}
+
 interface DashboardProps {
   user: AuthUser;
 }
 
 export default function Dashboard({ user }: DashboardProps) {
   const router = useRouter();
-  const selectedBusiness = null; // Temporalmente sin selector
+  const selectedBusiness: Business | null = null; // Temporalmente sin selector
   const [businesses, setBusinesses] = useState([]);
   const [stats, setStats] = useState({
     totalBusinesses: 0,
