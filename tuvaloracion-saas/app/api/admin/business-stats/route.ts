@@ -211,6 +211,22 @@ export async function GET(request: NextRequest) {
       ? Math.round(Object.values(dailyStats).reduce((sum: number, day: any) => sum + day.total, 0) / Object.keys(dailyStats).length * 10) / 10
       : 0;
 
+    // 8. ESTADÍSTICAS DE GOOGLE Y TRIPADVISOR
+    // Solo incluir si hay datos válidos (rating > 0 y totalReviews > 0)
+    const googleStats = (business.config?.googleStats && 
+                        business.config.googleStats.currentRating > 0 && 
+                        business.config.googleStats.totalReviews > 0) ? {
+      currentRating: business.config.googleStats.currentRating,
+      totalReviews: business.config.googleStats.totalReviews
+    } : null;
+
+    const tripadvisorStats = (business.config?.tripadvisorStats && 
+                             business.config.tripadvisorStats.currentRating > 0 && 
+                             business.config.tripadvisorStats.totalReviews > 0) ? {
+      currentRating: business.config.tripadvisorStats.currentRating,
+      totalReviews: business.config.tripadvisorStats.totalReviews
+    } : null;
+
     return NextResponse.json({
       // Información del período
       period,
@@ -253,7 +269,11 @@ export async function GET(request: NextRequest) {
         date,
         total: stats.total,
         fiveStar: stats.fiveStar
-      })).slice(-30) // Últimos 30 días
+      })).slice(-30), // Últimos 30 días
+      
+      // Estadísticas de Google y TripAdvisor
+      googleStats,
+      tripadvisorStats
     });
 
   } catch (error) {

@@ -45,6 +45,15 @@ interface BusinessStats {
     total: number;
     fiveStar: number;
   }>;
+  // Nuevos campos para Google y TripAdvisor
+  googleStats?: {
+    currentRating: number;
+    totalReviews: number;
+  };
+  tripadvisorStats?: {
+    currentRating: number;
+    totalReviews: number;
+  };
 }
 
 interface BusinessStatsPanelProps {
@@ -135,6 +144,37 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
       case 1: return '⭐';
       default: return '';
     }
+  };
+
+  // Función para calcular reseñas necesarias para subir 0.1 puntos
+  const calculateReviewsNeeded = (currentRating: number, totalReviews: number) => {
+    if (currentRating >= 5.0) return { target: 5.0, reviewsNeeded: 0 };
+    
+    // Calcular el siguiente objetivo (subir 0.1)
+    const targetRating = Math.min(5.0, Math.ceil(currentRating * 10) / 10);
+    
+    // Si ya está en una décima exacta, subir a la siguiente
+    const actualTarget = currentRating === targetRating ? 
+      Math.min(5.0, targetRating + 0.1) : targetRating;
+    
+    // Calcular suma actual de puntuaciones
+    const currentSum = currentRating * totalReviews;
+    
+    // Resolver ecuación: (currentSum + 5*x) / (totalReviews + x) = actualTarget
+    // currentSum + 5*x = actualTarget * (totalReviews + x)
+    // currentSum + 5*x = actualTarget * totalReviews + actualTarget * x
+    // 5*x - actualTarget * x = actualTarget * totalReviews - currentSum
+    // x * (5 - actualTarget) = actualTarget * totalReviews - currentSum
+    // x = (actualTarget * totalReviews - currentSum) / (5 - actualTarget)
+    
+    const reviewsNeeded = Math.ceil(
+      (actualTarget * totalReviews - currentSum) / (5 - actualTarget)
+    );
+    
+    return {
+      target: actualTarget,
+      reviewsNeeded: Math.max(0, reviewsNeeded)
+    };
   };
 
   if (loading) {
@@ -343,6 +383,137 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
           </div>
         </div>
       </div>
+
+      {/* Estadísticas de Google y TripAdvisor */}
+      {(stats.googleStats || stats.tripadvisorStats) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Google Reviews */}
+          {stats.googleStats && stats.googleStats.currentRating > 0 && stats.googleStats.totalReviews > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="text-3xl">🔍</div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Google Reviews</h3>
+                  <p className="text-sm text-gray-600">Tu puntuación actual en Google</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                  <div>
+                    <p className="text-sm text-gray-600">Puntuación actual</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      {stats.googleStats.currentRating.toFixed(1)}⭐
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600">Total reseñas</p>
+                    <p className="text-xl font-semibold text-gray-800">
+                      {stats.googleStats.totalReviews}
+                    </p>
+                  </div>
+                </div>
+
+                {(() => {
+                  const calculation = calculateReviewsNeeded(
+                    stats.googleStats!.currentRating, 
+                    stats.googleStats!.totalReviews
+                  );
+                  
+                  if (calculation.reviewsNeeded > 0) {
+                    return (
+                      <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-4 text-white">
+                        <div className="flex items-center space-x-2">
+                          <div className="text-2xl">🎯</div>
+                          <div>
+                            <p className="font-bold">
+                              Para llegar a {calculation.target.toFixed(1)}⭐
+                            </p>
+                            <p className="text-sm text-red-100">
+                              Te faltan <strong>{calculation.reviewsNeeded} reseñas de 5⭐</strong>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg p-4 text-white text-center">
+                        <div className="text-2xl mb-2">🏆</div>
+                        <p className="font-bold">¡Puntuación perfecta!</p>
+                        <p className="text-sm text-green-100">Ya tienes 5.0⭐ en Google</p>
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* TripAdvisor Reviews */}
+          {stats.tripadvisorStats && stats.tripadvisorStats.currentRating > 0 && stats.tripadvisorStats.totalReviews > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="text-3xl">🏨</div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">TripAdvisor Reviews</h3>
+                  <p className="text-sm text-gray-600">Tu puntuación actual en TripAdvisor</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                  <div>
+                    <p className="text-sm text-gray-600">Puntuación actual</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {stats.tripadvisorStats.currentRating.toFixed(1)}⭐
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600">Total reseñas</p>
+                    <p className="text-xl font-semibold text-gray-800">
+                      {stats.tripadvisorStats.totalReviews}
+                    </p>
+                  </div>
+                </div>
+
+                {(() => {
+                  const calculation = calculateReviewsNeeded(
+                    stats.tripadvisorStats!.currentRating, 
+                    stats.tripadvisorStats!.totalReviews
+                  );
+                  
+                  if (calculation.reviewsNeeded > 0) {
+                    return (
+                      <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg p-4 text-white">
+                        <div className="flex items-center space-x-2">
+                          <div className="text-2xl">🎯</div>
+                          <div>
+                            <p className="font-bold">
+                              Para llegar a {calculation.target.toFixed(1)}⭐
+                            </p>
+                            <p className="text-sm text-green-100">
+                              Te faltan <strong>{calculation.reviewsNeeded} reseñas de 5⭐</strong>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg p-4 text-white text-center">
+                        <div className="text-2xl mb-2">🏆</div>
+                        <p className="font-bold">¡Puntuación perfecta!</p>
+                        <p className="text-sm text-green-100">Ya tienes 5.0⭐ en TripAdvisor</p>
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Mensaje motivacional */}
       {stats.totalSavings > 0 && (
