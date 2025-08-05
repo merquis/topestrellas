@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
     let totalCost = 0;
     let fiveStarCost = 0;
 
-    currentOpinions.forEach(opinion => {
+    currentOpinions.forEach((opinion: any) => {
       if (opinion.prize && opinion.prize.index !== undefined) {
         const prizeIndex = opinion.prize.index;
         const prize = prizes[prizeIndex];
@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
 
     // 5. COMPARACIONES CON PERÍODO ANTERIOR
     const previousTotalReviews = previousOpinions.length;
-    const previousFiveStarReviews = previousOpinions.filter(o => o.rating === 5).length;
+    const previousFiveStarReviews = previousOpinions.filter((o: any) => o.rating === 5).length;
     
     const reviewsGrowth = previousTotalReviews > 0 
       ? Math.round(((totalReviews - previousTotalReviews) / previousTotalReviews) * 100)
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
 
     // 6. MÉTRICAS DE RENDIMIENTO
     const avgRating = totalReviews > 0 
-      ? Math.round((currentOpinions.reduce((sum, o) => sum + o.rating, 0) / totalReviews) * 10) / 10
+      ? Math.round((currentOpinions.reduce((sum: number, o: any) => sum + o.rating, 0) / totalReviews) * 10) / 10
       : 0;
 
     const qualityPercentage = totalReviews > 0 ? Math.round((qualityReviews / totalReviews) * 100) : 0;
@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
 
     // Agrupar por días para tendencias
     const dailyStats: { [key: string]: { total: number; fiveStar: number } } = {};
-    recentOpinions.forEach(opinion => {
+    recentOpinions.forEach((opinion: any) => {
       const day = opinion.createdAt.toISOString().split('T')[0];
       if (!dailyStats[day]) {
         dailyStats[day] = { total: 0, fiveStar: 0 };
