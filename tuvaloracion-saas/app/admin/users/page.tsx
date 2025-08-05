@@ -13,6 +13,8 @@ interface User {
   role: 'admin' | 'super_admin';
   businessId?: string;
   businessName?: string;
+  businessIds?: string[];
+  businesses?: { id: string; name: string }[];
   createdAt: string;
   active: boolean;
 }
@@ -290,9 +292,22 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className="text-gray-700">
-                        {userData.businessName || '-'}
-                      </span>
+                      <div className="text-gray-700">
+                        {userData.businesses && userData.businesses.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {userData.businesses.map((business, index) => (
+                              <span
+                                key={business.id}
+                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                              >
+                                {business.name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">Sin negocios</span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 px-6">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -305,6 +320,15 @@ export default function UsersPage() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedUser(userData);
+                            setShowEditModal(true);
+                          }}
+                          className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                        >
+                          ✏️ Editar
+                        </button>
                         <button
                           onClick={() => handleChangeRole(
                             userData.id, 

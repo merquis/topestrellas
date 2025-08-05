@@ -16,11 +16,20 @@ export async function GET() {
     // Obtener información de negocios asociados
     const usersWithBusinesses = await Promise.all(
       users.map(async (user) => {
-        let business = null;
-        if (user.businessId) {
-          business = await db.collection('businesses').findOne({ 
-            _id: new ObjectId(user.businessId) 
-          });
+        let businesses = [];
+        
+        // Soportar tanto businessId (legacy) como businessIds (nuevo)
+        const businessIds = user.businessIds || (user.businessId ? [user.businessId] : []);
+        
+        if (businessIds.length > 0) {
+          const businessDocs = await db.collection('businesses')
+            .find({ _id: { $in: businessIds.map(id => new ObjectId(id)) } })
+            .toArray();
+          
+          businesses = businessDocs.map(b => ({
+            id: b._id.toString(),
+            name: b.name
+          }));
         }
         
         return {
@@ -28,8 +37,11 @@ export async function GET() {
           name: user.name,
           email: user.email,
           role: user.role || 'admin',
-          businessId: user.businessId,
-          businessName: business?.name || null,
+          businessIds: businessIds,
+          businesses: businesses,
+          // Mantener compatibilidad con código existente
+          businessId: businessIds[0] || null,
+          businessName: businesses[0]?.name || null,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
           active: user.active !== false // Por defecto activo si no está definido
@@ -78,22 +90,33 @@ export async function POST(request: Request) {
       );
     }
     
-    // Si es admin, debe tener un businessId
-    if (data.role === 'admin' && !data.businessId) {
+    // Procesar negocios asignados
+    let businessIds = [];
+    
+    // Soportar tanto businessId (legacy) como businessIds (nuevo)
+    if (data.businessIds && Array.isArray(data.businessIds)) {
+      businessIds = data.businessIds;
+    } else if (data.businessId) {
+      businessIds = [data.businessId];
+    }
+    
+    // Si es admin, debe tener al menos un negocio
+    if (data.role === 'admin' && businessIds.length === 0) {
       return NextResponse.json(
-        { error: 'Los usuarios admin deben estar asociados a un negocio' },
+        { error: 'Los usuarios admin deben estar asociados a al menos un negocio' },
         { status: 400 }
       );
     }
     
-    // Verificar que el negocio existe si se proporciona businessId
-    if (data.businessId) {
-      const business = await db.collection('businesses').findOne({ 
-        _id: new ObjectId(data.businessId) 
-      });
-      if (!business) {
+    // Verificar que todos los negocios existen
+    if (businessIds.length > 0) {
+      const existingBusinesses = await db.collection('businesses')
+        .find({ _id: { $in: businessIds.map(id => new ObjectId(id)) } })
+        .toArray();
+      
+      if (existingBusinesses.length !== businessIds.length) {
         return NextResponse.json(
-          { error: 'El negocio especificado no existe' },
+          { error: 'Uno o más negocios especificados no existen' },
           { status: 400 }
         );
       }
@@ -105,7 +128,9 @@ export async function POST(request: Request) {
       email: data.email,
       password: data.password, // En producción usar bcrypt
       role: data.role,
-      businessId: data.businessId || null,
+      businessIds: businessIds,
+      // Mantener compatibilidad con código existente
+      businessId: businessIds[0] || null,
       active: true,
       createdAt: new Date(),
       updatedAt: new Date()

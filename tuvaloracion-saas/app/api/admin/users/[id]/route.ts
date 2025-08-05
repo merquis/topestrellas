@@ -55,20 +55,42 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       updateData.role = data.role;
     }
     
-    if (data.businessId !== undefined) {
-      if (data.businessId) {
-        // Verificar que el negocio existe
-        const business = await db.collection('businesses').findOne({ 
-          _id: new ObjectId(data.businessId) 
-        });
-        if (!business) {
+    // Procesar negocios asignados
+    if (data.businessIds !== undefined || data.businessId !== undefined) {
+      let businessIds = [];
+      
+      // Soportar tanto businessId (legacy) como businessIds (nuevo)
+      if (data.businessIds && Array.isArray(data.businessIds)) {
+        businessIds = data.businessIds;
+      } else if (data.businessId !== undefined) {
+        businessIds = data.businessId ? [data.businessId] : [];
+      }
+      
+      // Si es admin, debe tener al menos un negocio
+      if (updateData.role === 'admin' && businessIds.length === 0) {
+        return NextResponse.json(
+          { error: 'Los usuarios admin deben estar asociados a al menos un negocio' },
+          { status: 400 }
+        );
+      }
+      
+      // Verificar que todos los negocios existen
+      if (businessIds.length > 0) {
+        const existingBusinesses = await db.collection('businesses')
+          .find({ _id: { $in: businessIds.map(id => new ObjectId(id)) } })
+          .toArray();
+        
+        if (existingBusinesses.length !== businessIds.length) {
           return NextResponse.json(
-            { error: 'El negocio especificado no existe' },
+            { error: 'Uno o más negocios especificados no existen' },
             { status: 400 }
           );
         }
       }
-      updateData.businessId = data.businessId;
+      
+      updateData.businessIds = businessIds;
+      // Mantener compatibilidad con código existente
+      updateData.businessId = businessIds[0] || null;
     }
     
     if (data.active !== undefined) {
