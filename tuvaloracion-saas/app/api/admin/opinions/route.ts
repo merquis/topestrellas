@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Parámetros de usuario requeridos' }, { status: 400 });
     }
 
-    const { db } = await connectToDatabase();
+    const db = await getDatabase();
 
     // Construir filtro de fecha
     let dateQuery = {};
