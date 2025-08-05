@@ -3,11 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
-import Dashboard from '@/components/admin/Dashboard';
+import SimpleDashboard from '@/components/admin/SimpleDashboard';
 import StatsCard from '@/components/admin/StatsCard';
 import Toast from '@/components/Toast';
 import { AuthUser, authenticateUser, checkAuth, saveAuth } from '@/lib/auth';
-import { useBusinessContext } from '@/lib/business-context';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -344,7 +343,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout user={user}>
-      <Dashboard user={user} />
+      <SimpleDashboard user={user} />
     </AdminLayout>
   );
 }
