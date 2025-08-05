@@ -437,14 +437,16 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
               </div>
               
               <div className="space-y-4">
-                <div className="text-center p-6 bg-blue-50 rounded-lg">
-                  <div className="text-5xl font-bold text-blue-600 mb-2">
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                  <div>
+                    <p className="text-gray-700 font-semibold text-lg">Usuarios enviados</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {stats.totalRedirections > 0 ? Math.round((stats.googleRedirections / stats.totalRedirections) * 100) : 0}% del total
+                    </p>
+                  </div>
+                  <div className="text-4xl font-bold text-blue-600">
                     {stats.googleRedirections}
                   </div>
-                  <p className="text-gray-700 font-medium">usuarios enviados</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {stats.totalRedirections > 0 ? Math.round((stats.googleRedirections / stats.totalRedirections) * 100) : 0}% del total
-                  </p>
                 </div>
 
                 <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg p-4 text-white">
@@ -524,14 +526,16 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
               </div>
               
               <div className="space-y-4">
-                <div className="text-center p-6 bg-orange-50 rounded-lg">
-                  <div className="text-5xl font-bold text-orange-600 mb-2">
+                <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
+                  <div>
+                    <p className="text-gray-700 font-semibold text-lg">Usuarios enviados</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {stats.totalRedirections > 0 ? Math.round((stats.tripadvisorRedirections / stats.totalRedirections) * 100) : 0}% del total
+                    </p>
+                  </div>
+                  <div className="text-4xl font-bold text-orange-600">
                     {stats.tripadvisorRedirections}
                   </div>
-                  <p className="text-gray-700 font-medium">usuarios enviados</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {stats.totalRedirections > 0 ? Math.round((stats.tripadvisorRedirections / stats.totalRedirections) * 100) : 0}% del total
-                  </p>
                 </div>
 
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-4 text-white">
