@@ -1,6 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/admin/AdminLayout';
+import { checkAuth } from '@/lib/auth';
 
 interface ContactForm {
   name: string;
@@ -40,6 +43,19 @@ export default function ContactPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const authUser = checkAuth();
+    if (!authUser) {
+      router.push('/admin');
+      return;
+    }
+    setUser(authUser);
+    setLoading(false);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -76,49 +92,63 @@ export default function ContactPage() {
     }
   };
 
-  if (submitted) {
+  if (loading || !user) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-          <div className="text-6xl mb-6">✅</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            ¡Mensaje enviado correctamente!
-          </h1>
-          <p className="text-lg text-gray-600 mb-6">
-            Hemos recibido tu consulta y te responderemos en las próximas 24 horas.
-          </p>
-          <div className="bg-blue-50 rounded-xl p-6 mb-6">
-            <h3 className="font-semibold text-gray-800 mb-2">¿Qué pasa ahora?</h3>
-            <ul className="text-left text-gray-600 space-y-2">
-              <li>• Revisaremos tu consulta en detalle</li>
-              <li>• Te contactaremos por email en máximo 24 horas</li>
-              <li>• Si es urgente, también podemos llamarte por teléfono</li>
-              <li>• Te proporcionaremos una solución paso a paso</li>
-            </ul>
-          </div>
-          <button
-            onClick={() => {
-              setSubmitted(false);
-              setForm({
-                name: '',
-                email: '',
-                business: '',
-                category: '',
-                priority: 'medium',
-                subject: '',
-                message: ''
-              });
-            }}
-            className="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors"
-          >
-            Enviar otra consulta
-          </button>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando formulario de contacto...</p>
         </div>
       </div>
     );
   }
 
+  if (submitted) {
+    return (
+      <AdminLayout user={user}>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="text-6xl mb-6">✅</div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">
+              ¡Mensaje enviado correctamente!
+            </h1>
+            <p className="text-lg text-gray-600 mb-6">
+              Hemos recibido tu consulta y te responderemos en las próximas 24 horas.
+            </p>
+            <div className="bg-blue-50 rounded-xl p-6 mb-6">
+              <h3 className="font-semibold text-gray-800 mb-2">¿Qué pasa ahora?</h3>
+              <ul className="text-left text-gray-600 space-y-2">
+                <li>• Revisaremos tu consulta en detalle</li>
+                <li>• Te contactaremos por email en máximo 24 horas</li>
+                <li>• Si es urgente, también podemos llamarte por teléfono</li>
+                <li>• Te proporcionaremos una solución paso a paso</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => {
+                setSubmitted(false);
+                setForm({
+                  name: '',
+                  email: '',
+                  business: '',
+                  category: '',
+                  priority: 'medium',
+                  subject: '',
+                  message: ''
+                });
+              }}
+              className="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors"
+            >
+              Enviar otra consulta
+            </button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
+    <AdminLayout user={user}>
     <div className="space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white">
@@ -357,5 +387,6 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }

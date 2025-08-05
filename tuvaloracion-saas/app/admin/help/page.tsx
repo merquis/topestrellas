@@ -1,6 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/admin/AdminLayout';
+import { checkAuth } from '@/lib/auth';
 
 interface FAQ {
   id: number;
@@ -76,6 +79,19 @@ export default function HelpPage() {
   const [selectedCategory, setSelectedCategory] = useState('todas');
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const authUser = checkAuth();
+    if (!authUser) {
+      router.push('/admin');
+      return;
+    }
+    setUser(authUser);
+    setLoading(false);
+  }, []);
 
   const filteredFAQs = faqs.filter(faq => {
     const matchesCategory = selectedCategory === 'todas' || faq.category === selectedCategory;
@@ -88,7 +104,19 @@ export default function HelpPage() {
     setOpenFAQ(openFAQ === id ? null : id);
   };
 
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando centro de ayuda...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
+    <AdminLayout user={user}>
     <div className="space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
@@ -259,5 +287,6 @@ export default function HelpPage() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }
