@@ -190,15 +190,6 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
                   </div>
                 )}
                 
-                {/* Notifications */}
-                <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors">
-                  <span className="text-xl">🔔</span>
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-                {/* Help */}
-                <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
-                  <span className="text-xl">❓</span>
-                </button>
               </div>
             </div>
           </div>
