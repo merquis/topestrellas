@@ -9,57 +9,86 @@ export async function POST(
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
     
-    // Primero, incrementar el contador atómicamente
-    const updateResult = await db.collection('businesses').findOneAndUpdate(
-      { subdomain: params.subdomain },
-      { 
-        $inc: { 'config.reviewClickCounter': 1 }
-      },
-      { 
-        returnDocument: 'after',
-        upsert: false
-      }
-    );
+    // Obtener datos del request (email del usuario)
+    const body = await request.json();
+    const userEmail = body.email;
+    
+    if (!userEmail) {
+      return NextResponse.json(
+        { error: 'Email del usuario requerido' },
+        { status: 400 }
+      );
+    }
 
-    if (!updateResult) {
+    // Obtener información del negocio
+    const business = await db.collection('businesses').findOne({ subdomain: params.subdomain });
+    
+    if (!business) {
       return NextResponse.json(
         { error: 'Negocio no encontrado' },
         { status: 404 }
       );
     }
 
-    // Obtener el contador actualizado
-    const newCounter = updateResult.config?.reviewClickCounter || 1;
+    // Incrementar el contador atómicamente (solo para alternating)
+    let newCounter = business.config?.reviewClickCounter || 0;
+    const reviewPlatform = business.config?.reviewPlatform || 'google';
     
-    // Determinar qué plataforma usar basado en el contador
-    // Contador 1,3,5... (impar) = Google
-    // Contador 2,4,6... (par) = TripAdvisor
-    const useGoogle = newCounter % 2 === 1;
-    const platform = useGoogle ? 'google' : 'tripadvisor';
+    // Determinar qué plataforma usar basado en la configuración
+    let useGoogle = true;
+    let platform = 'google';
+    
+    if (reviewPlatform === 'google') {
+      // Solo Google
+      useGoogle = true;
+      platform = 'google';
+    } else if (reviewPlatform === 'tripadvisor') {
+      // Solo TripAdvisor
+      useGoogle = false;
+      platform = 'tripadvisor';
+    } else if (reviewPlatform === 'alternating') {
+      // Alternado automático: incrementar contador y decidir plataforma
+      const updateResult = await db.collection('businesses').findOneAndUpdate(
+        { subdomain: params.subdomain },
+        { $inc: { 'config.reviewClickCounter': 1 } },
+        { returnDocument: 'after' }
+      );
+      
+      newCounter = updateResult?.config?.reviewClickCounter || 1;
+      useGoogle = newCounter % 2 === 1;
+      platform = useGoogle ? 'google' : 'tripadvisor';
+    }
 
-    // Incrementar el contador específico de la plataforma
-    const platformField = useGoogle ? 'config.redirectionStats.googleRedirections' : 'config.redirectionStats.tripadvisorRedirections';
-    
-    // Crear el objeto de actualización con tipos correctos
-    const updateDoc: any = {
-      $inc: { [platformField]: 1 },
-      $push: {
-        'config.redirectionStats.lastRedirections': {
-          $each: [{
-            platform: platform,
-            timestamp: new Date()
-          }],
-          $slice: -50 // Mantener solo las últimas 50 redirecciones
+    // Buscar la opinión de 5⭐ más reciente del usuario que no haya sido redirigida
+    const opinion = await db.collection('opinions').findOne({
+      businessId: business._id,
+      email: userEmail,
+      rating: 5,
+      externalReview: false
+    }, {
+      sort: { createdAt: -1 }
+    });
+
+    if (!opinion) {
+      return NextResponse.json(
+        { error: 'No se encontró opinión de 5⭐ pendiente de redirección' },
+        { status: 404 }
+      );
+    }
+
+    // Actualizar la opinión con la información de redirección
+    await db.collection('opinions').updateOne(
+      { _id: opinion._id },
+      {
+        $set: {
+          externalReview: true,
+          redirectionPlatform: platform,
+          redirectedAt: new Date()
         }
       }
-    };
-    
-    await db.collection('businesses').updateOne(
-      { subdomain: params.subdomain },
-      updateDoc
     );
 
-    console.log(`[${params.subdomain}] Counter: ${newCounter}, Platform: ${platform}, Use Google: ${useGoogle}`);
+    console.log(`[${params.subdomain}] User: ${userEmail}, Platform: ${platform}, Counter: ${newCounter}`);
 
     return NextResponse.json({
       success: true,

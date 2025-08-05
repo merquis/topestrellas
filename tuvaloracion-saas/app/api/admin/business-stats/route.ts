@@ -234,10 +234,23 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // 8. ESTADÍSTICAS DE REDIRECCIONES A GOOGLE Y TRIPADVISOR
-    // Obtener datos reales de redirecciones desde la configuración del negocio
-    const redirectionStats = business.config?.redirectionStats || {};
-    const googleRedirections = redirectionStats.googleRedirections || 0;
-    const tripadvisorRedirections = redirectionStats.tripadvisorRedirections || 0;
+    // Obtener datos reales de redirecciones desde las opiniones
+    const googleRedirections = await db.collection('opinions').countDocuments({
+      businessId: new ObjectId(businessId),
+      rating: 5,
+      externalReview: true,
+      redirectionPlatform: "google",
+      redirectedAt: { $gte: periodStart, $lte: periodEnd }
+    });
+
+    const tripadvisorRedirections = await db.collection('opinions').countDocuments({
+      businessId: new ObjectId(businessId),
+      rating: 5,
+      externalReview: true,
+      redirectionPlatform: "tripadvisor",
+      redirectedAt: { $gte: periodStart, $lte: periodEnd }
+    });
+
     const totalRedirections = googleRedirections + tripadvisorRedirections;
 
     // 9. ESTADÍSTICAS DE GOOGLE Y TRIPADVISOR (datos de puntuación)

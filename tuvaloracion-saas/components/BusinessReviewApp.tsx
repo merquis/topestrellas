@@ -496,70 +496,65 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
     
     const reviewPlatform = business.config?.reviewPlatform;
     
-    if (reviewPlatform === 'alternating') {
-      console.log(`[${business.subdomain}] Alternating mode - calling counter API...`);
+    // SIEMPRE llamar a la API para registrar la redirección (no solo en alternating)
+    try {
+      console.log(`[${business.subdomain}] Calling tracking API for platform: ${reviewPlatform}`);
       
-      try {
-        // Llamar a la API para incrementar el contador
-        const response = await fetch(`/api/business/${business.subdomain}/increment-counter`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
+      // Llamar a la API para registrar la redirección
+      const response = await fetch(`/api/business/${business.subdomain}/increment-counter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        const useGoogle = result.useGoogle;
+        const counter = result.counter;
+        const platform = result.platform;
         
-        if (response.ok) {
-          const result = await response.json();
-          const useGoogle = result.useGoogle;
-          const counter = result.counter;
-          const platform = result.platform;
+        console.log(`[${business.subdomain}] Counter: ${counter}, Platform: ${platform}, Use Google: ${useGoogle}`);
+        
+        // Abrir la URL correspondiente según la plataforma decidida
+        const url = useGoogle 
+          ? business.config?.googleReviewUrl 
+          : business.config?.tripadvisorReviewUrl;
           
-          console.log(`[${business.subdomain}] Counter: ${counter}, Platform: ${platform}, Use Google: ${useGoogle}`);
+        console.log(`[${business.subdomain}] Opening URL: ${url ? 'Found' : 'Not found'} for ${platform}`);
           
-          // Abrir la URL correspondiente según el contador
-          const url = useGoogle 
-            ? business.config?.googleReviewUrl 
-            : business.config?.tripadvisorReviewUrl;
-            
-          console.log(`[${business.subdomain}] Opening URL: ${url ? 'Found' : 'Not found'} for ${platform}`);
-            
-          if (url) {
-            window.open(url, '_blank');
-          } else {
-            console.error(`[${business.subdomain}] No URL configured for ${platform}`);
-            // Fallback a la otra plataforma si no hay URL
-            const fallbackUrl = useGoogle 
-              ? business.config?.tripadvisorReviewUrl 
-              : business.config?.googleReviewUrl;
-            if (fallbackUrl) {
-              console.log(`[${business.subdomain}] Using fallback URL`);
-              window.open(fallbackUrl, '_blank');
-            }
-          }
+        if (url) {
+          window.open(url, '_blank');
         } else {
-          console.error(`[${business.subdomain}] API Error:`, response.status);
-          // Fallback a Google si falla la API
-          if (business.config?.googleReviewUrl) {
-            console.log(`[${business.subdomain}] Fallback to Google`);
-            window.open(business.config.googleReviewUrl, '_blank');
+          console.error(`[${business.subdomain}] No URL configured for ${platform}`);
+          // Fallback a la otra plataforma si no hay URL
+          const fallbackUrl = useGoogle 
+            ? business.config?.tripadvisorReviewUrl 
+            : business.config?.googleReviewUrl;
+          if (fallbackUrl) {
+            console.log(`[${business.subdomain}] Using fallback URL`);
+            window.open(fallbackUrl, '_blank');
           }
         }
-      } catch (error) {
-        console.error(`[${business.subdomain}] Error incrementing counter:`, error);
-        // Fallback a Google si hay error
-        if (business.config?.googleReviewUrl) {
-          console.log(`[${business.subdomain}] Exception fallback to Google`);
-          window.open(business.config.googleReviewUrl, '_blank');
+      } else {
+        console.error(`[${business.subdomain}] API Error:`, response.status);
+        // Fallback según configuración
+        const fallbackUrl = reviewPlatform === 'tripadvisor' 
+          ? business.config?.tripadvisorReviewUrl 
+          : business.config?.googleReviewUrl;
+        if (fallbackUrl) {
+          console.log(`[${business.subdomain}] Fallback to configured platform`);
+          window.open(fallbackUrl, '_blank');
         }
       }
-    } else {
-      // Lógica original para plataformas fijas
-      const url = reviewPlatform === 'tripadvisor' 
+    } catch (error) {
+      console.error(`[${business.subdomain}] Error calling tracking API:`, error);
+      // Fallback según configuración
+      const fallbackUrl = reviewPlatform === 'tripadvisor' 
         ? business.config?.tripadvisorReviewUrl 
         : business.config?.googleReviewUrl;
-        
-      console.log(`[${business.subdomain}] Fixed platform: ${reviewPlatform}`);
-        
-      if (url) {
-        window.open(url, '_blank');
+      if (fallbackUrl) {
+        console.log(`[${business.subdomain}] Exception fallback to configured platform`);
+        window.open(fallbackUrl, '_blank');
       }
     }
   }
