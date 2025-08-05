@@ -36,6 +36,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     activePercentage: 0,
     inactivePercentage: 0
   });
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
   // Cargar estadísticas cuando cambia el negocio seleccionado o el usuario
   useEffect(() => {
@@ -87,8 +88,14 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     if (selectedBusiness) {
       console.log('🔄 Business changed, reloading stats for:', selectedBusiness.name);
       loadStats();
+      loadRecentActivities();
     }
   }, [selectedBusiness]);
+
+  // Cargar actividades recientes cuando se carga el componente
+  useEffect(() => {
+    loadRecentActivities();
+  }, [user]);
 
   const loadBusinesses = async () => {
     setLoading(true);
@@ -155,6 +162,30 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     }
   };
 
+  const loadRecentActivities = async () => {
+    try {
+      const activityParams = new URLSearchParams({
+        userEmail: user.email,
+        userRole: user.role,
+        ...(selectedBusiness && user.role === 'admin' ? { businessId: selectedBusiness._id } : {}),
+        ...(user.businessId && user.role !== 'super_admin' && !selectedBusiness ? { businessId: user.businessId } : {})
+      });
+
+      console.log('🔄 Loading recent activities with params:', Object.fromEntries(activityParams));
+
+      const response = await fetch(`/api/admin/recent-activity?${activityParams}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Recent activities loaded:', data);
+        setRecentActivities(data.activities || []);
+      }
+    } catch (error) {
+      console.error('❌ Error loading recent activities:', error);
+      // En caso de error, mantener actividades vacías
+      setRecentActivities([]);
+    }
+  };
+
   const handleBusinessSelect = (business: Business) => {
     console.log('🔄 Business selected:', business.name);
     setSelectedBusiness(business);
@@ -218,20 +249,34 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
         <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Actividad Reciente</h2>
           <div className="space-y-4">
-            {[
-              { icon: '⭐', text: 'Nueva opinión 5 estrellas en Restaurante La Plaza', time: 'Hace 5 min' },
-              { icon: '🎁', text: 'Premio "Cena para 2" canjeado en Café Central', time: 'Hace 15 min' },
-              { icon: '🏢', text: 'Nuevo negocio registrado: Peluquería Style', time: 'Hace 1 hora' },
-              { icon: '📊', text: 'Informe mensual generado automáticamente', time: 'Hace 2 horas' },
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <span className="text-2xl">{activity.icon}</span>
-                <div className="flex-1">
-                  <p className="text-gray-800">{activity.text}</p>
-                  <p className="text-sm text-gray-500">{activity.time}</p>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity, index) => (
+                <div 
+                  key={index} 
+                  className={`flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors ${
+                    activity.priority === 'high' ? 'border-l-4 border-red-500 bg-red-50' : 
+                    activity.priority === 'medium' ? 'border-l-4 border-yellow-500 bg-yellow-50' : ''
+                  }`}
+                >
+                  <span className="text-2xl">{activity.icon}</span>
+                  <div className="flex-1">
+                    <p className={`${
+                      activity.priority === 'high' ? 'text-red-800 font-semibold' : 
+                      activity.priority === 'medium' ? 'text-yellow-800' : 'text-gray-800'
+                    }`}>
+                      {activity.message}
+                    </p>
+                    <p className="text-sm text-gray-500">{activity.time}</p>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <span className="text-4xl mb-2 block">📊</span>
+                <p>No hay actividad reciente</p>
+                <p className="text-sm">Las actividades aparecerán aquí cuando ocurran eventos en tu negocio</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
