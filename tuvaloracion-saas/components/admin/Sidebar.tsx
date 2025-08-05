@@ -56,6 +56,18 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       icon: '⚙️',
       href: '/admin/settings',
       show: true
+    },
+    {
+      title: 'Centro de Ayuda',
+      icon: '❓',
+      href: '/admin/help',
+      show: true
+    },
+    {
+      title: 'Contacto',
+      icon: '📞',
+      href: '/admin/contact',
+      show: true
     }
   ];
 
