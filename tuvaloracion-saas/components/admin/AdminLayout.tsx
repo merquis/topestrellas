@@ -1,8 +1,8 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
-import SimpleBusinessSelector from './SimpleBusinessSelector';
+import BusinessSelectorModal from './BusinessSelectorModal';
 import { AuthUser, clearAuth } from '@/lib/auth';
 
 interface Business {
@@ -18,10 +18,32 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children, user }: AdminLayoutProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+
+  // Cargar negocio seleccionado desde localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedBusiness = localStorage.getItem('selectedBusiness');
+      if (storedBusiness) {
+        try {
+          const business = JSON.parse(storedBusiness);
+          setSelectedBusiness(business);
+        } catch (error) {
+          console.error('Error parsing stored business:', error);
+        }
+      }
+    }
+  }, []);
+
   const handleLogout = () => {
     clearAuth();
     // Usar window.location.href para forzar una recarga completa
     window.location.href = '/admin';
+  };
+
+  const handleBusinessSelect = (business: Business) => {
+    setSelectedBusiness(business);
   };
 
   return (
@@ -45,6 +67,20 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
               </div>
               
               <div className="flex items-center gap-4">
+                {/* Business Selector Button for admin users */}
+                {user.role === 'admin' && (
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                  >
+                    <span className="text-lg">🏪</span>
+                    <span className="hidden sm:inline">
+                      {selectedBusiness ? selectedBusiness.name : 'Cambiar Negocio'}
+                    </span>
+                    <span className="sm:hidden">Negocio</span>
+                  </button>
+                )}
+                
                 {/* Notifications */}
                 <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors">
                   <span className="text-xl">🔔</span>
@@ -64,6 +100,15 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* Business Selector Modal */}
+      <BusinessSelectorModal
+        user={user}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onBusinessSelect={handleBusinessSelect}
+        selectedBusiness={selectedBusiness}
+      />
     </div>
   );
 }
