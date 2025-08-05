@@ -20,28 +20,6 @@ function SetupBusinessContent() {
   const userPassword = searchParams.get('password') || '';
   const businessType = searchParams.get('type') || 'restaurante';
   
-  const [formData, setFormData] = useState({
-    businessName: '',
-    phone: '',
-    country: 'España',
-    city: '',
-    postalCode: '',
-    address: '',
-    googleReviewUrl: '',
-    tripadvisorReviewUrl: '',
-    reviewPlatform: 'google',
-    prizes: [
-      'CENA Max 60€',
-      'DESCUENTO 30€', 
-      'BOTELLA VINO',
-      'HELADO',
-      'CERVEZA',
-      'REFRESCO',
-      'MOJITO',
-      'CHUPITO'
-    ]
-  });
-
   // Lista de provincias españolas con sus zonas horarias
   const spanishProvinces = [
     // Provincias peninsulares (mainland) - Europe/Madrid
@@ -111,6 +89,68 @@ function SetupBusinessContent() {
     { name: 'Ceuta', timezone: 'Europe/Madrid' },
     { name: 'Melilla', timezone: 'Europe/Madrid' }
   ].sort((a, b) => a.name.localeCompare(b.name));
+
+  const [formData, setFormData] = useState({
+    businessName: '',
+    phone: '',
+    country: 'España',
+    city: '',
+    postalCode: '',
+    address: '',
+    googleReviewUrl: '',
+    tripadvisorReviewUrl: '',
+    reviewPlatform: 'google',
+    prizes: [
+      'CENA Max 60€',
+      'DESCUENTO 30€', 
+      'BOTELLA VINO',
+      'HELADO',
+      'CERVEZA',
+      'REFRESCO',
+      'MOJITO',
+      'CHUPITO'
+    ]
+  });
+
+  // Estado para el autocompletado de provincias
+  const [provinceSearch, setProvinceSearch] = useState('');
+  const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+  const [filteredProvinces, setFilteredProvinces] = useState(spanishProvinces);
+
+  // Función para filtrar provincias
+  const handleProvinceSearch = (searchTerm: string) => {
+    setProvinceSearch(searchTerm);
+    const filtered = spanishProvinces.filter(province =>
+      province.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProvinces(filtered);
+    setShowProvinceDropdown(searchTerm.length > 0);
+  };
+
+  // Función para seleccionar provincia
+  const handleProvinceSelect = (provinceName: string) => {
+    setFormData({
+      ...formData,
+      city: provinceName
+    });
+    setProvinceSearch(provinceName);
+    setShowProvinceDropdown(false);
+  };
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.province-dropdown-container')) {
+        setShowProvinceDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const plans = [
     {
@@ -382,24 +422,54 @@ function SetupBusinessContent() {
                   </select>
                 </div>
 
-                <div>
+                <div className="relative province-dropdown-container">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ciudad *
+                    Provincia *
                   </label>
-                  <select
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
+                  <input
+                    type="text"
+                    name="provinceSearch"
+                    value={provinceSearch}
+                    onChange={(e) => handleProvinceSearch(e.target.value)}
+                    onFocus={() => setShowProvinceDropdown(true)}
+                    placeholder="Busca tu provincia (ej: Tenerife, Madrid...)"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
-                  >
-                    <option value="">Selecciona tu provincia</option>
-                    {spanishProvinces.map((province) => (
-                      <option key={province.name} value={province.name}>
-                        {province.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
+                  
+                  {/* Dropdown de provincias filtradas */}
+                  {showProvinceDropdown && filteredProvinces.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredProvinces.slice(0, 10).map((province) => (
+                        <div
+                          key={province.name}
+                          onClick={() => handleProvinceSelect(province.name)}
+                          className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-800">{province.name}</span>
+                            <span className="text-xs text-gray-500">
+                              {province.timezone === 'Atlantic/Canary' ? 'Canarias' : 'Península'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredProvinces.length > 10 && (
+                        <div className="px-4 py-2 text-sm text-gray-500 bg-gray-50">
+                          Mostrando 10 de {filteredProvinces.length} resultados. Sigue escribiendo para filtrar más.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Mensaje cuando no hay resultados */}
+                  {showProvinceDropdown && provinceSearch && filteredProvinces.length === 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                      <div className="px-4 py-3 text-gray-500">
+                        No se encontraron provincias que coincidan con "{provinceSearch}"
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
