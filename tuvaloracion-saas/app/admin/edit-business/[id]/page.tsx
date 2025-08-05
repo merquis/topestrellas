@@ -26,7 +26,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     reviewPlatform: 'google',
     plan: 'trial',
     active: true,
-    prizes: Array(8).fill({ name: '' })
+    prizes: Array(8).fill({ name: '', realCost: 0 })
   });
 
   useEffect(() => {
@@ -55,10 +55,11 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           const prize = existingPrizes[index];
           if (prize && prize.translations && prize.translations.es) {
             return {
-              name: prize.translations.es.name || ''
+              name: prize.translations.es.name || '',
+              realCost: prize.realCost || 0
             };
           }
-          return { name: '' };
+          return { name: '', realCost: 0 };
         });
 
         setFormData({
@@ -124,10 +125,11 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     });
   };
 
-  const handlePrizeChange = (index: number, value: string) => {
+  const handlePrizeChange = (index: number, field: 'name' | 'realCost', value: string | number) => {
     const newPrizes = [...formData.prizes];
     newPrizes[index] = {
-      name: value
+      ...newPrizes[index],
+      [field]: value
     };
     setFormData({ ...formData, prizes: newPrizes });
   };
@@ -372,7 +374,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                           <input
                             type="text"
                             value={prize.name}
-                            onChange={(e) => handlePrizeChange(index, e.target.value)}
+                            onChange={(e) => handlePrizeChange(index, 'name', e.target.value)}
                             placeholder={`Premio ${index + 1}`}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             required
@@ -381,6 +383,23 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                         <div className="flex-shrink-0 text-center">
                           <span className="text-2xl">🤖</span>
                           <p className="text-xs text-gray-500">Auto IA</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 ml-14">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          💰 Coste real del premio
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={prize.realCost}
+                            onChange={(e) => handlePrizeChange(index, 'realCost', parseFloat(e.target.value) || 0)}
+                            placeholder="0.00"
+                            className="w-24 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          />
+                          <span className="text-sm text-gray-600">€</span>
                         </div>
                       </div>
                       {index < 3 && (

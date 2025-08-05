@@ -99,13 +99,23 @@ export async function PUT(
         console.log('🤖 Premios modificados, ejecutando IA para traducir...');
         try {
           translatedPrizes = await translatePrizesWithAI(newPrizeNames);
+          
+          // Agregar el coste real a cada premio traducido
+          translatedPrizes = translatedPrizes.map((prize: any, index: number) => ({
+            ...prize,
+            realCost: data.prizes[index]?.realCost || 0
+          }));
         } catch (error) {
           console.error('Error traduciendo premios:', error);
           // Continuar con los premios existentes si falla la IA
         }
       } else if (!prizesChanged) {
         console.log('✅ Premios sin cambios, manteniendo traducciones existentes');
-        // Mantener premios existentes si no han cambiado
+        // Actualizar solo los costes reales sin cambiar las traducciones
+        translatedPrizes = translatedPrizes.map((prize: any, index: number) => ({
+          ...prize,
+          realCost: data.prizes[index]?.realCost || prize.realCost || 0
+        }));
       }
     }
     
