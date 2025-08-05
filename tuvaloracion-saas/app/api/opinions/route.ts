@@ -58,6 +58,13 @@ export async function POST(request: NextRequest) {
     // Crear fecha y hora en la zona horaria del negocio
     const now = new Date();
     
+    console.log('🔍 DEBUG - Información de tiempo:');
+    console.log('  - Hora UTC actual:', now.toISOString());
+    console.log('  - Zona horaria del negocio:', businessTimezone);
+    
+    // Crear un objeto Date específico para la zona horaria del negocio
+    const businessDateTime = new Date(now.toLocaleString("en-US", {timeZone: businessTimezone}));
+    
     // Formatear fecha y hora usando la zona horaria del negocio
     const businessDate = new Intl.DateTimeFormat('en-US', {
       timeZone: businessTimezone,
@@ -77,6 +84,20 @@ export async function POST(request: NextRequest) {
     // Los formatos ya vienen correctos: MM/DD/YYYY y HH:MM:SS
     const dateStr = businessDate; // Formato: MM/DD/YYYY
     const timeStr = businessTime; // Formato: HH:MM:SS
+    
+    // Comparar con hora de Madrid para verificar diferencia
+    const madridTime = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Europe/Madrid',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(now);
+    
+    console.log('🔍 DEBUG - Comparación de horas:');
+    console.log(`  - Hora en Madrid: ${madridTime}`);
+    console.log(`  - Hora en ${businessTimezone}: ${timeStr}`);
+    console.log(`  - Fecha en ${businessTimezone}: ${dateStr}`);
     
     console.log(`📍 Negocio: ${business.name} (${business.location?.city || 'Sin ciudad'})`);
     console.log(`🕐 Zona horaria: ${businessTimezone}`);
