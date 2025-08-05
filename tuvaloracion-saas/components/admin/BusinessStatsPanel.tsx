@@ -403,13 +403,13 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
                   <div>
                     <p className="text-sm text-gray-600">Puntuación actual</p>
                     <p className="text-2xl font-bold text-red-600">
-                      {stats.googleStats.currentRating.toFixed(1)}⭐
+                      {Number(stats.googleStats.currentRating).toFixed(1)}⭐
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Total reseñas</p>
                     <p className="text-xl font-semibold text-gray-800">
-                      {stats.googleStats.totalReviews}
+                      {Number(stats.googleStats.totalReviews)}
                     </p>
                   </div>
                 </div>
@@ -466,13 +466,13 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
                   <div>
                     <p className="text-sm text-gray-600">Puntuación actual</p>
                     <p className="text-2xl font-bold text-green-600">
-                      {stats.tripadvisorStats.currentRating.toFixed(1)}⭐
+                      {Number(stats.tripadvisorStats.currentRating).toFixed(1)}⭐
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Total reseñas</p>
                     <p className="text-xl font-semibold text-gray-800">
-                      {stats.tripadvisorStats.totalReviews}
+                      {Number(stats.tripadvisorStats.totalReviews)}
                     </p>
                   </div>
                 </div>
