@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [businessType, setBusinessType] = useState('restaurante');
   const [loginError, setLoginError] = useState('');
   const [businesses, setBusinesses] = useState([]);
@@ -103,7 +104,7 @@ export default function AdminDashboard() {
     
     // Por ahora redirigir a la página de selección de plan
     // En producción, aquí se crearía el usuario en la base de datos
-    router.push(`/admin/setup-business?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&type=${businessType}`);
+    router.push(`/admin/setup-business?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&type=${businessType}`);
   };
 
   if (!user) {
@@ -219,6 +220,20 @@ export default function AdminDashboard() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="tu@email.com"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Teléfono *
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="+34 900 000 000"
                   required
                 />
               </div>
