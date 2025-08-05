@@ -102,7 +102,13 @@ export default function UsersPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(createForm),
+        body: JSON.stringify({
+          name: createForm.name,
+          email: createForm.email,
+          password: createForm.password,
+          role: createForm.role,
+          businessIds: createForm.selectedBusinesses.map(b => b.id)
+        }),
       });
 
       const data = await response.json();
@@ -199,6 +205,60 @@ export default function UsersPage() {
       }
     } catch (error) {
       setToast({ message: 'Error al eliminar usuario', type: 'error' });
+    }
+  };
+
+  const handleEditUser = (userData: User) => {
+    setSelectedUser(userData);
+    setEditForm({
+      name: userData.name,
+      email: userData.email,
+      role: userData.role,
+      selectedBusinesses: userData.businesses || []
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    
+    setLoading(true);
+
+    try {
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          email: editForm.email,
+          role: editForm.role,
+          businessIds: editForm.selectedBusinesses.map(b => b.id)
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: 'Usuario actualizado exitosamente', type: 'success' });
+        setShowEditModal(false);
+        setSelectedUser(null);
+        setEditForm({
+          name: '',
+          email: '',
+          role: 'admin',
+          selectedBusinesses: []
+        });
+        loadUsers();
+      } else {
+        setToast({ message: data.error || 'Error al actualizar usuario', type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error al actualizar usuario', type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -331,10 +391,7 @@ export default function UsersPage() {
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => {
-                            setSelectedUser(userData);
-                            setShowEditModal(true);
-                          }}
+                          onClick={() => handleEditUser(userData)}
                           className="text-purple-600 hover:text-purple-700 text-sm font-medium"
                         >
                           ✏️ Editar
@@ -377,7 +434,7 @@ export default function UsersPage() {
 
         {/* Create User Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
             <div className="bg-white rounded-xl p-6 w-full max-w-md">
               <h2 className="text-xl font-bold mb-4">Crear Nuevo Usuario</h2>
               <form onSubmit={handleCreateUser} className="space-y-4">
@@ -434,21 +491,19 @@ export default function UsersPage() {
                 {createForm.role === 'admin' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Negocio asociado *
+                      Negocios asociados {user?.role === 'super_admin' ? '(opcional)' : '*'}
                     </label>
-                    <select
-                      value={createForm.businessId}
-                      onChange={(e) => setCreateForm({...createForm, businessId: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    >
-                      <option value="">Seleccionar negocio...</option>
-                      {businesses.map((business) => (
-                        <option key={business._id} value={business._id}>
-                          {business.name}
-                        </option>
-                      ))}
-                    </select>
+                    <BusinessMultiSelector
+                      selectedBusinesses={createForm.selectedBusinesses}
+                      onSelectionChange={(businesses) => setCreateForm({...createForm, selectedBusinesses: businesses})}
+                      placeholder="Buscar y seleccionar negocios..."
+                      required={createForm.role === 'admin' && user?.role !== 'super_admin'}
+                    />
+                    {user?.role === 'super_admin' && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Como super admin, puedes asignar negocios más tarde desde la edición del usuario.
+                      </p>
+                    )}
                   </div>
                 )}
                 <div className="flex gap-3 pt-4">
@@ -465,6 +520,92 @@ export default function UsersPage() {
                     className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50"
                   >
                     {loading ? 'Creando...' : 'Crear Usuario'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit User Modal */}
+        {showEditModal && selectedUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+              <h2 className="text-xl font-bold mb-4">Editar Usuario</h2>
+              <form onSubmit={handleUpdateUser} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre completo *
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rol *
+                  </label>
+                  <select
+                    value={editForm.role}
+                    onChange={(e) => setEditForm({...editForm, role: e.target.value as 'admin' | 'super_admin'})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="admin">Admin (Negocio específico)</option>
+                    <option value="super_admin">Super Admin (Acceso completo)</option>
+                  </select>
+                </div>
+                {editForm.role === 'admin' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Negocios asociados *
+                    </label>
+                    <BusinessMultiSelector
+                      selectedBusinesses={editForm.selectedBusinesses}
+                      onSelectionChange={(businesses) => setEditForm({...editForm, selectedBusinesses: businesses})}
+                      placeholder="Buscar y seleccionar negocios..."
+                      required={editForm.role === 'admin'}
+                    />
+                  </div>
+                )}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedUser(null);
+                      setEditForm({
+                        name: '',
+                        email: '',
+                        role: 'admin',
+                        selectedBusinesses: []
+                      });
+                    }}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all disabled:opacity-50"
+                  >
+                    {loading ? 'Actualizando...' : 'Actualizar Usuario'}
                   </button>
                 </div>
               </form>

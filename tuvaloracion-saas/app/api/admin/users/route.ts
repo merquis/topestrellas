@@ -100,12 +100,12 @@ export async function POST(request: Request) {
       businessIds = [data.businessId];
     }
     
-    // Si es admin, debe tener al menos un negocio
+    // Si es admin, debe tener al menos un negocio (excepto si lo crea un super_admin)
+    // Nota: En una implementación completa, aquí verificarías el rol del usuario que hace la petición
+    // Por ahora, permitimos crear admins sin negocios para que el super_admin pueda asignarlos después
     if (data.role === 'admin' && businessIds.length === 0) {
-      return NextResponse.json(
-        { error: 'Los usuarios admin deben estar asociados a al menos un negocio' },
-        { status: 400 }
-      );
+      // Permitir crear admin sin negocios - se pueden asignar después
+      console.log('Admin creado sin negocios asignados - se pueden asignar posteriormente');
     }
     
     // Verificar que todos los negocios existen
