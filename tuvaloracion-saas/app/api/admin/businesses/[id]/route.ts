@@ -129,6 +129,14 @@ export async function PUT(
         googleReviewUrl: data.googleReviewUrl || '',
         tripadvisorReviewUrl: data.tripadvisorReviewUrl || '',
         reviewPlatform: data.reviewPlatform || 'google',
+        googleStats: {
+          currentRating: data.googleCurrentRating || 0,
+          totalReviews: data.googleTotalReviews || 0
+        },
+        tripadvisorStats: {
+          currentRating: data.tripadvisorCurrentRating || 0,
+          totalReviews: data.tripadvisorTotalReviews || 0
+        },
         theme: {
         },
         prizes: translatedPrizes

@@ -31,6 +31,14 @@ export interface Business {
     tripadvisorReviewUrl?: string
     reviewPlatform?: 'google' | 'tripadvisor' | 'alternating'
     reviewClickCounter?: number
+    googleStats?: {
+      currentRating?: number
+      totalReviews?: number
+    }
+    tripadvisorStats?: {
+      currentRating?: number
+      totalReviews?: number
+    }
     features?: {
       showScarcityIndicators?: boolean
       showPrizeWheel?: boolean

@@ -26,7 +26,11 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     reviewPlatform: 'google',
     plan: 'trial',
     active: true,
-    prizes: Array(8).fill({ name: '', realCost: 0 })
+    prizes: Array(8).fill({ name: '', realCost: 0 }),
+    googleCurrentRating: 0,
+    googleTotalReviews: 0,
+    tripadvisorCurrentRating: 0,
+    tripadvisorTotalReviews: 0
   });
 
   useEffect(() => {
@@ -74,7 +78,11 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           reviewPlatform: business.config?.reviewPlatform || 'google',
           plan: business.subscription?.plan || 'trial',
           active: business.active !== false,
-          prizes: prizes
+          prizes: prizes,
+          googleCurrentRating: business.config?.googleStats?.currentRating || 0,
+          googleTotalReviews: business.config?.googleStats?.totalReviews || 0,
+          tripadvisorCurrentRating: business.config?.tripadvisorStats?.currentRating || 0,
+          tripadvisorTotalReviews: business.config?.tripadvisorStats?.totalReviews || 0
         });
       } else {
         setToast({ message: 'Error al cargar el negocio', type: 'error' });
@@ -469,6 +477,40 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                   <p className="text-xs text-gray-500 mt-1">
                     Obtén esta URL desde Google My Business
                   </p>
+                  
+                  {/* Estadísticas de Google */}
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        ⭐ Puntuación actual Google
+                      </label>
+                      <input
+                        type="number"
+                        name="googleCurrentRating"
+                        value={formData.googleCurrentRating}
+                        onChange={handleChange}
+                        min="0"
+                        max="5"
+                        step="0.1"
+                        placeholder="4.2"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        📊 Número de reseñas Google
+                      </label>
+                      <input
+                        type="number"
+                        name="googleTotalReviews"
+                        value={formData.googleTotalReviews}
+                        onChange={handleChange}
+                        min="0"
+                        placeholder="127"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -486,6 +528,40 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                   <p className="text-xs text-gray-500 mt-1">
                     Obtén esta URL desde TripAdvisor
                   </p>
+                  
+                  {/* Estadísticas de TripAdvisor */}
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        ⭐ Puntuación actual TripAdvisor
+                      </label>
+                      <input
+                        type="number"
+                        name="tripadvisorCurrentRating"
+                        value={formData.tripadvisorCurrentRating}
+                        onChange={handleChange}
+                        min="0"
+                        max="5"
+                        step="0.1"
+                        placeholder="4.0"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        📊 Número de reseñas TripAdvisor
+                      </label>
+                      <input
+                        type="number"
+                        name="tripadvisorTotalReviews"
+                        value={formData.tripadvisorTotalReviews}
+                        onChange={handleChange}
+                        min="0"
+                        placeholder="89"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div>
