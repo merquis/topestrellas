@@ -312,7 +312,10 @@ function OpinionsContent() {
                           </span>
                         </div>
                         <div className="text-sm text-gray-500">
-                          {formatDate(opinion.createdAt)}
+                          {opinion.date && opinion.time ? 
+                            `${opinion.date.split('/').reverse().join('/')}, ${opinion.time.substring(0, 5)}` :
+                            formatDate(opinion.createdAt)
+                          }
                         </div>
                         {businesses.length > 1 && (
                           <div className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
@@ -350,15 +353,20 @@ function OpinionsContent() {
                     </div>
 
                     {/* Prize Info */}
-                    {opinion.prize && (
+                    {(opinion.prize || opinion.premio) && (
                       <div className="ml-6 text-right">
                         <div className="bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-300 rounded-lg p-3">
                           <div className="text-sm font-medium text-orange-900 mb-1">
                             🎁 Premio Ganado
                           </div>
-                          <div className="text-sm text-orange-800">
-                            {opinion.prize.name || opinion.prize}
+                          <div className="text-sm text-orange-800 mb-1">
+                            {opinion.premio || opinion.prize?.name || opinion.prize}
                           </div>
+                          {opinion.codigoPremio && (
+                            <div className="text-xs text-orange-700 font-mono bg-orange-50 px-2 py-1 rounded border">
+                              {opinion.codigoPremio}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
