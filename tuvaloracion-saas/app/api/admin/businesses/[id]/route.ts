@@ -68,6 +68,9 @@ export async function PUT(
         { status: 400 }
       );
     }
+
+    // Validar permisos según el rol del usuario
+    const userRole = data.userRole; // Debe enviarse desde el frontend
     
     // Obtener el negocio actual para preservar algunos datos
     const currentBusiness = await db.collection('businesses').findOne({ _id: objectId });
@@ -106,8 +109,8 @@ export async function PUT(
       }
     }
     
-    // Preparar datos para actualizar
-    const updateData = {
+    // Preparar datos para actualizar según permisos
+    const updateData: any = {
       name: data.name,
       type: data.type || 'restaurante',
       category: data.category || '',
@@ -127,12 +130,20 @@ export async function PUT(
       },
       subscription: {
         ...currentBusiness.subscription, // Preservar datos de suscripción
-        plan: data.plan || 'trial',
-        status: data.active ? 'active' : 'suspended'
+        plan: data.plan || 'trial'
       },
-      active: data.active !== false,
       updatedAt: new Date()
     };
+
+    // Solo super_admin puede cambiar el estado activo/inactivo
+    if (userRole === 'super_admin') {
+      updateData.active = data.active !== false;
+      updateData.subscription.status = data.active ? 'active' : 'suspended';
+    } else {
+      // Admin normal: preservar estado actual
+      updateData.active = currentBusiness.active;
+      updateData.subscription.status = currentBusiness.subscription?.status || 'active';
+    }
     
     // Actualizar el negocio
     const result = await db.collection('businesses').updateOne(
