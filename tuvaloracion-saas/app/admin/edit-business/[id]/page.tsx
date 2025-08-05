@@ -35,7 +35,8 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
       router.push('/admin');
       return;
     }
-    if (authUser.role !== 'super_admin') {
+    // Permitir acceso tanto a super_admin como a admin
+    if (!['super_admin', 'admin'].includes(authUser.role)) {
       router.push('/admin');
       return;
     }
@@ -99,7 +100,8 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
       if (response.ok) {
         setToast({ message: 'Negocio actualizado exitosamente', type: 'success' });
-        setTimeout(() => router.push('/admin/businesses'), 2000);
+        const redirectPath = user?.role === 'super_admin' ? '/admin/businesses' : '/admin/my-business';
+        setTimeout(() => router.push(redirectPath), 2000);
       } else {
         const data = await response.json();
         setToast({ message: `Error: ${data.error}`, type: 'error' });
@@ -527,7 +529,10 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
             <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between">
               <button
                 type="button"
-                onClick={() => router.push('/admin/businesses')}
+                onClick={() => {
+                  const redirectPath = user?.role === 'super_admin' ? '/admin/businesses' : '/admin/my-business';
+                  router.push(redirectPath);
+                }}
                 className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancelar
