@@ -1,28 +1,16 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
-import BusinessSelector from './BusinessSelector';
 import SimpleBusinessSelector from './SimpleBusinessSelector';
 import { AuthUser, clearAuth } from '@/lib/auth';
-import { BusinessProvider, useBusinessContext } from '@/lib/business-context';
 
 interface AdminLayoutProps {
   children: ReactNode;
   user: AuthUser;
 }
 
-function AdminLayoutContent({ children, user }: AdminLayoutProps) {
-  const { loadBusinesses } = useBusinessContext();
-
-  useEffect(() => {
-    // Solo cargar negocios para admins normales
-    if (user.role === 'admin') {
-      loadBusinesses(user);
-    }
-  }, [user, loadBusinesses]);
-
+export default function AdminLayout({ children, user }: AdminLayoutProps) {
   const handleLogout = () => {
     clearAuth();
     // Usar window.location.href para forzar una recarga completa
@@ -72,15 +60,5 @@ function AdminLayoutContent({ children, user }: AdminLayoutProps) {
         </div>
       </main>
     </div>
-  );
-}
-
-export default function AdminLayout({ children, user }: AdminLayoutProps) {
-  return (
-    <BusinessProvider>
-      <AdminLayoutContent user={user}>
-        {children}
-      </AdminLayoutContent>
-    </BusinessProvider>
   );
 }

@@ -21,52 +21,70 @@ export default function SimpleBusinessSelector({ user }: SimpleBusinessSelectorP
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadBusinesses();
-  }, [user]);
+    let isMounted = true;
+    
+    const loadBusinesses = async () => {
+      if (user.role !== 'admin') return;
 
-  const loadBusinesses = async () => {
-    if (user.role !== 'admin') return;
+      console.log('🔍 SimpleBusinessSelector loading businesses for:', user.email);
+      setLoading(true);
+      setError(null);
 
-    console.log('🔍 SimpleBusinessSelector loading businesses for:', user.email);
-    setLoading(true);
-    setError(null);
+      try {
+        const params = new URLSearchParams({
+          userEmail: user.email,
+          userRole: user.role
+        });
 
-    try {
-      const params = new URLSearchParams({
-        userEmail: user.email,
-        userRole: user.role
-      });
+        const url = `/api/admin/businesses?${params}`;
+        console.log('📡 Fetching:', url);
 
-      const url = `/api/admin/businesses?${params}`;
-      console.log('📡 Fetching:', url);
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        console.log('📡 Response status:', response.status);
 
-      const response = await fetch(url);
-      console.log('📡 Response status:', response.status);
+        if (!isMounted) return; // Evitar actualizar estado si el componente se desmontó
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Data received:', data);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Data received:', data);
 
-        if (Array.isArray(data)) {
-          setBusinesses(data);
-          if (data.length > 0) {
-            setSelectedBusiness(data[0]);
+          if (Array.isArray(data)) {
+            setBusinesses(data);
+            if (data.length > 0) {
+              setSelectedBusiness(data[0]);
+            }
+          } else {
+            setError('Respuesta inválida del servidor');
           }
         } else {
-          setError('Respuesta inválida del servidor');
+          const errorText = await response.text();
+          console.error('❌ Error response:', errorText);
+          setError(`Error ${response.status}: ${errorText}`);
         }
-      } else {
-        const errorText = await response.text();
-        console.error('❌ Error response:', errorText);
-        setError(`Error ${response.status}: ${errorText}`);
+      } catch (err) {
+        console.error('❌ Fetch error:', err);
+        if (isMounted) {
+          setError('Error de conexión');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      console.error('❌ Fetch error:', err);
-      setError('Error de conexión');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadBusinesses();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user.email, user.role]); // Solo depender de email y role, no del objeto user completo
 
   if (loading) {
     return (
