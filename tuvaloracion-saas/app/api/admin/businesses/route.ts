@@ -87,6 +87,102 @@ async function findUniqueSubdomain(db: any, baseSubdomain: string): Promise<stri
   return subdomain;
 }
 
+// Mapeo de ciudades a zonas horarias
+const CITY_TIMEZONE_MAP: { [key: string]: string } = {
+  // Andalucía
+  'Sevilla': 'Europe/Madrid',
+  'Málaga': 'Europe/Madrid',
+  'Córdoba': 'Europe/Madrid',
+  'Granada': 'Europe/Madrid',
+  'Cádiz': 'Europe/Madrid',
+  'Almería': 'Europe/Madrid',
+  'Huelva': 'Europe/Madrid',
+  'Jaén': 'Europe/Madrid',
+  
+  // Madrid
+  'Madrid': 'Europe/Madrid',
+  'Alcalá de Henares': 'Europe/Madrid',
+  'Fuenlabrada': 'Europe/Madrid',
+  'Móstoles': 'Europe/Madrid',
+  'Alcorcón': 'Europe/Madrid',
+  'Leganés': 'Europe/Madrid',
+  'Getafe': 'Europe/Madrid',
+  
+  // Cataluña
+  'Barcelona': 'Europe/Madrid',
+  'Hospitalet de Llobregat': 'Europe/Madrid',
+  'Badalona': 'Europe/Madrid',
+  'Terrassa': 'Europe/Madrid',
+  'Sabadell': 'Europe/Madrid',
+  'Lleida': 'Europe/Madrid',
+  'Tarragona': 'Europe/Madrid',
+  'Girona': 'Europe/Madrid',
+  
+  // Valencia
+  'Valencia': 'Europe/Madrid',
+  'Alicante': 'Europe/Madrid',
+  'Elche': 'Europe/Madrid',
+  'Castellón de la Plana': 'Europe/Madrid',
+  'Torrevieja': 'Europe/Madrid',
+  'Orihuela': 'Europe/Madrid',
+  
+  // País Vasco
+  'Bilbao': 'Europe/Madrid',
+  'Vitoria-Gasteiz': 'Europe/Madrid',
+  'San Sebastián': 'Europe/Madrid',
+  'Barakaldo': 'Europe/Madrid',
+  
+  // Galicia
+  'Vigo': 'Europe/Madrid',
+  'A Coruña': 'Europe/Madrid',
+  'Ourense': 'Europe/Madrid',
+  'Lugo': 'Europe/Madrid',
+  'Santiago de Compostela': 'Europe/Madrid',
+  
+  // Canarias
+  'Las Palmas de Gran Canaria': 'Atlantic/Canary',
+  'Santa Cruz de Tenerife': 'Atlantic/Canary',
+  'San Cristóbal de La Laguna': 'Atlantic/Canary',
+  'Telde': 'Atlantic/Canary',
+  'Santa Lucía de Tirajana': 'Atlantic/Canary',
+  'Arona': 'Atlantic/Canary',
+  'Arrecife': 'Atlantic/Canary',
+  'Puerto del Rosario': 'Atlantic/Canary',
+  'Los Llanos de Aridane': 'Atlantic/Canary',
+  'San Sebastián de La Gomera': 'Atlantic/Canary',
+  'Valverde': 'Atlantic/Canary',
+  'Las Palmas': 'Atlantic/Canary',
+  
+  // Baleares
+  'Palma de Mallorca': 'Europe/Madrid',
+  'Ibiza': 'Europe/Madrid',
+  'Mahón': 'Europe/Madrid',
+  'Ciudadela de Menorca': 'Europe/Madrid',
+  
+  // Otras comunidades
+  'Zaragoza': 'Europe/Madrid',
+  'Murcia': 'Europe/Madrid',
+  'Valladolid': 'Europe/Madrid',
+  'Oviedo': 'Europe/Madrid',
+  'Pamplona': 'Europe/Madrid',
+  'Santander': 'Europe/Madrid',
+  'Toledo': 'Europe/Madrid',
+  'Badajoz': 'Europe/Madrid',
+  'Salamanca': 'Europe/Madrid',
+  'Mérida': 'Europe/Madrid',
+  'Ávila': 'Europe/Madrid',
+  'Cáceres': 'Europe/Madrid',
+  'Guadalajara': 'Europe/Madrid',
+  'Cuenca': 'Europe/Madrid',
+  'Soria': 'Europe/Madrid',
+  'Segovia': 'Europe/Madrid',
+  'Albacete': 'Europe/Madrid',
+  'Ciudad Real': 'Europe/Madrid',
+  'Logroño': 'Europe/Madrid',
+  'Huesca': 'Europe/Madrid',
+  'Teruel': 'Europe/Madrid'
+};
+
 export async function POST(request: Request) {
   try {
     const client = await clientPromise;
@@ -95,12 +191,15 @@ export async function POST(request: Request) {
     
     // Validar datos requeridos
     const businessName = data.businessName || data.name;
-    if (!businessName || !data.phone) {
+    if (!businessName || !data.phone || !data.city || !data.postalCode || !data.address) {
       return NextResponse.json(
-        { error: 'Nombre del negocio y teléfono son requeridos' },
+        { error: 'Todos los campos son requeridos: nombre, teléfono, ciudad, código postal y dirección' },
         { status: 400 }
       );
     }
+    
+    // Obtener zona horaria basada en la ciudad
+    const timezone = CITY_TIMEZONE_MAP[data.city] || 'Europe/Madrid';
     
     // Generar subdominio automáticamente
     const baseSubdomain = generateSubdomain(businessName);
@@ -135,6 +234,13 @@ export async function POST(request: Request) {
       name: data.businessName || data.name,
       type: data.type || 'restaurante',
       category: data.category || '',
+      location: {
+        country: data.country || 'España',
+        city: data.city,
+        postalCode: data.postalCode,
+        address: data.address,
+        timezone: timezone
+      },
       config: {
         languages: data.languages || ['es', 'en', 'de', 'fr'],
         defaultLanguage: 'es',
@@ -153,7 +259,7 @@ export async function POST(request: Request) {
       contact: {
         phone: data.phone || '',
         email: data.email || '',
-        address: data.address || ''
+        address: `${data.address}, ${data.postalCode} ${data.city}, ${data.country}`
       },
       subscription: {
         plan: data.plan || 'trial',

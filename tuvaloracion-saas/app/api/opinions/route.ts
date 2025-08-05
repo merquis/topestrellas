@@ -21,11 +21,35 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
     const db = await getDatabase()
     
+    // Obtener información del negocio para usar su zona horaria
+    const business = await db.collection('businesses').findOne({ subdomain: data.subdomain });
+    if (!business) {
+      return NextResponse.json({ success: false, error: 'Negocio no encontrado' }, { status: 404 });
+    }
+    
+    // Obtener zona horaria del negocio (fallback a Europe/Madrid)
+    const businessTimezone = business.location?.timezone || 'Europe/Madrid';
+    
     // Generar código de premio
     const prizeCode = generatePrizeCode(data.subdomain, data.rating)
     
-    // Crear objeto de opinión con la estructura solicitada
+    // Crear fecha y hora en la zona horaria del negocio
     const now = new Date();
+    const businessTime = new Intl.DateTimeFormat('es-ES', {
+      timeZone: businessTimezone,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).formatToParts(now);
+    
+    // Construir strings de fecha y hora
+    const dateStr = `${businessTime.find(p => p.type === 'day')?.value}/${businessTime.find(p => p.type === 'month')?.value}/${businessTime.find(p => p.type === 'year')?.value}`;
+    const timeStr = `${businessTime.find(p => p.type === 'hour')?.value}:${businessTime.find(p => p.type === 'minute')?.value}:${businessTime.find(p => p.type === 'second')?.value}`;
+    
+    // Crear objeto de opinión con la estructura solicitada
     const opinion = {
       businessId: new ObjectId(data.businessId),
       name: data.name,
@@ -36,8 +60,8 @@ export async function POST(request: NextRequest) {
       lang: data.language || 'es',
       premio: data.prize.name,
       codigoPremio: prizeCode,
-      date: now.toLocaleDateString('es-ES'),
-      time: now.toLocaleTimeString('es-ES'),
+      date: dateStr,
+      time: timeStr,
       date_real: now,
       subdomain: data.subdomain,
       customerName: data.name,
