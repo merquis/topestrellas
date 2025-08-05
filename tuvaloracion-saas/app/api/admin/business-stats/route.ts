@@ -234,25 +234,11 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // 8. ESTADÍSTICAS DE REDIRECCIONES A GOOGLE Y TRIPADVISOR
-    // Contar redirecciones (opiniones de 5 estrellas que fueron enviadas a review)
-    const totalRedirections = fiveStarReviews; // Todas las 5 estrellas son redirecciones
-    
-    // Obtener el contador actual para calcular distribución
-    const reviewClickCounter = business.config?.reviewClickCounter || 0;
-    
-    // Calcular distribución basada en la lógica del contador
-    // Contador impar (1,3,5...) = Google, Contador par (2,4,6...) = TripAdvisor
-    let googleRedirections = 0;
-    let tripadvisorRedirections = 0;
-    
-    // Simular la distribución basada en el patrón alternante
-    for (let i = 1; i <= totalRedirections; i++) {
-      if (i % 2 === 1) {
-        googleRedirections++;
-      } else {
-        tripadvisorRedirections++;
-      }
-    }
+    // Obtener datos reales de redirecciones desde la configuración del negocio
+    const redirectionStats = business.config?.redirectionStats || {};
+    const googleRedirections = redirectionStats.googleRedirections || 0;
+    const tripadvisorRedirections = redirectionStats.tripadvisorRedirections || 0;
+    const totalRedirections = googleRedirections + tripadvisorRedirections;
 
     // 9. ESTADÍSTICAS DE GOOGLE Y TRIPADVISOR (datos de puntuación)
     // Solo incluir si hay datos válidos (rating > 0 y totalReviews > 0)

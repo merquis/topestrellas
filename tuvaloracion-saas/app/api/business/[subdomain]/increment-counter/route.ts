@@ -35,14 +35,34 @@ export async function POST(
     // Contador 1,3,5... (impar) = Google
     // Contador 2,4,6... (par) = TripAdvisor
     const useGoogle = newCounter % 2 === 1;
+    const platform = useGoogle ? 'google' : 'tripadvisor';
 
-    console.log(`[${params.subdomain}] Counter: ${newCounter}, Use Google: ${useGoogle}`);
+    // Incrementar el contador específico de la plataforma
+    const platformField = useGoogle ? 'config.redirectionStats.googleRedirections' : 'config.redirectionStats.tripadvisorRedirections';
+    
+    await db.collection('businesses').updateOne(
+      { subdomain: params.subdomain },
+      { 
+        $inc: { [platformField]: 1 },
+        $push: {
+          'config.redirectionStats.lastRedirections': {
+            $each: [{
+              platform: platform,
+              timestamp: new Date()
+            }],
+            $slice: -50 // Mantener solo las últimas 50 redirecciones
+          }
+        }
+      }
+    );
+
+    console.log(`[${params.subdomain}] Counter: ${newCounter}, Platform: ${platform}, Use Google: ${useGoogle}`);
 
     return NextResponse.json({
       success: true,
       counter: newCounter,
       useGoogle: useGoogle,
-      platform: useGoogle ? 'google' : 'tripadvisor'
+      platform: platform
     });
 
   } catch (error) {
