@@ -44,16 +44,19 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
   // Escuchar cambios en localStorage para el negocio seleccionado
   useEffect(() => {
+    // Solo ejecutar en el cliente
+    if (typeof window === 'undefined') return;
+
     const handleStorageChange = () => {
-      const storedBusiness = localStorage.getItem('selectedBusiness');
-      if (storedBusiness) {
-        try {
+      try {
+        const storedBusiness = localStorage.getItem('selectedBusiness');
+        if (storedBusiness) {
           const business = JSON.parse(storedBusiness);
           console.log('📦 Business from localStorage:', business);
           setSelectedBusiness(business);
-        } catch (error) {
-          console.error('❌ Error parsing stored business:', error);
         }
+      } catch (error) {
+        console.error('❌ Error parsing stored business:', error);
       }
     };
 
