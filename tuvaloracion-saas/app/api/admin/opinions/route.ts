@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
       }
 
-      let userBusinessIds = [];
+      let userBusinessIds: ObjectId[] = [];
       
       // Soporte para múltiples negocios (businessIds) y compatibilidad con businessId legacy
       if (user.businessIds && Array.isArray(user.businessIds)) {
@@ -139,15 +139,15 @@ export async function GET(request: NextRequest) {
       .toArray();
 
     // Obtener información de negocios para mostrar nombres
-    const businessIds = [...new Set(opinions.map(opinion => opinion.businessId))];
+    const businessIds = Array.from(new Set(opinions.map((opinion: any) => opinion.businessId)));
     const businesses = await db.collection('businesses')
       .find({ _id: { $in: businessIds } })
       .project({ name: 1, subdomain: 1 })
       .toArray();
 
     // Enriquecer opiniones con información del negocio
-    const enrichedOpinions = opinions.map(opinion => {
-      const business = businesses.find(b => b._id.equals(opinion.businessId));
+    const enrichedOpinions = opinions.map((opinion: any) => {
+      const business = businesses.find((b: any) => b._id.equals(opinion.businessId));
       return {
         ...opinion,
         businessName: business?.name || 'Negocio desconocido',
