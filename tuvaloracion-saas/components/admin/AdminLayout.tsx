@@ -103,7 +103,7 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
         {/* Top Bar */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800">
@@ -149,7 +149,7 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
                         </option>
                         {businesses.map((business) => (
                           <option key={business._id} value={business._id} className="py-2">
-                            🏪 {business.name}
+                            {business.name}
                           </option>
                         ))}
                       </select>
