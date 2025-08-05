@@ -13,10 +13,14 @@ export async function GET(request: Request) {
     let searchFilter = {};
     
     if (query.trim()) {
-      // Búsqueda por nombre (case insensitive)
+      // Escapar caracteres especiales de regex y buscar en cualquier parte del nombre
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       searchFilter = {
-        name: { $regex: query, $options: 'i' }
+        name: { $regex: escapedQuery, $options: 'i' }
       };
+      
+      // Log para debug
+      console.log(`Searching businesses with query: "${query}" -> regex: "${escapedQuery}"`);
     }
     
     const businesses = await db.collection('businesses')
