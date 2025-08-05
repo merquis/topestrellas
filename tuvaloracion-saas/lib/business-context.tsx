@@ -36,18 +36,15 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/businesses');
+      // Enviar parámetros necesarios para el filtrado
+      const params = new URLSearchParams({
+        userEmail: user.email,
+        userRole: user.role
+      });
+      
+      const response = await fetch(`/api/admin/businesses?${params}`);
       if (response.ok) {
-        const data = await response.json();
-        
-        // Filtrar negocios del usuario
-        const userBusinesses = data.filter((business: Business) => {
-          // Por ahora solo soportamos businessId único, pero preparado para múltiples
-          if (user.businessId) {
-            return business._id === user.businessId;
-          }
-          return false;
-        });
+        const userBusinesses = await response.json();
         
         setBusinesses(userBusinesses);
         
@@ -60,9 +57,13 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
         if (businessToSelect) {
           setSelectedBusinessState(businessToSelect);
         }
+      } else {
+        console.error('Error response:', response.status, response.statusText);
+        setBusinesses([]);
       }
     } catch (error) {
       console.error('Error loading businesses:', error);
+      setBusinesses([]);
     } finally {
       setLoading(false);
     }
