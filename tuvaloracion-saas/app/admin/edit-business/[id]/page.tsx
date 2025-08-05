@@ -127,11 +127,45 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
   const handlePrizeChange = (index: number, field: 'name' | 'realCost', value: string | number) => {
     const newPrizes = [...formData.prizes];
-    newPrizes[index] = {
-      ...newPrizes[index],
-      [field]: value
-    };
+    
+    if (field === 'realCost') {
+      // Convertir el valor a número, manejando tanto punto como coma
+      let numericValue = 0;
+      if (typeof value === 'string') {
+        // Reemplazar coma por punto para parseFloat
+        const normalizedValue = value.replace(',', '.');
+        numericValue = parseFloat(normalizedValue) || 0;
+      } else {
+        numericValue = value || 0;
+      }
+      
+      newPrizes[index] = {
+        ...newPrizes[index],
+        [field]: numericValue
+      };
+    } else {
+      newPrizes[index] = {
+        ...newPrizes[index],
+        [field]: value
+      };
+    }
+    
     setFormData({ ...formData, prizes: newPrizes });
+  };
+
+  // Función para formatear el valor mostrado con coma decimal preservando decimales
+  const formatCostValue = (value: number) => {
+    // Convertir a string y preservar hasta 2 decimales
+    const formatted = value.toFixed(2).replace('.', ',');
+    return formatted;
+  };
+
+  // Función para manejar el input de coste con formato español
+  const handleCostInput = (index: number, inputValue: string) => {
+    // Permitir escribir tanto punto como coma, pero convertir internamente
+    const cleanValue = inputValue.replace(',', '.');
+    const numericValue = parseFloat(cleanValue) || 0;
+    handlePrizeChange(index, 'realCost', numericValue);
   };
 
   if (loading || !user) {
@@ -391,13 +425,13 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                         </label>
                         <div className="flex items-center gap-2">
                           <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={prize.realCost}
-                            onChange={(e) => handlePrizeChange(index, 'realCost', parseFloat(e.target.value) || 0)}
-                            placeholder="0.00"
+                            type="text"
+                            value={formatCostValue(prize.realCost)}
+                            onChange={(e) => handleCostInput(index, e.target.value)}
+                            placeholder="0,00"
                             className="w-24 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            pattern="[0-9]+([,][0-9]{1,2})?"
+                            title="Formato: 0,00 (usar coma para decimales)"
                           />
                           <span className="text-sm text-gray-600">€</span>
                         </div>
