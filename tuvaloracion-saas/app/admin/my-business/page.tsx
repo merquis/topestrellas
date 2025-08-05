@@ -84,6 +84,14 @@ export default function MyBusinessPage() {
                 Gestiona los negocios asignados a tu cuenta ({filteredBusinesses.length} negocio{filteredBusinesses.length !== 1 ? 's' : ''})
               </p>
             </div>
+            {businesses.length === 0 && (
+              <button
+                onClick={() => router.push('/admin/new-business')}
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center gap-2"
+              >
+                <span>➕</span> Añadir Nuevo Negocio
+              </button>
+            )}
           </div>
 
           {/* Search */}

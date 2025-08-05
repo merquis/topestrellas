@@ -105,7 +105,8 @@ export default function NewBusinessPage() {
       router.push('/admin');
       return;
     }
-    if (authUser.role !== 'super_admin') {
+    // Permitir acceso tanto a super_admin como a admin
+    if (!['super_admin', 'admin'].includes(authUser.role)) {
       router.push('/admin');
       return;
     }
@@ -132,7 +133,8 @@ export default function NewBusinessPage() {
           message: `Negocio creado exitosamente! Subdominio: ${data.subdomain}.tuvaloracion.com`, 
           type: 'success' 
         });
-        setTimeout(() => router.push('/admin/businesses'), 2000);
+        const redirectPath = user?.role === 'super_admin' ? '/admin/businesses' : '/admin/my-business';
+        setTimeout(() => router.push(redirectPath), 2000);
       } else {
         setToast({ message: `Error: ${data.error}`, type: 'error' });
       }
@@ -475,7 +477,10 @@ export default function NewBusinessPage() {
             <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between">
               <button
                 type="button"
-                onClick={() => router.push('/admin/businesses')}
+                onClick={() => {
+                  const redirectPath = user?.role === 'super_admin' ? '/admin/businesses' : '/admin/my-business';
+                  router.push(redirectPath);
+                }}
                 className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancelar
