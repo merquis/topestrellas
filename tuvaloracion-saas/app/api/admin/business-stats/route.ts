@@ -211,7 +211,28 @@ export async function GET(request: NextRequest) {
       ? Math.round(Object.values(dailyStats).reduce((sum: number, day: any) => sum + day.total, 0) / Object.keys(dailyStats).length * 10) / 10
       : 0;
 
-    // 8. ESTADÍSTICAS DE GOOGLE Y TRIPADVISOR
+    // 8. ESTADÍSTICAS DE REDIRECCIONES A GOOGLE Y TRIPADVISOR
+    // Contar redirecciones (opiniones de 5 estrellas que fueron enviadas a review)
+    const totalRedirections = fiveStarReviews; // Todas las 5 estrellas son redirecciones
+    
+    // Obtener el contador actual para calcular distribución
+    const reviewClickCounter = business.config?.reviewClickCounter || 0;
+    
+    // Calcular distribución basada en la lógica del contador
+    // Contador impar (1,3,5...) = Google, Contador par (2,4,6...) = TripAdvisor
+    let googleRedirections = 0;
+    let tripadvisorRedirections = 0;
+    
+    // Simular la distribución basada en el patrón alternante
+    for (let i = 1; i <= totalRedirections; i++) {
+      if (i % 2 === 1) {
+        googleRedirections++;
+      } else {
+        tripadvisorRedirections++;
+      }
+    }
+
+    // 9. ESTADÍSTICAS DE GOOGLE Y TRIPADVISOR (datos de puntuación)
     // Solo incluir si hay datos válidos (rating > 0 y totalReviews > 0)
     const googleStats = (business.config?.googleStats && 
                         business.config.googleStats.currentRating > 0 && 
@@ -273,7 +294,12 @@ export async function GET(request: NextRequest) {
       
       // Estadísticas de Google y TripAdvisor
       googleStats,
-      tripadvisorStats
+      tripadvisorStats,
+      
+      // Estadísticas de redirecciones
+      totalRedirections,
+      googleRedirections,
+      tripadvisorRedirections
     });
 
   } catch (error) {

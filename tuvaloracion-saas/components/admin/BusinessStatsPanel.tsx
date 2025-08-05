@@ -45,7 +45,7 @@ interface BusinessStats {
     total: number;
     fiveStar: number;
   }>;
-  // Nuevos campos para Google y TripAdvisor
+  // Campos para Google y TripAdvisor
   googleStats?: {
     currentRating: number;
     totalReviews: number;
@@ -54,6 +54,10 @@ interface BusinessStats {
     currentRating: number;
     totalReviews: number;
   };
+  // Nuevos campos para redirecciones
+  totalRedirections: number;
+  googleRedirections: number;
+  tripadvisorRedirections: number;
 }
 
 interface BusinessStatsPanelProps {
@@ -364,11 +368,12 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
         </div>
       </div>
 
-      {/* Estadísticas de Google y TripAdvisor - MOVIDO AQUÍ */}
-      {(stats.googleStats || stats.tripadvisorStats) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Google Reviews */}
-          {stats.googleStats && stats.googleStats.currentRating > 0 && stats.googleStats.totalReviews > 0 && (
+      {/* Estadísticas de Google y TripAdvisor con Redirecciones */}
+      <div className="space-y-6">
+        {/* Fila Google - solo si hay datos de Google */}
+        {stats.googleStats && stats.googleStats.currentRating > 0 && stats.googleStats.totalReviews > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Google Reviews */}
             <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="text-3xl">🔍</div>
@@ -415,10 +420,47 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
                 })()}
               </div>
             </div>
-          )}
 
-          {/* TripAdvisor Reviews */}
-          {stats.tripadvisorStats && stats.tripadvisorStats.currentRating > 0 && stats.tripadvisorStats.totalReviews > 0 && (
+            {/* Estadísticas de Redirecciones Google */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="text-3xl">📊</div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Redirecciones a Google</h3>
+                  <p className="text-sm text-gray-600">Usuarios enviados al formulario de Google</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="text-center p-6 bg-blue-50 rounded-lg">
+                  <div className="text-5xl font-bold text-blue-600 mb-2">
+                    {stats.googleRedirections}
+                  </div>
+                  <p className="text-gray-700 font-medium">usuarios enviados</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {stats.totalRedirections > 0 ? Math.round((stats.googleRedirections / stats.totalRedirections) * 100) : 0}% del total
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg p-4 text-white">
+                  <div className="flex items-center space-x-2">
+                    <div className="text-2xl">🚀</div>
+                    <div>
+                      <p className="font-bold">
+                        Impacto: {stats.googleRedirections} posibles reseñas en Google
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Fila TripAdvisor - solo si hay datos de TripAdvisor */}
+        {stats.tripadvisorStats && stats.tripadvisorStats.currentRating > 0 && stats.tripadvisorStats.totalReviews > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* TripAdvisor Reviews */}
             <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="text-3xl">🏨</div>
@@ -465,9 +507,103 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
                 })()}
               </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Estadísticas de Redirecciones TripAdvisor */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="text-3xl">📊</div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Redirecciones a TripAdvisor</h3>
+                  <p className="text-sm text-gray-600">Usuarios enviados al formulario de TripAdvisor</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="text-center p-6 bg-orange-50 rounded-lg">
+                  <div className="text-5xl font-bold text-orange-600 mb-2">
+                    {stats.tripadvisorRedirections}
+                  </div>
+                  <p className="text-gray-700 font-medium">usuarios enviados</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {stats.totalRedirections > 0 ? Math.round((stats.tripadvisorRedirections / stats.totalRedirections) * 100) : 0}% del total
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-4 text-white">
+                  <div className="flex items-center space-x-2">
+                    <div className="text-2xl">🚀</div>
+                    <div>
+                      <p className="font-bold">
+                        Impacto: {stats.tripadvisorRedirections} posibles reseñas en TripAdvisor
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sección de recomendaciones si falta alguna plataforma */}
+        {(!stats.googleStats || stats.googleStats.currentRating === 0 || stats.googleStats.totalReviews === 0) && 
+         (!stats.tripadvisorStats || stats.tripadvisorStats.currentRating === 0 || stats.tripadvisorStats.totalReviews === 0) && (
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+            <div className="flex items-start space-x-4">
+              <div className="text-4xl">💡</div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  Recomendación de Crecimiento
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Maximiza tu alcance configurando ambas plataformas de reseñas:
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(!stats.googleStats || stats.googleStats.currentRating === 0 || stats.googleStats.totalReviews === 0) && (
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="text-2xl">🔍</div>
+                        <h4 className="font-bold text-gray-800">Google Reviews</h4>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Google es la plataforma #1 para búsquedas locales. Configúrala para:
+                      </p>
+                      <ul className="text-xs text-gray-600 space-y-1 mb-4">
+                        <li>• Aparecer primero en búsquedas locales</li>
+                        <li>• Aumentar la confianza del cliente</li>
+                        <li>• Mejorar tu SEO local</li>
+                      </ul>
+                      <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium">
+                        🔗 Configurar Google
+                      </button>
+                    </div>
+                  )}
+                  
+                  {(!stats.tripadvisorStats || stats.tripadvisorStats.currentRating === 0 || stats.tripadvisorStats.totalReviews === 0) && (
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="text-2xl">🏨</div>
+                        <h4 className="font-bold text-gray-800">TripAdvisor Reviews</h4>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        TripAdvisor es clave para turismo y hostelería. Te ayuda a:
+                      </p>
+                      <ul className="text-xs text-gray-600 space-y-1 mb-4">
+                        <li>• Atraer turistas y viajeros</li>
+                        <li>• Competir en el sector turístico</li>
+                        <li>• Aumentar reservas directas</li>
+                      </ul>
+                      <button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium">
+                        🔗 Configurar TripAdvisor
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Métricas de Rendimiento */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
