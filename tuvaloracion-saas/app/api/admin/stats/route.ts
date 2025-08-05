@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
     const businesses = await db.collection('businesses').find(businessQuery).toArray();
     const totalBusinesses = businesses.length;
     const activeBusinesses = businesses.filter((b: any) => b.active).length;
+    const inactiveBusinesses = businesses.filter((b: any) => !b.active).length;
 
     // Construir query para opiniones basado en los negocios del usuario
     const opinionsQuery = userBusinessIds.length > 0 
@@ -125,14 +126,33 @@ export async function GET(request: NextRequest) {
       ? Math.round((opinionsThisMonth / opinionsLastMonth) * 100 * 10) / 10
       : opinionsThisMonth > 0 ? 100 : 0;
 
+    // Calcular crecimiento mensual de negocios inactivos
+    const inactiveBusinessesLastMonth = await db.collection('businesses').countDocuments({
+      ...businessQuery,
+      active: false,
+      createdAt: { $lt: oneMonthAgo }
+    });
+
+    const inactiveBusinessesThisMonth = await db.collection('businesses').countDocuments({
+      ...businessQuery,
+      active: false,
+      createdAt: { $gte: oneMonthAgo }
+    });
+
+    const inactiveGrowth = inactiveBusinessesLastMonth > 0 
+      ? Math.round((inactiveBusinessesThisMonth / inactiveBusinessesLastMonth) * 100 * 10) / 10
+      : inactiveBusinessesThisMonth > 0 ? 100 : 0;
+
     return NextResponse.json({
       totalBusinesses,
       activeBusinesses,
+      inactiveBusinesses,
       totalOpinions,
       totalPrizes,
       avgRating,
       monthlyGrowth,
-      opinionsGrowth
+      opinionsGrowth,
+      inactiveGrowth
     });
 
   } catch (error) {

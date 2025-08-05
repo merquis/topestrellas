@@ -22,11 +22,13 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalBusinesses: 0,
     activeBusinesses: 0,
+    inactiveBusinesses: 0,
     totalOpinions: 0,
     totalPrizes: 0,
     avgRating: 0,
     monthlyGrowth: 0,
-    opinionsGrowth: 0
+    opinionsGrowth: 0,
+    inactiveGrowth: 0
   });
   const router = useRouter();
 
@@ -88,11 +90,13 @@ export default function AdminDashboard() {
         setStats({
           totalBusinesses: statsData.totalBusinesses,
           activeBusinesses: statsData.activeBusinesses,
+          inactiveBusinesses: statsData.inactiveBusinesses,
           totalOpinions: statsData.totalOpinions,
           totalPrizes: statsData.totalPrizes,
           avgRating: statsData.avgRating,
           monthlyGrowth: statsData.monthlyGrowth,
-          opinionsGrowth: statsData.opinionsGrowth
+          opinionsGrowth: statsData.opinionsGrowth,
+          inactiveGrowth: statsData.inactiveGrowth
         });
       }
     } catch (error) {
@@ -335,7 +339,7 @@ export default function AdminDashboard() {
   return (
     <AdminLayout user={user}>
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <StatsCard
           title="Negocios Totales"
           value={stats.totalBusinesses}
@@ -350,6 +354,14 @@ export default function AdminDashboard() {
           icon="✅"
           bgColor="bg-gradient-to-br from-green-50 to-green-100"
           iconBgColor="bg-green-500"
+        />
+        <StatsCard
+          title="Negocios Inactivos"
+          value={stats.inactiveBusinesses}
+          icon="❌"
+          trend={{ value: stats.inactiveGrowth, isPositive: false }}
+          bgColor="bg-gradient-to-br from-red-50 to-red-100"
+          iconBgColor="bg-red-500"
         />
         <StatsCard
           title="Opiniones Totales"
