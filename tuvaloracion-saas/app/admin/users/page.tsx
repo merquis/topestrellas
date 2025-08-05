@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
+import BusinessMultiSelector from '@/components/BusinessMultiSelector';
 import { AuthUser, checkAuth } from '@/lib/auth';
 
 interface User {
@@ -41,7 +42,15 @@ export default function UsersPage() {
     email: '',
     password: '',
     role: 'admin' as 'admin' | 'super_admin',
-    businessId: ''
+    businessId: '',
+    selectedBusinesses: [] as { id: string; name: string }[]
+  });
+
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    role: 'admin' as 'admin' | 'super_admin',
+    selectedBusinesses: [] as { id: string; name: string }[]
   });
 
   useEffect(() => {
