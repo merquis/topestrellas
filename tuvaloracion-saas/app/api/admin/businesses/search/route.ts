@@ -3,7 +3,8 @@ import clientPromise from '@/lib/mongodb';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
+    const url = new URL(request.url);
+    const { searchParams } = url;
     const query = searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '10');
     

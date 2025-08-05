@@ -4,7 +4,8 @@ import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const url = new URL(request.url);
+    const { searchParams } = url;
     const userEmail = searchParams.get('userEmail');
     const userRole = searchParams.get('userRole');
     const businessId = searchParams.get('businessId');
