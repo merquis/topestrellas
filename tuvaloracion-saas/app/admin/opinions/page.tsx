@@ -63,6 +63,37 @@ function OpinionsContent() {
     }
   }, [user]);
 
+  // Escuchar cambios en el selector global de negocios
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleBusinessChange = () => {
+      try {
+        const storedBusiness = localStorage.getItem('selectedBusiness');
+        if (storedBusiness) {
+          const business = JSON.parse(storedBusiness);
+          console.log('📦 Business changed in opinions page:', business);
+          // Actualizar el filtro de negocio y recargar opiniones
+          setSelectedBusiness(business._id);
+        }
+      } catch (error) {
+        console.error('❌ Error parsing stored business:', error);
+      }
+    };
+
+    // Cargar negocio inicial desde localStorage
+    handleBusinessChange();
+
+    // Escuchar cambios en localStorage
+    window.addEventListener('storage', handleBusinessChange);
+    window.addEventListener('businessChanged', handleBusinessChange);
+
+    return () => {
+      window.removeEventListener('storage', handleBusinessChange);
+      window.removeEventListener('businessChanged', handleBusinessChange);
+    };
+  }, []);
+
   // Recargar opiniones cuando cambien los filtros
   useEffect(() => {
     if (user) {

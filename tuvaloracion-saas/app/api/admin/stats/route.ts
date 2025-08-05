@@ -27,26 +27,44 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
       }
 
-      // Soporte para múltiples negocios (businessIds) y compatibilidad con businessId legacy
-      if (user.businessIds && Array.isArray(user.businessIds)) {
-        userBusinessIds = user.businessIds.map((id: string) => new ObjectId(id));
-      } else if (user.businessId) {
-        userBusinessIds = [new ObjectId(user.businessId)];
-      }
+      // Si se especifica un businessId, verificar que el admin tenga acceso a ese negocio
+      if (businessId) {
+        // Verificar que el businessId esté en los negocios asignados al admin
+        if (user.businessIds && Array.isArray(user.businessIds)) {
+          if (user.businessIds.includes(businessId)) {
+            userBusinessIds = [new ObjectId(businessId)];
+            businessQuery = { _id: new ObjectId(businessId) };
+          } else {
+            return NextResponse.json({ error: 'No tienes acceso a este negocio' }, { status: 403 });
+          }
+        } else if (user.businessId && user.businessId === businessId) {
+          userBusinessIds = [new ObjectId(businessId)];
+          businessQuery = { _id: new ObjectId(businessId) };
+        } else {
+          return NextResponse.json({ error: 'No tienes acceso a este negocio' }, { status: 403 });
+        }
+      } else {
+        // Sin businessId específico, usar todos los negocios asignados
+        if (user.businessIds && Array.isArray(user.businessIds)) {
+          userBusinessIds = user.businessIds.map((id: string) => new ObjectId(id));
+        } else if (user.businessId) {
+          userBusinessIds = [new ObjectId(user.businessId)];
+        }
 
-      if (userBusinessIds.length === 0) {
-        return NextResponse.json({
-          totalBusinesses: 0,
-          activeBusinesses: 0,
-          totalOpinions: 0,
-          totalPrizes: 0,
-          avgRating: 0,
-          monthlyGrowth: 0,
-          opinionsGrowth: 0
-        });
-      }
+        if (userBusinessIds.length === 0) {
+          return NextResponse.json({
+            totalBusinesses: 0,
+            activeBusinesses: 0,
+            totalOpinions: 0,
+            totalPrizes: 0,
+            avgRating: 0,
+            monthlyGrowth: 0,
+            opinionsGrowth: 0
+          });
+        }
 
-      businessQuery = { _id: { $in: userBusinessIds } };
+        businessQuery = { _id: { $in: userBusinessIds } };
+      }
     } else if (userRole === 'super_admin') {
       // Super admin puede ver todas las estadísticas
       if (businessId && businessId !== 'all') {
