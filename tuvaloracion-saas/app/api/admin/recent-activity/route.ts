@@ -251,7 +251,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Ordenar por fecha y prioridad, limitar a 8 actividades
+    // Ordenar por fecha y prioridad, limitar a 12 actividades
     const sortedActivities = activities
       .sort((a, b) => {
         // Primero por prioridad
@@ -262,7 +262,7 @@ export async function GET(request: NextRequest) {
         // Luego por fecha
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       })
-      .slice(0, 8);
+      .slice(0, 12);
 
     return NextResponse.json({ activities: sortedActivities });
 

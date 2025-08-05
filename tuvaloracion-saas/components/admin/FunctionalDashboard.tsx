@@ -247,8 +247,21 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Recent Activity */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Actividad Reciente</h2>
-          <div className="space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Actividad Reciente</h2>
+            {recentActivities.length > 8 && (
+              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                {recentActivities.length} actividades
+              </span>
+            )}
+          </div>
+          <div 
+            className="space-y-4 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#d1d5db #f3f4f6'
+            }}
+          >
             {recentActivities.length > 0 ? (
               recentActivities.map((activity, index) => (
                 <div 
@@ -278,6 +291,15 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
               </div>
             )}
           </div>
+          {recentActivities.length > 8 && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-center text-xs text-gray-500">
+                <span className="mr-2">⬆️</span>
+                Desliza hacia arriba para ver más actividades
+                <span className="ml-2">⬆️</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
