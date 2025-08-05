@@ -72,7 +72,8 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
   const [selectedPeriod, setSelectedPeriod] = useState('1month');
 
   const periods = [
-    { value: '1day', label: 'Último día', icon: '📅' },
+    { value: '1day', label: 'Hoy', icon: '📅' },
+    { value: 'yesterday', label: 'Ayer', icon: '📆' },
     { value: '1week', label: 'Última semana', icon: '📊' },
     { value: '1month', label: 'Último mes', icon: '📈' },
     { value: '3months', label: '3 meses', icon: '📉' },

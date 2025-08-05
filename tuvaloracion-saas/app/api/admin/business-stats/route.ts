@@ -64,16 +64,38 @@ export async function GET(request: NextRequest) {
 
     // Calcular fechas según el período
     const now = new Date();
-    const periodStart = new Date();
-    const previousPeriodStart = new Date();
-    const previousPeriodEnd = new Date();
+    let periodStart = new Date();
+    let periodEnd: Date = now;
+    let previousPeriodStart = new Date();
+    let previousPeriodEnd = new Date();
 
     switch (period) {
-      case '1day':
-        periodStart.setDate(now.getDate() - 1);
-        previousPeriodStart.setDate(now.getDate() - 2);
-        previousPeriodEnd.setDate(now.getDate() - 1);
+      case '1day': { // Hoy
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const yesterdayStart = new Date(todayStart);
+        yesterdayStart.setDate(todayStart.getDate() - 1);
+
+        periodStart = todayStart;
+        periodEnd = now;
+        previousPeriodStart = yesterdayStart;
+        previousPeriodEnd = new Date(todayStart.getTime() - 1);
         break;
+      }
+      case 'yesterday': { // Ayer
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const yesterdayStart = new Date(todayStart);
+        yesterdayStart.setDate(todayStart.getDate() - 1);
+        const dayBeforeYesterdayStart = new Date(yesterdayStart);
+        dayBeforeYesterdayStart.setDate(yesterdayStart.getDate() - 1);
+
+        periodStart = yesterdayStart;
+        periodEnd = new Date(todayStart.getTime() - 1);
+        previousPeriodStart = dayBeforeYesterdayStart;
+        previousPeriodEnd = new Date(yesterdayStart.getTime() - 1);
+        break;
+      }
       case '1week':
         periodStart.setDate(now.getDate() - 7);
         previousPeriodStart.setDate(now.getDate() - 14);
@@ -105,7 +127,7 @@ export async function GET(request: NextRequest) {
     const baseQuery = { businessId: new ObjectId(businessId) };
 
     // 1. ESTADÍSTICAS GENERALES DEL PERÍODO
-    const currentPeriodQuery = { ...baseQuery, createdAt: { $gte: periodStart, $lte: now } };
+    const currentPeriodQuery = { ...baseQuery, createdAt: { $gte: periodStart, $lte: periodEnd } };
     const previousPeriodQuery = { ...baseQuery, createdAt: { $gte: previousPeriodStart, $lte: previousPeriodEnd } };
 
     // Obtener todas las opiniones del período actual
@@ -313,7 +335,8 @@ export async function GET(request: NextRequest) {
 
 function getPeriodLabel(period: string): string {
   switch (period) {
-    case '1day': return 'Último día';
+    case '1day': return 'Hoy';
+    case 'yesterday': return 'Ayer';
     case '1week': return 'Última semana';
     case '1month': return 'Último mes';
     case '3months': return 'Últimos 3 meses';
