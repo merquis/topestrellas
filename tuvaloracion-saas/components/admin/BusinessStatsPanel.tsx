@@ -211,24 +211,29 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
     <div className="space-y-6">
       {/* Header con selector de período */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col space-y-4">
           <div>
             <h1 className="text-2xl font-bold">📊 Panel Empresarial</h1>
             <p className="text-blue-100 mt-1">{stats.businessName}</p>
             <p className="text-blue-200 text-sm">{stats.periodLabel}</p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="bg-white/20 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50"
-            >
-              {periods.map(period => (
-                <option key={period.value} value={period.value} className="text-gray-900">
-                  {period.icon} {period.label}
-                </option>
-              ))}
-            </select>
+          
+          {/* Selector de período horizontal */}
+          <div className="flex flex-wrap gap-2">
+            {periods.map(period => (
+              <button
+                key={period.value}
+                onClick={() => setSelectedPeriod(period.value)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  selectedPeriod === period.value
+                    ? 'bg-white text-blue-600 shadow-lg'
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+              >
+                <span>{period.icon}</span>
+                <span>{period.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
