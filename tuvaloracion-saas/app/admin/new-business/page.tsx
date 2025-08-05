@@ -13,11 +13,89 @@ export default function NewBusinessPage() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
+  
+  // Lista de provincias españolas con sus zonas horarias
+  const spanishProvinces = [
+    // Provincias peninsulares (mainland) - Europe/Madrid
+    { name: 'Álava', timezone: 'Europe/Madrid' },
+    { name: 'Albacete', timezone: 'Europe/Madrid' },
+    { name: 'Alicante', timezone: 'Europe/Madrid' },
+    { name: 'Almería', timezone: 'Europe/Madrid' },
+    { name: 'Asturias', timezone: 'Europe/Madrid' },
+    { name: 'Ávila', timezone: 'Europe/Madrid' },
+    { name: 'Badajoz', timezone: 'Europe/Madrid' },
+    { name: 'Barcelona', timezone: 'Europe/Madrid' },
+    { name: 'Burgos', timezone: 'Europe/Madrid' },
+    { name: 'Cáceres', timezone: 'Europe/Madrid' },
+    { name: 'Cádiz', timezone: 'Europe/Madrid' },
+    { name: 'Cantabria', timezone: 'Europe/Madrid' },
+    { name: 'Castellón', timezone: 'Europe/Madrid' },
+    { name: 'Ciudad Real', timezone: 'Europe/Madrid' },
+    { name: 'Córdoba', timezone: 'Europe/Madrid' },
+    { name: 'Cuenca', timezone: 'Europe/Madrid' },
+    { name: 'Girona', timezone: 'Europe/Madrid' },
+    { name: 'Granada', timezone: 'Europe/Madrid' },
+    { name: 'Guadalajara', timezone: 'Europe/Madrid' },
+    { name: 'Guipúzcoa', timezone: 'Europe/Madrid' },
+    { name: 'Huelva', timezone: 'Europe/Madrid' },
+    { name: 'Huesca', timezone: 'Europe/Madrid' },
+    { name: 'Jaén', timezone: 'Europe/Madrid' },
+    { name: 'La Coruña (A Coruña)', timezone: 'Europe/Madrid' },
+    { name: 'La Rioja', timezone: 'Europe/Madrid' },
+    { name: 'León', timezone: 'Europe/Madrid' },
+    { name: 'Lleida', timezone: 'Europe/Madrid' },
+    { name: 'Lugo', timezone: 'Europe/Madrid' },
+    { name: 'Madrid', timezone: 'Europe/Madrid' },
+    { name: 'Málaga', timezone: 'Europe/Madrid' },
+    { name: 'Murcia', timezone: 'Europe/Madrid' },
+    { name: 'Navarra', timezone: 'Europe/Madrid' },
+    { name: 'Ourense', timezone: 'Europe/Madrid' },
+    { name: 'Palencia', timezone: 'Europe/Madrid' },
+    { name: 'Pontevedra', timezone: 'Europe/Madrid' },
+    { name: 'Salamanca', timezone: 'Europe/Madrid' },
+    { name: 'Segovia', timezone: 'Europe/Madrid' },
+    { name: 'Sevilla', timezone: 'Europe/Madrid' },
+    { name: 'Soria', timezone: 'Europe/Madrid' },
+    { name: 'Tarragona', timezone: 'Europe/Madrid' },
+    { name: 'Teruel', timezone: 'Europe/Madrid' },
+    { name: 'Toledo', timezone: 'Europe/Madrid' },
+    { name: 'Valencia', timezone: 'Europe/Madrid' },
+    { name: 'Valladolid', timezone: 'Europe/Madrid' },
+    { name: 'Zamora', timezone: 'Europe/Madrid' },
+    { name: 'Zaragoza', timezone: 'Europe/Madrid' },
+    
+    // Islas Canarias - Atlantic/Canary
+    { name: 'Tenerife', timezone: 'Atlantic/Canary' },
+    { name: 'Gran Canaria', timezone: 'Atlantic/Canary' },
+    { name: 'Lanzarote', timezone: 'Atlantic/Canary' },
+    { name: 'Fuerteventura', timezone: 'Atlantic/Canary' },
+    { name: 'La Palma', timezone: 'Atlantic/Canary' },
+    { name: 'La Gomera', timezone: 'Atlantic/Canary' },
+    { name: 'El Hierro', timezone: 'Atlantic/Canary' },
+    
+    // Islas Baleares - Europe/Madrid
+    { name: 'Mallorca', timezone: 'Europe/Madrid' },
+    { name: 'Menorca', timezone: 'Europe/Madrid' },
+    { name: 'Ibiza (Eivissa)', timezone: 'Europe/Madrid' },
+    { name: 'Formentera', timezone: 'Europe/Madrid' },
+    
+    // Ciudades autónomas - Europe/Madrid
+    { name: 'Ceuta', timezone: 'Europe/Madrid' },
+    { name: 'Melilla', timezone: 'Europe/Madrid' }
+  ].sort((a, b) => a.name.localeCompare(b.name));
+
+  // Estado para el autocompletado de provincias
+  const [provinceSearch, setProvinceSearch] = useState('');
+  const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+  const [filteredProvinces, setFilteredProvinces] = useState(spanishProvinces);
   const [formData, setFormData] = useState({
     name: '',
     type: 'restaurante',
     phone: '',
     email: '',
+    country: 'España',
+    city: '',
+    postalCode: '',
     address: '',
     googleReviewUrl: '',
     tripadvisorReviewUrl: '',
@@ -98,6 +176,41 @@ export default function NewBusinessPage() {
       'PREMIO 8'
     ]
   };
+
+  // Función para filtrar provincias
+  const handleProvinceSearch = (searchTerm: string) => {
+    setProvinceSearch(searchTerm);
+    const filtered = spanishProvinces.filter(province =>
+      province.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProvinces(filtered);
+    setShowProvinceDropdown(searchTerm.length > 0);
+  };
+
+  // Función para seleccionar provincia
+  const handleProvinceSelect = (provinceName: string) => {
+    setFormData({
+      ...formData,
+      city: provinceName
+    });
+    setProvinceSearch(provinceName);
+    setShowProvinceDropdown(false);
+  };
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.province-dropdown-container')) {
+        setShowProvinceDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const authUser = checkAuth();
@@ -306,17 +419,99 @@ export default function NewBusinessPage() {
                     />
                   </div>
 
+                </div>
+
+                {/* Ubicación del negocio */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      País *
+                    </label>
+                    <select
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="España">España</option>
+                    </select>
+                  </div>
+
+                  <div className="relative province-dropdown-container">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Provincia *
+                    </label>
+                    <input
+                      type="text"
+                      name="provinceSearch"
+                      value={provinceSearch}
+                      onChange={(e) => handleProvinceSearch(e.target.value)}
+                      onFocus={() => setShowProvinceDropdown(true)}
+                      placeholder="Busca tu provincia (ej: Tenerife, Madrid...)"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                    
+                    {/* Dropdown de provincias filtradas */}
+                    {showProvinceDropdown && filteredProvinces.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredProvinces.map((province) => (
+                          <div
+                            key={province.name}
+                            onClick={() => handleProvinceSelect(province.name)}
+                            className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-800">{province.name}</span>
+                              <span className="text-xs text-gray-500">
+                                {province.timezone === 'Atlantic/Canary' ? 'Canarias' : 'Península'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Mensaje cuando no hay resultados */}
+                    {showProvinceDropdown && provinceSearch && filteredProvinces.length === 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                        <div className="px-4 py-3 text-gray-500">
+                          No se encontraron provincias que coincidan con "{provinceSearch}"
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Código Postal *
+                    </label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      value={formData.postalCode}
+                      onChange={handleChange}
+                      placeholder="28001"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Dirección
+                      Dirección completa *
                     </label>
                     <input
                       type="text"
                       name="address"
                       value={formData.address}
                       onChange={handleChange}
-                      placeholder="Calle Principal 123, Ciudad"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Calle Principal 123, 2º A"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
                     />
                   </div>
                 </div>

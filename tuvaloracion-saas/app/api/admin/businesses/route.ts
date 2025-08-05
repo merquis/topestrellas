@@ -232,8 +232,7 @@ export async function POST(request: Request) {
       },
       contact: {
         phone: data.phone || '',
-        email: data.email || '',
-        address: `${data.address}, ${data.postalCode} ${data.city}, ${data.country}`
+        email: data.email || ''
       },
       subscription: {
         plan: data.plan || 'trial',
