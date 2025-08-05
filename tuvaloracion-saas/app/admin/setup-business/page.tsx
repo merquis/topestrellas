@@ -19,7 +19,6 @@ function SetupBusinessContent() {
   const businessType = searchParams.get('type') || 'restaurante';
   
   const [formData, setFormData] = useState({
-    subdomain: '',
     businessName: '',
     phone: '',
     address: '',
@@ -93,7 +92,7 @@ function SetupBusinessContent() {
     if (currentStep === 1 && selectedPlan) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      if (!formData.subdomain || !formData.businessName) {
+      if (!formData.businessName || !formData.phone) {
         setToast({ message: 'Por favor completa los campos requeridos', type: 'error' });
         return;
       }
@@ -262,25 +261,6 @@ function SetupBusinessContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Subdominio *
-                  </label>
-                  <input
-                    type="text"
-                    name="subdomain"
-                    value={formData.subdomain}
-                    onChange={handleChange}
-                    placeholder="mi-negocio"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                    pattern="[a-z0-9-]+"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    URL: {formData.subdomain || 'mi-negocio'}.tuvaloracion.com
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Nombre del Negocio *
                   </label>
                   <input
@@ -296,7 +276,7 @@ function SetupBusinessContent() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Teléfono
+                    Teléfono del negocio *
                   </label>
                   <input
                     type="tel"
@@ -305,25 +285,14 @@ function SetupBusinessContent() {
                     onChange={handleChange}
                     placeholder="+34 900 000 000"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de Negocio
-                  </label>
-                  <input
-                    type="text"
-                    value={businessType}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
-                    disabled
+                    required
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dirección
+                  Dirección del negocio
                 </label>
                 <input
                   type="text"

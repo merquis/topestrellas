@@ -14,7 +14,6 @@ export default function NewBusinessPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState({
-    subdomain: '',
     name: '',
     type: 'restaurante',
     phone: '',
@@ -226,28 +225,6 @@ export default function NewBusinessPage() {
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Subdominio *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        name="subdomain"
-                        value={formData.subdomain}
-                        onChange={handleChange}
-                        placeholder="mi-restaurante"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        required
-                        pattern="[a-z0-9-]+"
-                        title="Solo letras minúsculas, números y guiones"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      URL: {formData.subdomain || 'mi-restaurante'}.tuvaloracion.com
-                    </p>
-                  </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Nombre del Negocio *

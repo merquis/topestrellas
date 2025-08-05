@@ -23,6 +23,43 @@ export async function GET() {
   }
 }
 
+// Función para generar subdominio a partir del nombre
+function generateSubdomain(businessName: string): string {
+  return businessName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
+    .replace(/[^a-z0-9\s-]/g, '') // Solo letras, números, espacios y guiones
+    .trim()
+    .replace(/\s+/g, '-') // Reemplazar espacios con guiones
+    .replace(/-+/g, '-') // Eliminar guiones múltiples
+    .replace(/^-|-$/g, ''); // Eliminar guiones al inicio y final
+}
+
+// Función para encontrar un subdominio único
+async function findUniqueSubdomain(db: any, baseSubdomain: string): Promise<string> {
+  let subdomain = baseSubdomain;
+  let counter = 1;
+  
+  // Verificar si el subdominio base está disponible
+  let existing = await db.collection('businesses').findOne({ subdomain });
+  
+  // Si el subdominio base está ocupado, buscar uno con sufijo
+  while (existing) {
+    subdomain = `${baseSubdomain}-${counter}`;
+    existing = await db.collection('businesses').findOne({ subdomain });
+    counter++;
+    
+    // Protección contra bucles infinitos (máximo 1000 intentos)
+    if (counter > 1000) {
+      throw new Error('No se pudo encontrar un subdominio único después de 1000 intentos');
+    }
+  }
+  
+  console.log(`Subdominio único encontrado: ${subdomain} (base: ${baseSubdomain})`);
+  return subdomain;
+}
+
 export async function POST(request: Request) {
   try {
     const client = await clientPromise;
@@ -31,24 +68,26 @@ export async function POST(request: Request) {
     
     // Validar datos requeridos
     const businessName = data.businessName || data.name;
-    if (!data.subdomain || !businessName || !data.phone) {
+    if (!businessName || !data.phone) {
       return NextResponse.json(
-        { error: 'Subdominio, nombre y teléfono son requeridos' },
+        { error: 'Nombre del negocio y teléfono son requeridos' },
         { status: 400 }
       );
     }
     
-    // Verificar si el subdominio ya existe
-    const existing = await db.collection('businesses').findOne({ 
-      subdomain: data.subdomain 
-    });
+    // Generar subdominio automáticamente
+    const baseSubdomain = generateSubdomain(businessName);
+    console.log(`Generando subdominio para "${businessName}" -> "${baseSubdomain}"`);
     
-    if (existing) {
+    if (!baseSubdomain) {
       return NextResponse.json(
-        { error: 'El subdominio ya está en uso' },
+        { error: 'No se pudo generar un subdominio válido a partir del nombre del negocio' },
         { status: 400 }
       );
     }
+    
+    // Encontrar un subdominio único
+    const uniqueSubdomain = await findUniqueSubdomain(db, baseSubdomain);
     
     // Procesar premios con IA
     const prizesToTranslate = data.prizes || [
@@ -65,7 +104,7 @@ export async function POST(request: Request) {
 
     // Estructura del nuevo negocio
     const newBusiness = {
-      subdomain: data.subdomain.toLowerCase(),
+      subdomain: uniqueSubdomain,
       name: data.businessName || data.name,
       type: data.type || 'restaurante',
       category: data.category || '',
