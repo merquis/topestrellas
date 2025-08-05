@@ -364,37 +364,7 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
         </div>
       </div>
 
-      {/* Métricas de Rendimiento */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
-          <div className="text-center">
-            <div className="text-4xl mb-2">🎯</div>
-            <p className="text-gray-600 text-sm font-medium">Tasa de Conversión</p>
-            <p className="text-3xl font-bold text-green-600">{stats.conversionRate}%</p>
-            <p className="text-sm text-gray-500 mt-1">a reseñas 5★</p>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-          <div className="text-center">
-            <div className="text-4xl mb-2">🏆</div>
-            <p className="text-gray-600 text-sm font-medium">Reseñas de Calidad</p>
-            <p className="text-3xl font-bold text-blue-600">{stats.qualityReviews}</p>
-            <p className="text-sm text-gray-500 mt-1">4★ y 5★ combinadas</p>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
-          <div className="text-center">
-            <div className="text-4xl mb-2">💎</div>
-            <p className="text-gray-600 text-sm font-medium">Eficiencia</p>
-            <p className="text-3xl font-bold text-purple-600">{formatCurrency(stats.costPerFiveStar)}</p>
-            <p className="text-sm text-gray-500 mt-1">por reseña 5★</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Estadísticas de Google y TripAdvisor */}
+      {/* Estadísticas de Google y TripAdvisor - MOVIDO AQUÍ */}
       {(stats.googleStats || stats.tripadvisorStats) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Google Reviews */}
@@ -498,6 +468,36 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
           )}
         </div>
       )}
+
+      {/* Métricas de Rendimiento */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+          <div className="text-center">
+            <div className="text-4xl mb-2">🎯</div>
+            <p className="text-gray-600 text-sm font-medium">Tasa de Conversión</p>
+            <p className="text-3xl font-bold text-green-600">{stats.conversionRate}%</p>
+            <p className="text-sm text-gray-500 mt-1">a reseñas 5★</p>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+          <div className="text-center">
+            <div className="text-4xl mb-2">🏆</div>
+            <p className="text-gray-600 text-sm font-medium">Reseñas de Calidad</p>
+            <p className="text-3xl font-bold text-blue-600">{stats.qualityReviews}</p>
+            <p className="text-sm text-gray-500 mt-1">4★ y 5★ combinadas</p>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+          <div className="text-center">
+            <div className="text-4xl mb-2">💎</div>
+            <p className="text-gray-600 text-sm font-medium">Eficiencia</p>
+            <p className="text-3xl font-bold text-purple-600">{formatCurrency(stats.costPerFiveStar)}</p>
+            <p className="text-sm text-gray-500 mt-1">por reseña 5★</p>
+          </div>
+        </div>
+      </div>
 
       {/* Mensaje motivacional */}
       {stats.totalSavings > 0 && (
