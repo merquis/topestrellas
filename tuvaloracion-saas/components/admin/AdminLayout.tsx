@@ -20,6 +20,8 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children, user }: AdminLayoutProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Cargar negocio seleccionado desde localStorage
   useEffect(() => {
@@ -36,6 +38,48 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
     }
   }, []);
 
+  // Cargar negocios para admins normales
+  useEffect(() => {
+    if (user.role === 'admin') {
+      loadBusinesses();
+    }
+  }, [user.email, user.role]);
+
+  const loadBusinesses = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        userEmail: user.email,
+        userRole: user.role
+      });
+
+      const response = await fetch(`/api/admin/businesses?${params}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Businesses loaded in AdminLayout:', data);
+        
+        if (Array.isArray(data)) {
+          setBusinesses(data);
+          // Si no hay negocio seleccionado, seleccionar el primero automáticamente
+          if (!selectedBusiness && data.length > 0) {
+            setSelectedBusiness(data[0]);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('selectedBusiness', JSON.stringify(data[0]));
+              window.dispatchEvent(new CustomEvent('businessChanged'));
+            }
+          }
+        }
+      } else {
+        console.error('❌ Error loading businesses:', response.status);
+      }
+    } catch (err) {
+      console.error('❌ Fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     clearAuth();
     // Usar window.location.href para forzar una recarga completa
@@ -44,6 +88,12 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
 
   const handleBusinessSelect = (business: Business) => {
     setSelectedBusiness(business);
+    
+    // Guardar en localStorage para persistencia
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedBusiness', JSON.stringify(business));
+      window.dispatchEvent(new CustomEvent('businessChanged'));
+    }
   };
 
   return (
@@ -67,18 +117,39 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
               </div>
               
               <div className="flex items-center gap-4">
-                {/* Business Selector Button for admin users */}
+                {/* Business Selector Dropdown for admin users */}
                 {user.role === 'admin' && (
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-                  >
-                    <span className="text-lg">🏪</span>
-                    <span className="hidden sm:inline">
-                      {selectedBusiness ? selectedBusiness.name : 'Cambiar Negocio'}
-                    </span>
-                    <span className="sm:hidden">Negocio</span>
-                  </button>
+                  <div className="relative">
+                    <label className="block text-xs text-gray-500 mb-1">Negocio actual:</label>
+                    <select
+                      value={selectedBusiness?._id || ''}
+                      onChange={(e) => {
+                        const businessId = e.target.value;
+                        if (businessId) {
+                          // Buscar el negocio completo
+                          const business = businesses.find(b => b._id === businessId);
+                          if (business) {
+                            handleBusinessSelect(business);
+                          }
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm font-medium min-w-[200px] appearance-none cursor-pointer"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: 'right 0.5rem center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: '1.5em 1.5em',
+                        paddingRight: '2.5rem'
+                      }}
+                    >
+                      <option value="">Seleccionar negocio...</option>
+                      {businesses.map((business) => (
+                        <option key={business._id} value={business._id}>
+                          🏪 {business.name} {business.active ? '(Activo)' : '(Inactivo)'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
                 
                 {/* Notifications */}
