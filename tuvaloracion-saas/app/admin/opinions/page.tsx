@@ -140,12 +140,7 @@ function OpinionsContent() {
         console.log('Opinions response:', data);
         setOpinions(data.opinions || []);
         
-        if (!data.opinions || data.opinions.length === 0) {
-          setToast({ 
-            message: `No se encontraron opiniones. Usuario: ${user.email}, Rol: ${user.role}`, 
-            type: 'info' 
-          });
-        }
+        // No mostrar toast cuando no hay opiniones, se mostrará en la UI
       } else {
         const errorData = await response.json();
         console.error('Error response:', errorData);
@@ -413,9 +408,12 @@ function OpinionsContent() {
               <h3 className="text-xl font-bold text-gray-800 mb-2">
                 No hay opiniones
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-4">
                 No se encontraron opiniones con los filtros aplicados
               </p>
+              <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3 inline-block">
+                Usuario: {user.email}, Rol: {user.role}
+              </div>
             </div>
           )}
         </div>
