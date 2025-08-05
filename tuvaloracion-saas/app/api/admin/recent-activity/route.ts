@@ -22,6 +22,13 @@ export async function GET(request: NextRequest) {
     
     if (userRole === 'admin') {
       const user = await db.collection('users').findOne({ email: userEmail });
+      console.log('👤 DEBUG - Usuario encontrado:', {
+        email: user?.email,
+        businessId: user?.businessId,
+        businessIds: user?.businessIds,
+        role: user?.role
+      });
+      
       if (!user) {
         return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
       }
@@ -74,6 +81,13 @@ export async function GET(request: NextRequest) {
 
     // 1. ACTIVIDADES DE NUEVAS OPINIONES (últimas 48 horas)
     const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    
+    console.log('🔍 DEBUG - Buscando opiniones recientes:');
+    console.log('- userBusinessIds:', userBusinessIds.map(id => id.toString()));
+    console.log('- twoDaysAgo:', twoDaysAgo);
+    console.log('- userRole:', userRole);
+    console.log('- businessId param:', businessId);
+    
     const recentOpinions = await db.collection('opinions')
       .find({
         businessId: { $in: userBusinessIds },
@@ -82,6 +96,16 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .limit(10)
       .toArray();
+      
+    console.log('📊 Found opinions:', recentOpinions.length);
+    recentOpinions.forEach((opinion, index) => {
+      console.log(`Opinion ${index + 1}:`, {
+        rating: opinion.rating,
+        businessId: opinion.businessId.toString(),
+        customerName: opinion.customer?.name,
+        createdAt: opinion.createdAt
+      });
+    });
 
     for (const opinion of recentOpinions) {
       const business = businessMap.get(opinion.businessId.toString());
