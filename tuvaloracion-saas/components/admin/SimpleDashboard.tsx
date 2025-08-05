@@ -36,10 +36,16 @@ export default function SimpleDashboard({ user, selectedBusiness }: SimpleDashbo
 
   useEffect(() => {
     loadDashboardData();
-  }, [user]);
+  }, [user, selectedBusiness]);
 
   const loadDashboardData = async () => {
     try {
+      // Para admins normales, esperar a que se seleccione un negocio
+      if (user.role === 'admin' && !selectedBusiness) {
+        console.log('⏳ Esperando selección de negocio...');
+        return;
+      }
+
       // Cargar negocios según el rol
       const businessesParams = new URLSearchParams({
         userEmail: user.email,
@@ -56,12 +62,16 @@ export default function SimpleDashboard({ user, selectedBusiness }: SimpleDashbo
       const statsParams = new URLSearchParams({
         userEmail: user.email,
         userRole: user.role,
-        ...(user.businessId && user.role !== 'super_admin' ? { businessId: user.businessId } : {})
+        ...(selectedBusiness && user.role === 'admin' ? { businessId: selectedBusiness._id } : {}),
+        ...(user.businessId && user.role !== 'super_admin' && !selectedBusiness ? { businessId: user.businessId } : {})
       });
+
+      console.log('📊 Cargando estadísticas con params:', Object.fromEntries(statsParams));
 
       const statsResponse = await fetch(`/api/admin/stats?${statsParams}`);
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
+        console.log('✅ Estadísticas recibidas:', statsData);
         setStats({
           totalBusinesses: statsData.totalBusinesses,
           activeBusinesses: statsData.activeBusinesses,
