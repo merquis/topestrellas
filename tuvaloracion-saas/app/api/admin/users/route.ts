@@ -16,7 +16,7 @@ export async function GET() {
     // Obtener información de negocios asociados
     const usersWithBusinesses = await Promise.all(
       users.map(async (user) => {
-        let businesses = [];
+        let businesses: { id: string; name: string }[] = [];
         
         // Soportar tanto businessId (legacy) como businessIds (nuevo)
         const businessIds = user.businessIds || (user.businessId ? [user.businessId] : []);
