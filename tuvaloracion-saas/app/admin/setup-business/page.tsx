@@ -96,7 +96,8 @@ function SetupBusinessContent() {
         setToast({ message: 'Por favor completa los campos requeridos', type: 'error' });
         return;
       }
-      setCurrentStep(3);
+      // En lugar de ir al paso 3, crear el negocio directamente
+      handleSubmit();
     }
   };
 
@@ -172,7 +173,7 @@ function SetupBusinessContent() {
         </div>
 
         {/* Progress Bar */}
-        <div className="max-w-3xl mx-auto mb-8">
+        <div className="max-w-2xl mx-auto mb-8">
           <div className="flex items-center justify-between">
             <div className={`flex items-center ${currentStep >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
@@ -190,15 +191,6 @@ function SetupBusinessContent() {
                 2
               </div>
               <span className="ml-2 hidden sm:inline">Información básica</span>
-            </div>
-            <div className={`flex-1 h-1 mx-4 ${currentStep >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-            <div className={`flex items-center ${currentStep >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                currentStep >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-300'
-              }`}>
-                3
-              </div>
-              <span className="ml-2 hidden sm:inline">Configuración</span>
             </div>
           </div>
         </div>
@@ -307,66 +299,6 @@ function SetupBusinessContent() {
           </div>
         )}
 
-        {/* Step 3: Configuration */}
-        {currentStep === 3 && (
-          <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold mb-6">Configuración de reseñas</h2>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL de Google Reviews (opcional)
-                </label>
-                <textarea
-                  name="googleReviewUrl"
-                  value={formData.googleReviewUrl}
-                  onChange={handleChange}
-                  placeholder="https://search.google.com/local/writereview?placeid=..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows={3}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Puedes añadirlo más tarde desde el panel de administración
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">
-                  Plataforma de Reviews por defecto
-                </label>
-                <div className="space-y-3">
-                  <label className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="reviewPlatform"
-                      value="google"
-                      checked={formData.reviewPlatform === 'google'}
-                      onChange={handleChange}
-                      className="mr-3"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">Google Reviews</p>
-                      <p className="text-sm text-gray-500">Redirigir a Google cuando den 5 estrellas</p>
-                    </div>
-                  </label>
-                  <label className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="reviewPlatform"
-                      value="tripadvisor"
-                      checked={formData.reviewPlatform === 'tripadvisor'}
-                      onChange={handleChange}
-                      className="mr-3"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">TripAdvisor Reviews</p>
-                      <p className="text-sm text-gray-500">Redirigir a TripAdvisor cuando den 5 estrellas</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Navigation Buttons */}
         <div className="max-w-2xl mx-auto mt-8 flex justify-between">
@@ -379,7 +311,7 @@ function SetupBusinessContent() {
             </button>
           )}
           <div className="flex-1"></div>
-          {currentStep < 3 ? (
+          {currentStep === 1 ? (
             <button
               onClick={handleNextStep}
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
@@ -388,11 +320,11 @@ function SetupBusinessContent() {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={handleNextStep}
               disabled={loading}
               className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50"
             >
-              Crear mi Negocio
+              {loading ? 'Creando...' : 'Crear mi Negocio'}
             </button>
           )}
         </div>
