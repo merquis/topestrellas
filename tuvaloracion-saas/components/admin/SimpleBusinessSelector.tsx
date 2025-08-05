@@ -59,6 +59,10 @@ export default function SimpleBusinessSelector({ user, onBusinessChange }: Simpl
             setBusinesses(data);
             if (data.length > 0) {
               setSelectedBusiness(data[0]);
+              // Guardar en localStorage para comunicación con dashboard
+              localStorage.setItem('selectedBusiness', JSON.stringify(data[0]));
+              // Disparar evento personalizado para notificar cambios en la misma pestaña
+              window.dispatchEvent(new CustomEvent('businessChanged'));
               // Notificar al componente padre sobre el negocio seleccionado
               onBusinessChange?.(data[0]);
             }
@@ -195,6 +199,10 @@ export default function SimpleBusinessSelector({ user, onBusinessChange }: Simpl
                 onClick={() => {
                   setSelectedBusiness(business);
                   setIsOpen(false);
+                  // Guardar en localStorage para comunicación con dashboard
+                  localStorage.setItem('selectedBusiness', JSON.stringify(business));
+                  // Disparar evento personalizado para notificar cambios en la misma pestaña
+                  window.dispatchEvent(new CustomEvent('businessChanged'));
                   // Notificar al componente padre sobre el cambio
                   onBusinessChange?.(business);
                 }}

@@ -1,9 +1,16 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import SimpleBusinessSelector from './SimpleBusinessSelector';
 import { AuthUser, clearAuth } from '@/lib/auth';
+
+interface Business {
+  _id: string;
+  name: string;
+  subdomain: string;
+  active: boolean;
+}
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -38,6 +45,13 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
               </div>
               
               <div className="flex items-center gap-4">
+                {/* Business Selector for admin users */}
+                {user.role === 'admin' && (
+                  <div className="mr-2">
+                    <SimpleBusinessSelector user={user} />
+                  </div>
+                )}
+                
                 {/* Notifications */}
                 <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors">
                   <span className="text-xl">🔔</span>
