@@ -148,18 +148,7 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
 
   // Función para calcular reseñas necesarias para subir 0.1 puntos
   const calculateReviewsNeeded = (currentRating: number, totalReviews: number) => {
-    // Calcular el siguiente objetivo (subir 0.1)
-    const nextDecimal = Math.ceil(currentRating * 10) / 10;
-    const targetRating = currentRating === nextDecimal ? 
-      Math.min(5.0, nextDecimal + 0.1) : nextDecimal;
-    
-    // Si ya está en 5.0, el objetivo es mantener 5.0
-    const actualTarget = currentRating >= 5.0 ? 5.0 : targetRating;
-    
-    // Calcular suma actual de puntuaciones
-    const currentSum = currentRating * totalReviews;
-    
-    // Si ya está en 5.0, calcular cuántas reseñas necesita para mantenerlo
+    // Si ya está en 5.0, mostrar mensaje especial
     if (currentRating >= 5.0) {
       return {
         target: 5.0,
@@ -168,15 +157,33 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
       };
     }
     
-    // Resolver ecuación: (currentSum + 5*x) / (totalReviews + x) = actualTarget
+    // Calcular el siguiente objetivo (SIEMPRE la siguiente décima superior)
+    // Redondear hacia arriba a la siguiente décima
+    let targetRating = Math.ceil(currentRating * 10) / 10;
+    
+    // Si ya está exactamente en una décima (ej: 4.0, 4.1, 4.2), subir a la siguiente
+    if (Math.abs(currentRating - targetRating) < 0.01) {
+      targetRating = Math.min(5.0, targetRating + 0.1);
+    }
+    
+    // Calcular suma actual de puntuaciones
+    const currentSum = currentRating * totalReviews;
+    
+    // Resolver ecuación: (currentSum + 5*x) / (totalReviews + x) = targetRating
+    // currentSum + 5*x = targetRating * (totalReviews + x)
+    // currentSum + 5*x = targetRating * totalReviews + targetRating * x
+    // 5*x - targetRating * x = targetRating * totalReviews - currentSum
+    // x * (5 - targetRating) = targetRating * totalReviews - currentSum
+    // x = (targetRating * totalReviews - currentSum) / (5 - targetRating)
+    
     const reviewsNeeded = Math.ceil(
-      (actualTarget * totalReviews - currentSum) / (5 - actualTarget)
+      (targetRating * totalReviews - currentSum) / (5 - targetRating)
     );
     
     return {
-      target: actualTarget,
+      target: targetRating,
       reviewsNeeded: Math.max(0, reviewsNeeded),
-      message: `Para llegar a ${actualTarget.toFixed(1)}⭐: Te faltan ${Math.max(0, reviewsNeeded)} reseñas de 5⭐`
+      message: `Para llegar a ${targetRating.toFixed(1)}⭐: Te faltan ${Math.max(0, reviewsNeeded)} reseñas de 5⭐`
     };
   };
 
