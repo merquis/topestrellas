@@ -35,8 +35,6 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
                   </p>
                 </div>
                 
-                {/* Business Selector - Solo para admins normales */}
-                {user.role === 'admin' && <SimpleBusinessSelector user={user} />}
               </div>
               
               <div className="flex items-center gap-4">

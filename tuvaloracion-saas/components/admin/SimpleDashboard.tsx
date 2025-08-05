@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation';
 import StatsCard from '@/components/admin/StatsCard';
 import { AuthUser } from '@/lib/auth';
 
-interface SimpleDashboardProps {
-  user: AuthUser;
+interface Business {
+  _id: string;
+  name: string;
+  subdomain: string;
+  active: boolean;
 }
 
-export default function SimpleDashboard({ user }: SimpleDashboardProps) {
+interface SimpleDashboardProps {
+  user: AuthUser;
+  selectedBusiness?: Business | null;
+}
+
+export default function SimpleDashboard({ user, selectedBusiness }: SimpleDashboardProps) {
   const router = useRouter();
   const [businesses, setBusinesses] = useState([]);
   const [stats, setStats] = useState({
