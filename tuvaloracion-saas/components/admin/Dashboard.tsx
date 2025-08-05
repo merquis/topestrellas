@@ -57,8 +57,7 @@ export default function Dashboard({ user }: DashboardProps) {
       const statsParams = new URLSearchParams({
         userEmail: user.email,
         userRole: user.role,
-        ...(user.role === 'admin' && selectedBusiness ? { businessId: selectedBusiness._id } : {}),
-        ...(user.businessId && user.role !== 'super_admin' && !selectedBusiness ? { businessId: user.businessId } : {})
+        ...(user.businessId && user.role !== 'super_admin' ? { businessId: user.businessId } : {})
       });
 
       const statsResponse = await fetch(`/api/admin/stats?${statsParams}`);
