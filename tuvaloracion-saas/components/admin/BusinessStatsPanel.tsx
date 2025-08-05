@@ -362,6 +362,117 @@ export default function BusinessStatsPanel({ businessId, businessName }: Busines
           </div>
         </div>
       )}
+
+      {/* Beneficios de tener reseñas altas - Puntos de dolor del empresario */}
+      <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
+        <div className="flex items-start space-x-4 mb-6">
+          <div className="text-4xl">🚀</div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              ¿Por qué NECESITAS subir tus reseñas?
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Estos son los beneficios reales que te están perdiendo si no tienes reseñas altas:
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Beneficio 1 - Google te recomienda primero */}
+          <div className="bg-white rounded-lg p-4 border-l-4 border-red-500">
+            <div className="flex items-start space-x-3">
+              <div className="text-2xl">🎯</div>
+              <div>
+                <h4 className="font-bold text-gray-800 text-sm">Google te recomienda PRIMERO</h4>
+                <p className="text-gray-600 text-xs mt-1">
+                  Si tienes 4.6★ y tu competencia 3.9★, <strong>apareces antes en búsquedas locales</strong>. 
+                  Más visibilidad = más clientes.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Beneficio 2 - Más clientes nuevos */}
+          <div className="bg-white rounded-lg p-4 border-l-4 border-green-500">
+            <div className="flex items-start space-x-3">
+              <div className="text-2xl">👥</div>
+              <div>
+                <h4 className="font-bold text-gray-800 text-sm">Más clientes nuevos</h4>
+                <p className="text-gray-600 text-xs mt-1">
+                  <strong>El 92% de la gente</strong> confía en negocios con 4.5★ o más. 
+                  Sin buenas reseñas, pierdes clientes antes de conocerte.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Beneficio 3 - Puedes subir precios */}
+          <div className="bg-white rounded-lg p-4 border-l-4 border-purple-500">
+            <div className="flex items-start space-x-3">
+              <div className="text-2xl">💰</div>
+              <div>
+                <h4 className="font-bold text-gray-800 text-sm">Puedes subir precios</h4>
+                <p className="text-gray-600 text-xs mt-1">
+                  Con buena reputación, <strong>puedes cobrar 15-20% más</strong> que la competencia. 
+                  La calidad percibida justifica precios premium.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Beneficio 4 - Ventaja competitiva */}
+          <div className="bg-white rounded-lg p-4 border-l-4 border-blue-500">
+            <div className="flex items-start space-x-3">
+              <div className="text-2xl">🏆</div>
+              <div>
+                <h4 className="font-bold text-gray-800 text-sm">Ventaja frente a competencia</h4>
+                <p className="text-gray-600 text-xs mt-1">
+                  Entre dos opciones similares, <strong>el 89% elige el mejor valorado</strong>. 
+                  Tus reseñas son tu arma secreta.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Beneficio 5 - Más conversiones */}
+          <div className="bg-white rounded-lg p-4 border-l-4 border-yellow-500">
+            <div className="flex items-start space-x-3">
+              <div className="text-2xl">📈</div>
+              <div>
+                <h4 className="font-bold text-gray-800 text-sm">Mayor conversión</h4>
+                <p className="text-gray-600 text-xs mt-1">
+                  <strong>Más visitas → más compras</strong>. Las reseñas altas aumentan 
+                  la confianza y reducen la fricción en la decisión de compra.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Beneficio 6 - Incremento en ventas */}
+          <div className="bg-white rounded-lg p-4 border-l-4 border-emerald-500">
+            <div className="flex items-start space-x-3">
+              <div className="text-2xl">💸</div>
+              <div>
+                <h4 className="font-bold text-gray-800 text-sm">Incremento directo en ventas</h4>
+                <p className="text-gray-600 text-xs mt-1">
+                  <strong>Está demostrado:</strong> cada estrella adicional puede aumentar 
+                  los ingresos entre 5-15%. Es matemática pura.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to action motivacional */}
+        <div className="mt-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-4 text-white text-center">
+          <p className="font-bold text-sm">
+            💡 <strong>Cada día sin reseñas altas = dinero perdido</strong>
+          </p>
+          <p className="text-xs mt-1 text-red-100">
+            Tu competencia está ganando los clientes que deberían ser tuyos. ¡Es hora de cambiar eso!
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
