@@ -1,0 +1,451 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/admin/AdminLayout';
+import Toast from '@/components/Toast';
+import { AuthUser, checkAuth } from '@/lib/auth';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'super_admin';
+  businessId?: string;
+  businessName?: string;
+  createdAt: string;
+  active: boolean;
+}
+
+interface Business {
+  _id: string;
+  name: string;
+}
+
+export default function UsersPage() {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
+
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'admin' as 'admin' | 'super_admin',
+    businessId: ''
+  });
+
+  useEffect(() => {
+    const authUser = checkAuth();
+    if (!authUser || authUser.role !== 'super_admin') {
+      router.push('/admin');
+      return;
+    }
+    setUser(authUser);
+    loadUsers();
+    loadBusinesses();
+  }, [router]);
+
+  const loadUsers = async () => {
+    try {
+      const response = await fetch('/api/admin/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      } else {
+        setToast({ message: 'Error al cargar usuarios', type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error al cargar usuarios', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBusinesses = async () => {
+    try {
+      const response = await fetch('/api/admin/businesses');
+      if (response.ok) {
+        const data = await response.json();
+        setBusinesses(data);
+      }
+    } catch (error) {
+      console.error('Error loading businesses:', error);
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(createForm),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: 'Usuario creado exitosamente', type: 'success' });
+        setShowCreateModal(false);
+        setCreateForm({
+          name: '',
+          email: '',
+          password: '',
+          role: 'admin',
+          businessId: ''
+        });
+        loadUsers();
+      } else {
+        setToast({ message: data.error || 'Error al crear usuario', type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error al crear usuario', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangeRole = async (userId: string, newRole: 'admin' | 'super_admin') => {
+    if (!confirm(`¿Estás seguro de cambiar el rol de este usuario a ${newRole === 'super_admin' ? 'Super Admin' : 'Admin'}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: 'Rol actualizado exitosamente', type: 'success' });
+        loadUsers();
+      } else {
+        setToast({ message: data.error || 'Error al cambiar rol', type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error al cambiar rol', type: 'error' });
+    }
+  };
+
+  const handleToggleActive = async (userId: string, active: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ active: !active }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: `Usuario ${!active ? 'activado' : 'desactivado'} exitosamente`, type: 'success' });
+        loadUsers();
+      } else {
+        setToast({ message: data.error || 'Error al cambiar estado', type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error al cambiar estado', type: 'error' });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: 'Usuario eliminado exitosamente', type: 'success' });
+        loadUsers();
+      } else {
+        setToast({ message: data.error || 'Error al eliminar usuario', type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error al eliminar usuario', type: 'error' });
+    }
+  };
+
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  if (loading && users.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando usuarios...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <AdminLayout user={user}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">👥 Gestión de Usuarios</h1>
+            <p className="text-gray-600 mt-1">Administra usuarios y sus roles en la plataforma</p>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center gap-2"
+          >
+            <span>➕</span> Crear Usuario
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Buscar usuarios por nombre o email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div className="text-sm text-gray-500">
+              {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+        </div>
+
+        {/* Users Table */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left py-4 px-6 font-medium text-gray-700">Usuario</th>
+                  <th className="text-left py-4 px-6 font-medium text-gray-700">Email</th>
+                  <th className="text-left py-4 px-6 font-medium text-gray-700">Rol</th>
+                  <th className="text-left py-4 px-6 font-medium text-gray-700">Negocio</th>
+                  <th className="text-left py-4 px-6 font-medium text-gray-700">Estado</th>
+                  <th className="text-left py-4 px-6 font-medium text-gray-700">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((userData) => (
+                  <tr key={userData.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                          {getInitials(userData.name)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">{userData.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(userData.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="text-gray-700">{userData.email}</span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        userData.role === 'super_admin' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {userData.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="text-gray-700">
+                        {userData.businessName || '-'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        userData.active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {userData.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleChangeRole(
+                            userData.id, 
+                            userData.role === 'admin' ? 'super_admin' : 'admin'
+                          )}
+                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                        >
+                          {userData.role === 'admin' ? '↗️ Promover' : '↘️ Degradar'}
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(userData.id, userData.active)}
+                          className={`text-sm font-medium ${
+                            userData.active 
+                              ? 'text-red-600 hover:text-red-700' 
+                              : 'text-green-600 hover:text-green-700'
+                          }`}
+                        >
+                          {userData.active ? '🚫 Desactivar' : '✅ Activar'}
+                        </button>
+                        {userData.role !== 'super_admin' && (
+                          <button
+                            onClick={() => handleDeleteUser(userData.id)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium"
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Create User Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4">Crear Nuevo Usuario</h2>
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre completo *
+                  </label>
+                  <input
+                    type="text"
+                    value={createForm.name}
+                    onChange={(e) => setCreateForm({...createForm, name: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={createForm.email}
+                    onChange={(e) => setCreateForm({...createForm, email: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Contraseña *
+                  </label>
+                  <input
+                    type="password"
+                    value={createForm.password}
+                    onChange={(e) => setCreateForm({...createForm, password: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rol *
+                  </label>
+                  <select
+                    value={createForm.role}
+                    onChange={(e) => setCreateForm({...createForm, role: e.target.value as 'admin' | 'super_admin'})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="admin">Admin (Negocio específico)</option>
+                    <option value="super_admin">Super Admin (Acceso completo)</option>
+                  </select>
+                </div>
+                {createForm.role === 'admin' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Negocio asociado *
+                    </label>
+                    <select
+                      value={createForm.businessId}
+                      onChange={(e) => setCreateForm({...createForm, businessId: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Seleccionar negocio...</option>
+                      {businesses.map((business) => (
+                        <option key={business._id} value={business._id}>
+                          {business.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50"
+                  >
+                    {loading ? 'Creando...' : 'Crear Usuario'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </AdminLayout>
+  );
+}

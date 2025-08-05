@@ -28,6 +28,12 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       show: user.role === 'super_admin'
     },
     {
+      title: 'Usuarios',
+      icon: '👥',
+      href: '/admin/users',
+      show: user.role === 'super_admin'
+    },
+    {
       title: 'Mi Negocio',
       icon: '🏪',
       href: '/admin/my-business',
