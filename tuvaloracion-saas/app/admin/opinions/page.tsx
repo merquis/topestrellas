@@ -360,7 +360,9 @@ function OpinionsContent() {
                             🎁 Premio Ganado
                           </div>
                           <div className="text-sm text-orange-800 mb-1">
-                            {opinion.premio || opinion.prize?.name || opinion.prize}
+                            {opinion.premio || 
+                             (opinion.prize?.emoji ? `${opinion.prize.emoji} ${opinion.prize.name}` : opinion.prize?.name) || 
+                             opinion.prize}
                           </div>
                           {opinion.codigoPremio && (
                             <div className="text-xs text-orange-700 font-mono bg-orange-50 px-2 py-1 rounded border">

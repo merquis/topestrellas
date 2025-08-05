@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       review: data.feedback || '',
       rating: data.rating,
       lang: data.language || 'es',
-      premio: data.prize.name,
+      premio: data.prize.emoji ? `${data.prize.emoji} ${data.prize.name}` : data.prize.name,
       codigoPremio: prizeCode,
       date: dateStr,
       time: timeStr,
@@ -133,6 +133,7 @@ export async function POST(request: NextRequest) {
       prize: {
         index: data.prize.index,
         name: data.prize.name,
+        emoji: data.prize.emoji,
         code: prizeCode,
         value: data.prize.value,
       },

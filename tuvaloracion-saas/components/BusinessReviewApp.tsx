@@ -429,6 +429,7 @@ export default function BusinessReviewApp({ business }: BusinessReviewAppProps) 
       prize: {
         index: prizeIndex,
         name: prize.translations[currentLanguage]?.name || prize.translations['es']?.name,
+        emoji: prize.translations[currentLanguage]?.emoji || prize.translations['es']?.emoji,
         value: prize.value
       }
     };
