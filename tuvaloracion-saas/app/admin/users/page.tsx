@@ -115,7 +115,8 @@ export default function UsersPage() {
           email: '',
           password: '',
           role: 'admin',
-          businessId: ''
+          businessId: '',
+          selectedBusinesses: []
         });
         loadUsers();
       } else {
