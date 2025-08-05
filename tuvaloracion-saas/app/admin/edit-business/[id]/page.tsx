@@ -153,9 +153,13 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     setFormData({ ...formData, prizes: newPrizes });
   };
 
-  // Función para formatear el valor mostrado con coma decimal preservando decimales
+  // Función para formatear el valor mostrado con coma decimal
   const formatCostValue = (value: number) => {
-    // Convertir a string y preservar hasta 2 decimales
+    // Si es un número entero, mostrarlo sin decimales
+    if (value % 1 === 0) {
+      return value.toString();
+    }
+    // Si tiene decimales, mostrar con 2 decimales y coma
     const formatted = value.toFixed(2).replace('.', ',');
     return formatted;
   };
