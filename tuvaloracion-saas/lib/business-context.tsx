@@ -32,7 +32,12 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
 
   // Cargar negocios del usuario
   const loadBusinesses = async (user: AuthUser) => {
-    if (user.role !== 'admin') return; // Solo para admins normales
+    console.log('🔍 loadBusinesses called with user:', { email: user.email, role: user.role, businessId: user.businessId });
+    
+    if (user.role !== 'admin') {
+      console.log('❌ User is not admin, skipping business loading');
+      return; // Solo para admins normales
+    }
     
     setLoading(true);
     try {
@@ -42,30 +47,42 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
         userRole: user.role
       });
       
+      console.log('📡 Fetching businesses with params:', params.toString());
       const response = await fetch(`/api/admin/businesses?${params}`);
+      
       if (response.ok) {
         const userBusinesses = await response.json();
+        console.log('✅ Businesses loaded:', userBusinesses.length, 'businesses');
+        console.log('📋 Business list:', userBusinesses.map((b: Business) => ({ id: b._id, name: b.name })));
         
         setBusinesses(userBusinesses);
         
         // Seleccionar el primer negocio por defecto o el guardado en localStorage
         const savedBusinessId = localStorage.getItem('selectedBusinessId');
+        console.log('💾 Saved business ID from localStorage:', savedBusinessId);
+        
         const businessToSelect = savedBusinessId 
           ? userBusinesses.find((b: Business) => b._id === savedBusinessId) || userBusinesses[0]
           : userBusinesses[0];
           
         if (businessToSelect) {
+          console.log('🎯 Selected business:', { id: businessToSelect._id, name: businessToSelect.name });
           setSelectedBusinessState(businessToSelect);
+        } else {
+          console.log('❌ No business to select');
         }
       } else {
-        console.error('Error response:', response.status, response.statusText);
+        console.error('❌ Error response:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('❌ Error details:', errorText);
         setBusinesses([]);
       }
     } catch (error) {
-      console.error('Error loading businesses:', error);
+      console.error('❌ Error loading businesses:', error);
       setBusinesses([]);
     } finally {
       setLoading(false);
+      console.log('🏁 loadBusinesses finished');
     }
   };
 

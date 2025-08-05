@@ -18,19 +18,22 @@ export async function GET(request: Request) {
     if (userRole === 'admin' && userEmail) {
       // Obtener los negocios asignados al usuario
       const user = await db.collection('users').findOne({ email: userEmail });
+      
       if (user && user.businessIds && user.businessIds.length > 0) {
-        // Filtrar por los negocios asignados al usuario
+        // Filtrar por los negocios asignados al usuario (múltiples)
         businessFilter = {
           _id: { $in: user.businessIds.map((id: string) => new ObjectId(id)) }
         };
       } else if (user && user.businessId) {
-        // Compatibilidad con el campo legacy businessId
+        // Compatibilidad con el campo legacy businessId (único)
         businessFilter = {
           _id: new ObjectId(user.businessId)
         };
       } else {
-        // Si no tiene negocios asignados, devolver array vacío
-        return NextResponse.json([]);
+        // Fallback: buscar negocios por email del contacto
+        businessFilter = {
+          'contact.email': userEmail
+        };
       }
     }
     // Si es super_admin, no aplicar filtro (mostrar todos)
