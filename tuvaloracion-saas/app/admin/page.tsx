@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
-import AdminDashboardWithSelector from '@/components/admin/AdminDashboardWithSelector';
+import Dashboard from '@/components/admin/Dashboard';
 import StatsCard from '@/components/admin/StatsCard';
 import Toast from '@/components/Toast';
 import { AuthUser, authenticateUser, checkAuth, saveAuth } from '@/lib/auth';
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout user={user}>
-      <AdminDashboardWithSelector user={user} />
+      <Dashboard user={user} />
     </AdminLayout>
   );
 }

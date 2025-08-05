@@ -4,15 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import StatsCard from '@/components/admin/StatsCard';
 import { AuthUser } from '@/lib/auth';
-import { useBusinessContext } from '@/lib/business-context';
-
 interface DashboardProps {
   user: AuthUser;
 }
 
 export default function Dashboard({ user }: DashboardProps) {
   const router = useRouter();
-  const { selectedBusiness } = useBusinessContext();
+  const selectedBusiness = null; // Temporalmente sin selector
   const [businesses, setBusinesses] = useState([]);
   const [stats, setStats] = useState({
     totalBusinesses: 0,
