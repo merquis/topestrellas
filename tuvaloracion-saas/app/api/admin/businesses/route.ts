@@ -31,9 +31,9 @@ export async function POST(request: Request) {
     
     // Validar datos requeridos
     const businessName = data.businessName || data.name;
-    if (!data.subdomain || !businessName) {
+    if (!data.subdomain || !businessName || !data.phone) {
       return NextResponse.json(
-        { error: 'Subdominio y nombre son requeridos' },
+        { error: 'Subdominio, nombre y teléfono son requeridos' },
         { status: 400 }
       );
     }
