@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       console.log(`Opinion ${index + 1}:`, {
         rating: opinion.rating,
         businessId: opinion.businessId.toString(),
-        customerName: opinion.customer?.name,
+        customerName: opinion.name,
         createdAt: opinion.createdAt
       });
     });
@@ -118,13 +118,13 @@ export async function GET(request: NextRequest) {
       
       if (opinion.rating >= 4) {
         icon = '💰';
-        message = `Nueva opinión ${opinion.rating}⭐ de ${opinion.customer.name} en ${businessName} - Valor estimado: ${marketingValue}€ en marketing gratuito`;
+        message = `Nueva opinión ${opinion.rating}⭐ de ${opinion.name} en ${businessName} - Valor estimado: ${marketingValue}€ en marketing gratuito`;
       } else if (opinion.rating === 3) {
         icon = '⚠️';
-        message = `Opinión ${opinion.rating}⭐ de ${opinion.customer.name} en ${businessName} - Responde rápido para evitar daños`;
+        message = `Opinión ${opinion.rating}⭐ de ${opinion.name} en ${businessName} - Responde rápido para evitar daños`;
       } else {
         icon = '🚨';
-        message = `ALERTA: Opinión ${opinion.rating}⭐ de ${opinion.customer.name} en ${businessName} - Actúa YA para proteger tu reputación`;
+        message = `ALERTA: Opinión ${opinion.rating}⭐ de ${opinion.name} en ${businessName} - Actúa YA para proteger tu reputación`;
       }
 
       activities.push({
