@@ -45,13 +45,6 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
               </div>
               
               <div className="flex items-center gap-4">
-                {/* Business Selector for admin users */}
-                {user.role === 'admin' && (
-                  <div className="mr-2">
-                    <SimpleBusinessSelector user={user} />
-                  </div>
-                )}
-                
                 {/* Notifications */}
                 <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors">
                   <span className="text-xl">🔔</span>
