@@ -22,13 +22,35 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase()
     
     // Obtener información del negocio para usar su zona horaria
-    const business = await db.collection('businesses').findOne({ subdomain: data.subdomain });
+    let business;
+    
+    // Buscar por subdomain primero
+    if (data.subdomain) {
+      business = await db.collection('businesses').findOne({ subdomain: data.subdomain });
+    }
+    
+    // Si no se encuentra por subdomain, buscar por businessId
+    if (!business && data.businessId) {
+      business = await db.collection('businesses').findOne({ _id: new ObjectId(data.businessId) });
+    }
+    
     if (!business) {
+      console.error('❌ Negocio no encontrado:', { subdomain: data.subdomain, businessId: data.businessId });
       return NextResponse.json({ success: false, error: 'Negocio no encontrado' }, { status: 404 });
     }
     
     // Obtener zona horaria del negocio (fallback a Europe/Madrid)
     const businessTimezone = business.location?.timezone || 'Europe/Madrid';
+    
+    // Debug: mostrar información del negocio
+    console.log('🏢 Negocio encontrado:', {
+      id: business._id,
+      name: business.name,
+      subdomain: business.subdomain,
+      city: business.location?.city,
+      timezone: business.location?.timezone,
+      fullLocation: business.location
+    });
     
     // Generar código de premio
     const prizeCode = generatePrizeCode(data.subdomain, data.rating)
