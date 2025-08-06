@@ -48,13 +48,24 @@ export const QR_PRESETS = {
       light: '#FFFFFF'
     },
     errorCorrectionLevel: 'M' as const
+  },
+  
+  // Para alta calidad en pantalla (600x600px)
+  hd: {
+    width: 600,
+    margin: 3,
+    color: {
+      dark: '#000000',
+      light: '#FFFFFF'
+    },
+    errorCorrectionLevel: 'H' as const
   }
 } as const;
 
 /**
  * Tipos de QR que podemos generar
  */
-export type QRType = 'display' | 'print' | 'web';
+export type QRType = 'display' | 'print' | 'web' | 'hd';
 
 /**
  * Información del QR generado
@@ -174,6 +185,12 @@ export class QRGenerator {
           size: '1800x1800px',
           dpi: 300,
           dimensions: '15x15 cm'
+        };
+      case 'hd':
+        return {
+          size: '600x600px',
+          dpi: 72,
+          dimensions: '21x21 cm'
         };
       case 'web':
         return {

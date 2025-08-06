@@ -122,6 +122,7 @@ export default function QRCodeGenerator({
       {/* Info text */}
       <div className="mt-1 text-xs text-gray-500 text-center">
         {type === 'print' && '📄 Calidad impresión 15×15cm'}
+        {type === 'hd' && '🔥 Alta calidad 600×600px'}
         {type === 'web' && '🌐 Calidad web'}
         {type === 'display' && '📱 Vista previa'}
       </div>

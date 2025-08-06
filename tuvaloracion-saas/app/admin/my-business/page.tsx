@@ -237,7 +237,7 @@ export default function MyBusinessPage() {
                         <BusinessQR
                           subdomain={business.subdomain}
                           businessName={business.name}
-                          type="display"
+                          type="hd"
                           showDownloadButton={true}
                           className="w-full"
                         />
