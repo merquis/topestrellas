@@ -119,12 +119,13 @@ export default function MyBusinessPage() {
               <div key={business._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="flex flex-col md:flex-row">
                   {/* Business Image */}
-                  <div className="md:w-40 w-full h-48 md:h-full flex-shrink-0">
+                  <div className="md:w-40 w-full h-48 md:h-full flex-shrink-0 overflow-hidden">
                     {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
                       <img
                         src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
                         alt={business.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
+                        style={{ objectPosition: 'center center' }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=4F46E5&color=fff&size=160`;
