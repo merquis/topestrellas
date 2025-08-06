@@ -140,23 +140,23 @@ export default function MyBusinessPage() {
                           </span>
                         </div>
                       )}
-                      {/* Badge de estado superpuesto */}
-                      <div className="absolute top-3 right-3">
-                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm ${
-                          business.active 
-                            ? 'bg-green-500/90 text-white' 
-                            : 'bg-red-500/90 text-white'
-                        }`}>
-                          {business.active ? '● Activo' : '● Inactivo'}
-                        </span>
-                      </div>
                     </div>
 
                     {/* Business Info - Diseño mejorado */}
                     <div className="flex-1 p-6 lg:p-8">
                       {/* Header con título y URL */}
                       <div className="mb-4">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{business.name}</h3>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-2xl font-bold text-gray-900">{business.name}</h3>
+                          {/* Badge de estado alineado con el título */}
+                          <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-md ${
+                            business.active 
+                              ? 'bg-green-500 text-white' 
+                              : 'bg-red-500 text-white'
+                          }`}>
+                            {business.active ? '● Activo' : '● Inactivo'}
+                          </span>
+                        </div>
                         <a 
                           href={`https://${business.subdomain}.tuvaloracion.com`}
                           target="_blank"
