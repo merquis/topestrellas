@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   const [selectedBusiness, setSelectedBusiness] = useState<GooglePlaceData | null>(null);
   const [businessPlaceId, setBusinessPlaceId] = useState('');
   const [businessPhotoUrl, setBusinessPhotoUrl] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('trial');
   const [registerError, setRegisterError] = useState('');
   const [isCreatingBusiness, setIsCreatingBusiness] = useState(false);
   const [tempUserData, setTempUserData] = useState<any>(null);
@@ -425,7 +426,9 @@ export default function AdminDashboard() {
                 <p className="text-gray-600">
                   {registrationStep === 1 
                     ? 'Completa tus datos personales' 
-                    : 'Busca y selecciona tu negocio'
+                    : registrationStep === 2
+                    ? 'Busca y selecciona tu negocio'
+                    : 'Elige tu plan de suscripción'
                   }
                 </p>
               </div>
@@ -444,7 +447,15 @@ export default function AdminDashboard() {
                   <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
                     registrationStep >= 2 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
-                    2
+                    {registrationStep > 2 ? '✓' : '2'}
+                  </div>
+                  <div className={`w-16 h-1 rounded-full transition-all ${
+                    registrationStep >= 3 ? 'bg-green-600' : 'bg-gray-300'
+                  }`}></div>
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+                    registrationStep >= 3 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    3
                   </div>
                 </div>
               </div>
@@ -565,7 +576,7 @@ export default function AdminDashboard() {
                   
                   <div className="text-center">
                     <p className="text-sm text-gray-600">
-                      Paso 1 de 2: Información personal
+                      Paso 1 de 3: Información personal
                     </p>
                   </div>
                 </form>
@@ -606,19 +617,20 @@ export default function AdminDashboard() {
                   <div className="flex justify-center">
                     <button
                       type="button"
-                      onClick={handleStep2Submit}
-                      disabled={isCreatingBusiness || !selectedBusiness}
+                      onClick={() => {
+                        if (!selectedBusiness) {
+                          setRegisterError('Por favor busca y selecciona tu negocio');
+                          return;
+                        }
+                        setRegistrationStep(3);
+                      }}
+                      disabled={!selectedBusiness}
                       className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
                     >
-                      {isCreatingBusiness ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                          <span>Creando tu cuenta...</span>
-                        </div>
-                      ) : selectedBusiness ? (
+                      {selectedBusiness ? (
                         <div className="flex items-center justify-center gap-2">
-                          <span>✅</span>
-                          <span>Crear cuenta para {selectedBusiness.name}</span>
+                          <span>Continuar</span>
+                          <span>→</span>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center gap-2">
@@ -628,14 +640,179 @@ export default function AdminDashboard() {
                       )}
                     </button>
                   </div>
-                  
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-gray-600">
-                      Al crear una cuenta, obtienes <strong className="text-green-600">7 días de prueba gratis</strong>
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Sin tarjeta de crédito • Cancela cuando quieras • Soporte incluido
-                    </p>
+                </div>
+              )}
+
+              {/* Step 3: Plan Selection */}
+              {registrationStep === 3 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Elige tu plan</h3>
+                    <p className="text-gray-600">Selecciona el plan que mejor se adapte a tu negocio</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Plan Prueba 7 días gratis */}
+                    <div 
+                      className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                        selectedPlan === 'trial' 
+                          ? 'border-green-500 bg-green-50 shadow-lg' 
+                          : 'border-gray-200 hover:border-green-300'
+                      }`}
+                      onClick={() => setSelectedPlan('trial')}
+                    >
+                      {selectedPlan === 'trial' && (
+                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            Seleccionado
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">🎯</div>
+                        <h4 className="text-lg font-bold text-gray-900 mb-2">Prueba 7 días gratis</h4>
+                        <div className="text-3xl font-bold text-green-600 mb-2">GRATIS</div>
+                        <p className="text-sm text-gray-500 mb-4">7 días de prueba</p>
+                        
+                        <ul className="text-sm text-gray-600 space-y-2 text-left">
+                          <li className="flex items-center gap-2">
+                            <span className="text-green-500">✓</span>
+                            <span>Hasta 100 reseñas</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-green-500">✓</span>
+                            <span>Sistema de premios básico</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-green-500">✓</span>
+                            <span>Soporte por email</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-green-500">✓</span>
+                            <span>Sin tarjeta de crédito</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Plan Básico */}
+                    <div 
+                      className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                        selectedPlan === 'basic' 
+                          ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                          : 'border-gray-200 hover:border-blue-300'
+                      }`}
+                      onClick={() => setSelectedPlan('basic')}
+                    >
+                      {selectedPlan === 'basic' && (
+                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            Seleccionado
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">🚀</div>
+                        <h4 className="text-lg font-bold text-gray-900 mb-2">Plan Básico</h4>
+                        <div className="text-3xl font-bold text-blue-600 mb-2">€29</div>
+                        <p className="text-sm text-gray-500 mb-4">por mes</p>
+                        
+                        <ul className="text-sm text-gray-600 space-y-2 text-left">
+                          <li className="flex items-center gap-2">
+                            <span className="text-blue-500">✓</span>
+                            <span>Hasta 500 reseñas</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-blue-500">✓</span>
+                            <span>Sistema de premios completo</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-blue-500">✓</span>
+                            <span>Estadísticas avanzadas</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-blue-500">✓</span>
+                            <span>Soporte prioritario</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Plan Premium */}
+                    <div 
+                      className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                        selectedPlan === 'premium' 
+                          ? 'border-purple-500 bg-purple-50 shadow-lg' 
+                          : 'border-gray-200 hover:border-purple-300'
+                      }`}
+                      onClick={() => setSelectedPlan('premium')}
+                    >
+                      {selectedPlan === 'premium' && (
+                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                          <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            Seleccionado
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">⭐</div>
+                        <h4 className="text-lg font-bold text-gray-900 mb-2">Plan Premium</h4>
+                        <div className="text-3xl font-bold text-purple-600 mb-2">€59</div>
+                        <p className="text-sm text-gray-500 mb-4">por mes</p>
+                        
+                        <ul className="text-sm text-gray-600 space-y-2 text-left">
+                          <li className="flex items-center gap-2">
+                            <span className="text-purple-500">✓</span>
+                            <span>Reseñas ilimitadas</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-purple-500">✓</span>
+                            <span>Múltiples ubicaciones</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-purple-500">✓</span>
+                            <span>API personalizada</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-purple-500">✓</span>
+                            <span>Soporte 24/7</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {registerError && (
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-500">❌</span>
+                        <span>{registerError}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleStep2Submit}
+                      disabled={isCreatingBusiness}
+                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                    >
+                      {isCreatingBusiness ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                          <span>Creando tu cuenta...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2">
+                          <span>✅</span>
+                          <span>Finalizar registro</span>
+                        </div>
+                      )}
+                    </button>
                   </div>
                 </div>
               )}
