@@ -119,20 +119,23 @@ export default function MyBusinessPage() {
               <div key={business._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="flex flex-col md:flex-row">
                   {/* Business Image */}
-                  <div className="md:w-40 w-full h-48 md:h-full flex-shrink-0 overflow-hidden">
+                  <div className="w-full md:w-40 aspect-square flex-shrink-0 overflow-hidden">
                     {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
                       <img
                         src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
                         alt={business.name}
-                        className="w-full h-full object-cover object-center"
-                        style={{ objectPosition: 'center center' }}
+                        className="w-full h-full object-cover"
+                        style={{ 
+                          objectPosition: 'center center',
+                          aspectRatio: '1 / 1'
+                        }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=4F46E5&color=fff&size=160`;
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center aspect-square">
                         <span className="text-white text-3xl font-bold">
                           {business.name.charAt(0).toUpperCase()}
                         </span>
