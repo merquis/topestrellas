@@ -237,11 +237,17 @@ export function GooglePlacesUltraSeparated({
   // SIEMPRE 4 caracteres mínimo para evitar búsquedas genéricas
   const minChars = 4;
 
-  // Cache manual para evitar llamadas repetidas
+  // Cache mejorado con soporte para fallos
   const cacheRef = useRef<Map<string, { data: AutocompleteResult[], timestamp: number }>>(new Map());
+  const failedQueriesRef = useRef<Set<string>>(new Set()); // Cache de queries sin resultados
+  const lastFailedPrefixRef = useRef<string>(''); // Último prefijo que falló
   const CACHE_DURATION = 60000; // Cache de 1 minuto
+  
+  // Referencias para optimización de borrado
+  const previousQueryRef = useRef<string>('');
+  const previousResultsRef = useRef<AutocompleteResult[]>([]);
 
-  // Limpiar cache viejo
+  // Limpiar cache viejo (incluyendo fallos)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -250,21 +256,39 @@ export function GooglePlacesUltraSeparated({
           cacheRef.current.delete(key);
         }
       });
+      // Limpiar cache de fallos cada 5 minutos
+      if (failedQueriesRef.current.size > 100) {
+        failedQueriesRef.current.clear();
+        lastFailedPrefixRef.current = '';
+      }
     }, 30000); // Limpiar cada 30 segundos
 
     return () => clearInterval(interval);
   }, []);
 
-  // Fetcher con cache manual
+  // Fetcher con cache mejorado (incluye fallos)
   const fetcher = useCallback(async (url: string): Promise<AutocompleteResult[]> => {
     // Extraer el query de la URL para usar como clave de cache
     const urlParams = new URLSearchParams(url.split('?')[1]);
     const queryParam = urlParams.get('query') || '';
     
-    // Verificar cache primero
+    // MEJORA 1: Verificar si es extensión de un query fallido
+    if (lastFailedPrefixRef.current && queryParam.startsWith(lastFailedPrefixRef.current)) {
+      console.log('⚠️ Evitando búsqueda - extensión de query fallido:', queryParam);
+      return [];
+    }
+    
+    // Verificar si este query específico ya falló
+    if (failedQueriesRef.current.has(queryParam)) {
+      console.log('⚠️ Query previamente sin resultados:', queryParam);
+      return [];
+    }
+    
+    // Verificar cache de éxitos primero
     const cached = cacheRef.current.get(queryParam);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       console.log('✅ Usando cache para:', queryParam);
+      previousResultsRef.current = cached.data; // Guardar para optimización de borrado
       return cached.data;
     }
 
@@ -281,28 +305,59 @@ export function GooglePlacesUltraSeparated({
     
     // Guardar en cache
     const predictions = result.predictions || [];
-    cacheRef.current.set(queryParam, {
-      data: predictions,
-      timestamp: Date.now()
-    });
+    
+    if (predictions.length === 0) {
+      // MEJORA 1: Cachear fallos
+      failedQueriesRef.current.add(queryParam);
+      lastFailedPrefixRef.current = queryParam;
+      console.log('❌ Query sin resultados cacheado:', queryParam);
+    } else {
+      // Limpiar prefijo fallido si ahora hay resultados
+      if (queryParam.startsWith(lastFailedPrefixRef.current)) {
+        lastFailedPrefixRef.current = '';
+      }
+      cacheRef.current.set(queryParam, {
+        data: predictions,
+        timestamp: Date.now()
+      });
+      previousResultsRef.current = predictions; // Guardar para optimización de borrado
+    }
     
     return predictions;
   }, []);
 
   // Crear una clave estable para SWR que solo cambie cuando realmente necesitemos buscar
   const swrKey = useMemo(() => {
+    // MEJORA 2: Detectar si estamos borrando y tenemos resultados previos
+    const isBorrando = previousQueryRef.current.startsWith(debouncedQuery) && 
+                       debouncedQuery.length < previousQueryRef.current.length &&
+                       previousResultsRef.current.length > 0;
+    
+    if (isBorrando) {
+      console.log('🔄 Detectado borrado - reutilizando resultados filtrados');
+      // No hacer nueva búsqueda, usaremos los resultados previos filtrados
+      return null;
+    }
+    
     // Solo hacer búsqueda si:
     // 1. El query tiene al menos minChars caracteres
     // 2. Las sugerencias están visibles
     // 3. No estamos seleccionando un lugar
-    if (debouncedQuery.length >= minChars && showSuggestions && !isSelecting) {
+    // 4. No es una extensión de un query fallido
+    if (debouncedQuery.length >= minChars && 
+        showSuggestions && 
+        !isSelecting &&
+        !(lastFailedPrefixRef.current && debouncedQuery.startsWith(lastFailedPrefixRef.current))) {
+      
+      // Actualizar query previo
+      previousQueryRef.current = debouncedQuery;
       return `/api/google-places/autocomplete?query=${encodeURIComponent(debouncedQuery)}&language=es&types=establishment`;
     }
     return null;
   }, [debouncedQuery, showSuggestions, isSelecting]);
 
   // SWR con configuración MÁXIMA optimización
-  const { data: suggestions = [], error, isLoading } = useSWR(
+  const { data: swrSuggestions = [], error, isLoading } = useSWR(
     swrKey,
     fetcher,
     {
@@ -325,6 +380,27 @@ export function GooglePlacesUltraSeparated({
       }
     }
   );
+  
+  // MEJORA 2: Filtrar resultados localmente si estamos borrando
+  const suggestions = useMemo(() => {
+    const isBorrando = previousQueryRef.current.startsWith(query) && 
+                       query.length < previousQueryRef.current.length &&
+                       previousResultsRef.current.length > 0;
+    
+    if (isBorrando && query.length >= minChars) {
+      // Filtrar resultados previos basados en el nuevo query más corto
+      const filtered = previousResultsRef.current.filter(suggestion => {
+        const mainText = suggestion.structured_formatting.main_text.toLowerCase();
+        const secondaryText = suggestion.structured_formatting.secondary_text?.toLowerCase() || '';
+        const queryLower = query.toLowerCase();
+        return mainText.includes(queryLower) || secondaryText.includes(queryLower);
+      });
+      console.log(`🔍 Filtrando localmente: ${previousResultsRef.current.length} → ${filtered.length} resultados`);
+      return filtered;
+    }
+    
+    return swrSuggestions;
+  }, [swrSuggestions, query, previousQueryRef.current, previousResultsRef.current]);
 
   // Función para seleccionar un lugar
   const selectPlace = useCallback(async (suggestion: AutocompleteResult) => {
@@ -411,6 +487,13 @@ export function GooglePlacesUltraSeparated({
 
   // Manejar cambio de query con validación estricta
   const handleQueryChange = useCallback((newQuery: string) => {
+    // MEJORA 3: Limitar longitud máxima del query
+    const MAX_QUERY_LENGTH = 50;
+    if (newQuery.length > MAX_QUERY_LENGTH) {
+      console.log(`⚠️ Query demasiado largo (${newQuery.length} chars), limitando a ${MAX_QUERY_LENGTH}`);
+      newQuery = newQuery.substring(0, MAX_QUERY_LENGTH);
+    }
+    
     // Solo actualizar si realmente cambió
     if (newQuery !== query) {
       setQuery(newQuery);
@@ -427,6 +510,10 @@ export function GooglePlacesUltraSeparated({
         setSelectedPlace(null);
         setSelectedPhotoUrl(null);
         setShowSuggestions(false);
+        // Limpiar referencias cuando se borra todo
+        previousQueryRef.current = '';
+        previousResultsRef.current = [];
+        lastFailedPrefixRef.current = '';
       }
     }
   }, [query]);
@@ -470,6 +557,13 @@ export function GooglePlacesUltraSeparated({
         placeholder={placeholder}
         disabled={disabled || isSelecting}
       />
+      
+      {/* Indicador de límite de caracteres */}
+      {query.length >= 45 && (
+        <div className="text-xs text-orange-500 mt-1">
+          {50 - query.length} caracteres restantes
+        </div>
+      )}
 
       {/* Indicador de carga */}
       {isSelecting && (
