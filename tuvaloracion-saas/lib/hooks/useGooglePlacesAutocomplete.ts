@@ -131,9 +131,10 @@ export function useGooglePlacesAutocomplete(
         }
       }
 
-      // Limpiar sugerencias y query
+      // Limpiar sugerencias PERO NO cambiar el query para mantener el foco
       setSuggestions([]);
-      setQuery(suggestion.structured_formatting.main_text);
+      // NO actualizar el query aquí para evitar pérdida de foco
+      // setQuery(suggestion.structured_formatting.main_text);
 
       // Callback con los datos obtenidos
       onPlaceSelected?.(result.data, suggestion.place_id, photoUrl || undefined);

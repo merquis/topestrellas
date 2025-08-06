@@ -66,10 +66,14 @@ export function GooglePlacesAutocomplete({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Mostrar dropdown cuando hay sugerencias
+  // Mostrar dropdown cuando hay sugerencias, pero sin interferir con el foco
   useEffect(() => {
-    setIsOpen(suggestions.length > 0);
-    setSelectedIndex(-1);
+    if (suggestions.length > 0) {
+      setIsOpen(true);
+      setSelectedIndex(-1);
+    } else {
+      setIsOpen(false);
+    }
   }, [suggestions]);
 
   const handleInputChange = (value: string) => {
@@ -84,6 +88,10 @@ export function GooglePlacesAutocomplete({
     await selectPlace(suggestion);
     setIsOpen(false);
     setSelectedIndex(-1);
+    // Mantener el foco en el input después de seleccionar
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
