@@ -6,6 +6,8 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { checkAuth } from '@/lib/auth';
+import { GooglePlacesAutocompleteLarge } from '@/components/GooglePlacesAutocomplete';
+import { GooglePlaceData } from '@/lib/types';
 
 export default function EditBusinessPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -178,6 +180,28 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     const cleanValue = inputValue.replace(',', '.');
     const numericValue = parseFloat(cleanValue) || 0;
     handlePrizeChange(index, 'realCost', numericValue);
+  };
+
+  // Handler para cuando se selecciona un lugar con autocompletado
+  const handleAutocompletePlaceSelected = (place: GooglePlaceData, placeId: string, photoUrl?: string) => {
+    console.log('Lugar seleccionado:', { place, placeId, photoUrl });
+    
+    // Rellenar automáticamente todos los campos
+    setFormData(prev => ({
+      ...prev,
+      name: place.name || prev.name,
+      googleCurrentRating: place.rating || prev.googleCurrentRating,
+      googleTotalReviews: place.user_ratings_total || prev.googleTotalReviews,
+      address: place.formatted_address || prev.address,
+      phone: place.international_phone_number || prev.phone,
+      // Generar URL de Google Reviews usando el placeId
+      googleReviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`
+    }));
+  };
+
+  const handleAutocompleteError = (error: string) => {
+    console.error('Error en autocompletado:', error);
+    setToast({ message: `Error: ${error}`, type: 'error' });
   };
 
   if (loading || !user) {
@@ -462,6 +486,31 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
             {/* Reviews Tab */}
             {activeTab === 'reviews' && (
               <div className="space-y-6">
+                {/* NUEVA FUNCIONALIDAD: Búsqueda inteligente con autocompletado */}
+                <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                  <h3 className="text-lg font-semibold mb-4 text-blue-800">
+                    🔍 Buscar tu negocio (Recomendado)
+                  </h3>
+                  <p className="text-sm text-blue-600 mb-4">
+                    Escribe el nombre de tu negocio y selecciónalo de las sugerencias. 
+                    Todos los campos se rellenarán automáticamente.
+                  </p>
+                  
+                  <GooglePlacesAutocompleteLarge
+                    onPlaceSelected={handleAutocompletePlaceSelected}
+                    onError={handleAutocompleteError}
+                    placeholder="Ej: Restaurante Euro, Las Palmas..."
+                    className="mb-4"
+                  />
+                </div>
+
+                {/* Separador */}
+                <div className="flex items-center my-6">
+                  <div className="flex-1 border-t border-gray-300"></div>
+                  <span className="px-4 text-gray-500 text-sm">O introduce manualmente</span>
+                  <div className="flex-1 border-t border-gray-300"></div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     URL de Google Reviews
