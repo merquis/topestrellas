@@ -15,7 +15,7 @@ interface GooglePlacesAutocompleteProps {
   language?: string;
 }
 
-export function GooglePlacesAutocompleteSWR({
+export function GooglePlacesAutocompleteFocusFixed({
   onPlaceSelected,
   onError,
   placeholder = "Busca tu negocio...",
@@ -27,8 +27,10 @@ export function GooglePlacesAutocompleteSWR({
 }: GooglePlacesAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isSelecting, setIsSelecting] = useState(false); // Flag para prevenir pérdida de foco
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const focusTimeoutRef = useRef<NodeJS.Timeout>();
 
   const {
     query,
@@ -46,9 +48,24 @@ export function GooglePlacesAutocompleteSWR({
     minQueryLength: 2
   });
 
-  // Cerrar dropdown cuando se hace clic fuera
+  // Función para mantener el foco de manera agresiva
+  const maintainFocus = useCallback(() => {
+    if (focusTimeoutRef.current) {
+      clearTimeout(focusTimeoutRef.current);
+    }
+    
+    focusTimeoutRef.current = setTimeout(() => {
+      if (inputRef.current && !isSelecting) {
+        inputRef.current.focus();
+      }
+    }, 0);
+  }, [isSelecting]);
+
+  // Cerrar dropdown cuando se hace clic fuera - PERO NO durante selección
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (isSelecting) return; // No cerrar si estamos seleccionando
+      
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
@@ -61,51 +78,49 @@ export function GooglePlacesAutocompleteSWR({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      if (focusTimeoutRef.current) {
+        clearTimeout(focusTimeoutRef.current);
+      }
+    };
+  }, [isSelecting]);
 
-  // Mostrar dropdown cuando hay sugerencias - SIN interferir con el foco
+  // Mostrar dropdown cuando hay sugerencias
   useEffect(() => {
-    if (suggestions.length > 0) {
+    if (suggestions.length > 0 && !isSelecting) {
       setIsOpen(true);
       setSelectedIndex(-1);
-    } else {
+    } else if (suggestions.length === 0) {
       setIsOpen(false);
     }
-  }, [suggestions]);
+  }, [suggestions, isSelecting]);
 
-  // Manejar cambios en el input - OPTIMIZADO para mantener foco
-  const handleInputChange = (value: string) => {
-    setQuery(value); // SWR maneja todo automáticamente
+  // Manejar cambios en el input
+  const handleInputChange = useCallback((value: string) => {
+    setQuery(value);
     if (value.length === 0) {
       reset();
       setIsOpen(false);
     }
-  };
+  }, [setQuery, reset]);
 
-  // Manejar selección de sugerencia - MANTENER FOCO
-  const handleSuggestionClick = async (suggestion: AutocompleteResult) => {
-    // Guardar el foco antes de la operación
-    const hadFocus = document.activeElement === inputRef.current;
+  // Manejar selección de sugerencia - VERSIÓN ULTRA ROBUSTA
+  const handleSuggestionClick = useCallback(async (suggestion: AutocompleteResult) => {
+    setIsSelecting(true); // Marcar que estamos seleccionando
     
-    await selectPlace(suggestion);
-    setIsOpen(false);
-    setSelectedIndex(-1);
-    
-    // CRÍTICO: Restaurar el foco si lo tenía antes
-    if (hadFocus) {
-      // Usar múltiples métodos para asegurar que el foco se mantiene
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
-      
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
+    try {
+      await selectPlace(suggestion);
+      setIsOpen(false);
+      setSelectedIndex(-1);
+    } finally {
+      setIsSelecting(false);
+      // Restaurar foco inmediatamente
+      maintainFocus();
     }
-  };
+  }, [selectPlace, maintainFocus]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!isOpen || suggestions.length === 0) return;
 
     switch (e.key) {
@@ -133,20 +148,32 @@ export function GooglePlacesAutocompleteSWR({
         inputRef.current?.blur();
         break;
     }
-  };
+  }, [isOpen, suggestions, selectedIndex, handleSuggestionClick]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     reset();
     setIsOpen(false);
-    // Mantener foco al limpiar
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    });
-  };
+    maintainFocus();
+  }, [reset, maintainFocus]);
+
+  // Manejar eventos de foco
+  const handleFocus = useCallback(() => {
+    if (suggestions.length > 0) {
+      setIsOpen(true);
+    }
+  }, [suggestions.length]);
+
+  const handleBlur = useCallback((e: React.FocusEvent) => {
+    // Solo perder foco si no estamos seleccionando y el foco no va al dropdown
+    if (!isSelecting && !dropdownRef.current?.contains(e.relatedTarget as Node)) {
+      setIsOpen(false);
+      setSelectedIndex(-1);
+    }
+  }, [isSelecting]);
 
   return (
     <div className={`relative ${className}`}>
-      {/* Input principal - OPTIMIZADO para mantener foco */}
+      {/* Input principal - ULTRA OPTIMIZADO para mantener foco */}
       <div className="relative">
         <input
           ref={inputRef}
@@ -154,6 +181,8 @@ export function GooglePlacesAutocompleteSWR({
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={disabled || loading}
           className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
@@ -164,6 +193,7 @@ export function GooglePlacesAutocompleteSWR({
         {/* Botón de limpiar */}
         {query && (
           <button
+            onMouseDown={(e) => e.preventDefault()} // Prevenir pérdida de foco
             onClick={handleClear}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             type="button"
@@ -173,7 +203,7 @@ export function GooglePlacesAutocompleteSWR({
           </button>
         )}
 
-        {/* Indicador de carga - SWR optimizado */}
+        {/* Indicador de carga */}
         {loading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
             <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
@@ -181,20 +211,27 @@ export function GooglePlacesAutocompleteSWR({
         )}
       </div>
 
-      {/* Dropdown de sugerencias - NO interfiere con el foco */}
+      {/* Dropdown de sugerencias - OPTIMIZADO para no interferir con foco */}
       {isOpen && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
           className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-y-auto"
+          onMouseDown={(e) => {
+            // Prevenir que cualquier interacción con el dropdown quite el foco
+            e.preventDefault();
+          }}
         >
           {suggestions.map((suggestion, index) => (
             <div
               key={suggestion.place_id}
               onMouseDown={(e) => {
-                // Prevenir que el mousedown quite el foco del input
-                e.preventDefault();
+                e.preventDefault(); // Crítico: prevenir pérdida de foco
+                setIsSelecting(true);
               }}
-              onClick={() => handleSuggestionClick(suggestion)}
+              onMouseUp={() => {
+                // Ejecutar selección en mouseup para mantener mejor control
+                handleSuggestionClick(suggestion);
+              }}
               className={`px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 ${
                 index === selectedIndex ? 'bg-blue-50 border-blue-200' : ''
               }`}
@@ -297,9 +334,9 @@ export function GooglePlacesAutocompleteSWR({
 }
 
 // Componente con foto grande para formularios principales
-export function GooglePlacesAutocompleteLargeSWR(props: GooglePlacesAutocompleteProps) {
+export function GooglePlacesAutocompleteLargeFocusFixed(props: GooglePlacesAutocompleteProps) {
   return (
-    <GooglePlacesAutocompleteSWR
+    <GooglePlacesAutocompleteFocusFixed
       {...props}
       showPhoto={true}
       photoSize={120}

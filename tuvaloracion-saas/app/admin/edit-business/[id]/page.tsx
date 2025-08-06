@@ -6,7 +6,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { checkAuth } from '@/lib/auth';
-import { GooglePlacesAutocompleteLargeSWR } from '@/components/GooglePlacesAutocompleteSWR';
+import { GooglePlacesAutocompleteLargeFocusFixed } from '@/components/GooglePlacesAutocompleteFocusFixed';
 import { GooglePlaceData } from '@/lib/types';
 
 export default function EditBusinessPage({ params }: { params: { id: string } }) {
@@ -501,7 +501,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                     Todos los campos se rellenarán automáticamente.
                   </p>
                   
-                  <GooglePlacesAutocompleteLargeSWR
+                  <GooglePlacesAutocompleteLargeFocusFixed
                     onPlaceSelected={handleAutocompletePlaceSelected}
                     onError={handleAutocompleteError}
                     placeholder="Ej: Restaurante Euro, Las Palmas..."
