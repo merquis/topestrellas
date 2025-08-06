@@ -7,6 +7,8 @@ import FunctionalDashboard from '@/components/admin/FunctionalDashboard';
 import StatsCard from '@/components/admin/StatsCard';
 import Toast from '@/components/Toast';
 import { AuthUser, authenticateUser, checkAuth, saveAuth } from '@/lib/auth';
+import { GooglePlacesUltraSeparated } from '@/components/GooglePlacesUltraSeparated';
+import { GooglePlaceData } from '@/lib/types';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -19,6 +21,10 @@ export default function AdminDashboard() {
   const [phone, setPhone] = useState('');
   const [businessType, setBusinessType] = useState('restaurante');
   const [loginError, setLoginError] = useState('');
+  const [selectedBusiness, setSelectedBusiness] = useState<GooglePlaceData | null>(null);
+  const [businessPlaceId, setBusinessPlaceId] = useState('');
+  const [businessPhotoUrl, setBusinessPhotoUrl] = useState('');
+  const [isCreatingBusiness, setIsCreatingBusiness] = useState(false);
   const [businesses, setBusinesses] = useState([]);
   const [stats, setStats] = useState({
     totalBusinesses: 0,
@@ -120,6 +126,12 @@ export default function AdminDashboard() {
     );
   }
 
+  const handleBusinessSelected = (place: GooglePlaceData, placeId: string, photoUrl?: string) => {
+    setSelectedBusiness(place);
+    setBusinessPlaceId(placeId);
+    setBusinessPhotoUrl(photoUrl || '');
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
@@ -128,9 +140,85 @@ export default function AdminDashboard() {
       setLoginError('Las contraseñas no coinciden');
       return;
     }
+
+    if (!name || !email || !phone) {
+      setLoginError('Por favor completa todos los campos personales');
+      return;
+    }
+
+    if (!selectedBusiness) {
+      setLoginError('Por favor busca y selecciona tu negocio');
+      return;
+    }
+
+    setIsCreatingBusiness(true);
     
-    // Redirigir a la página de selección de plan con la contraseña
-    router.push(`/admin/setup-business?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&type=${businessType}&password=${encodeURIComponent(password)}`);
+    try {
+      // Crear el negocio directamente con todos los datos de Google Places
+      const businessData = {
+        // Datos del usuario
+        ownerName: name,
+        email: email,
+        phone: phone,
+        password: password,
+        
+        // Datos del negocio desde Google Places
+        businessName: selectedBusiness.name,
+        placeId: businessPlaceId,
+        address: selectedBusiness.formatted_address || '',
+        businessPhone: selectedBusiness.international_phone_number || phone,
+        website: selectedBusiness.website || '',
+        rating: selectedBusiness.rating || 0,
+        totalReviews: selectedBusiness.user_ratings_total || 0,
+        photoUrl: businessPhotoUrl,
+        
+        // Configuración por defecto
+        plan: 'trial', // Siempre empezar con prueba gratis
+        type: businessType,
+        country: 'España',
+        
+        // Premios por defecto
+        prizes: [
+          'CENA Max 60€',
+          'DESCUENTO 30€', 
+          'BOTELLA VINO',
+          'HELADO',
+          'CERVEZA',
+          'REFRESCO',
+          'MOJITO',
+          'CHUPITO'
+        ]
+      };
+      
+      const response = await fetch('/api/admin/businesses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(businessData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Guardar automáticamente la sesión del usuario
+        if (data.user) {
+          saveAuth(data.user);
+          setUser(data.user);
+          loadDashboardData(data.user);
+        }
+        
+        setLoginError('');
+        // No necesitamos toast, simplemente cargamos el dashboard
+      } else {
+        const data = await response.json();
+        setLoginError(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      setLoginError('Error al crear el negocio. Inténtalo de nuevo.');
+    } finally {
+      setIsCreatingBusiness(false);
+    }
   };
 
   if (!user) {
@@ -221,97 +309,109 @@ export default function AdminDashboard() {
           
           {/* Register Form */}
           {activeTab === 'register' && (
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre completo
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Juan Pérez"
-                  required
+            <div className="space-y-6">
+              {/* Información Personal */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                  📋 Información Personal
+                </h3>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nombre completo
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="Juan Pérez"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="tu@email.com"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Teléfono
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="+34 900 000 000"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirmar
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Búsqueda de Negocio */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                  🔍 Busca tu Negocio
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Busca tu negocio en Google Places. Todos los datos se completarán automáticamente.
+                </p>
+                
+                <GooglePlacesUltraSeparated
+                  placeholder="Busca tu negocio (ej: Restaurante Euro, Las Galletas)"
+                  onPlaceSelected={handleBusinessSelected}
+                  onError={(error) => setLoginError(error)}
+                  showPhoto={true}
+                  photoSize={100}
+                  className="w-full"
                 />
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="tu@email.com"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Teléfono *
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="+34 900 000 000"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de negocio
-                </label>
-                <select
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                >
-                  <option value="restaurante">🍽️ Restaurante</option>
-                  <option value="cafeteria">☕ Cafetería</option>
-                  <option value="peluqueria">✂️ Peluquería</option>
-                  <option value="hotel">🏨 Hotel</option>
-                  <option value="tienda">🛍️ Tienda</option>
-                  <option value="otro">📦 Otro</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirmar contraseña
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-              </div>
-              
+
               {loginError && (
                 <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
                   {loginError}
@@ -319,16 +419,31 @@ export default function AdminDashboard() {
               )}
               
               <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-medium hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02]"
+                onClick={handleRegister}
+                disabled={isCreatingBusiness || !selectedBusiness}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-lg font-medium hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                Continuar →
+                {isCreatingBusiness ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Creando tu cuenta...</span>
+                  </div>
+                ) : selectedBusiness ? (
+                  `✅ Crear cuenta para ${selectedBusiness.name}`
+                ) : (
+                  '🔍 Primero busca tu negocio'
+                )}
               </button>
               
-              <p className="text-xs text-gray-500 text-center mt-4">
-                Al crear una cuenta, obtienes 7 días de prueba gratis
-              </p>
-            </form>
+              <div className="text-center space-y-2">
+                <p className="text-xs text-gray-500">
+                  Al crear una cuenta, obtienes <strong>7 días de prueba gratis</strong>
+                </p>
+                <p className="text-xs text-gray-400">
+                  Sin tarjeta de crédito • Cancela cuando quieras
+                </p>
+              </div>
+            </div>
           )}
           
           <div className="mt-6 text-center">

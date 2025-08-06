@@ -166,13 +166,39 @@ export async function POST(request: Request) {
     const db = client.db('tuvaloracion');
     const data = await request.json();
     
-    // Validar datos requeridos
+    // Validar datos requeridos - Ahora más flexible para Google Places
     const businessName = data.businessName || data.name;
-    if (!businessName || !data.phone || !data.city || !data.postalCode || !data.address) {
+    if (!businessName || !data.email || !data.ownerName) {
       return NextResponse.json(
-        { error: 'Todos los campos son requeridos: nombre, teléfono, ciudad, código postal y dirección' },
+        { error: 'Datos requeridos: nombre del negocio, email y nombre del propietario' },
         { status: 400 }
       );
+    }
+    
+    // Extraer información de ubicación de la dirección de Google Places si está disponible
+    let city = data.city || '';
+    let postalCode = data.postalCode || '';
+    let address = data.address || '';
+    
+    // Si tenemos dirección de Google Places, intentar extraer información
+    if (data.address && !city) {
+      const addressParts = data.address.split(',');
+      if (addressParts.length >= 2) {
+        // Intentar extraer ciudad de la dirección
+        city = addressParts[addressParts.length - 2]?.trim() || '';
+        // Intentar extraer código postal si está en el formato típico
+        const lastPart = addressParts[addressParts.length - 1]?.trim() || '';
+        const postalMatch = lastPart.match(/\d{5}/);
+        if (postalMatch) {
+          postalCode = postalMatch[0];
+        }
+      }
+      address = data.address;
+    }
+    
+    // Si aún no tenemos ciudad, usar un valor por defecto
+    if (!city) {
+      city = 'España'; // Valor por defecto
     }
     
     // Obtener zona horaria basada en la provincia
@@ -205,19 +231,31 @@ export async function POST(request: Request) {
     ];
     const translatedPrizes = await translatePrizesWithAI(prizesToTranslate);
 
-    // Estructura del nuevo negocio
+    // Estructura del nuevo negocio con datos de Google Places
     const newBusiness = {
       subdomain: uniqueSubdomain,
-      name: data.businessName || data.name,
+      name: businessName,
       type: data.type || 'restaurante',
       category: data.category || '',
+      
+      // Datos de Google Places
+      googlePlaces: {
+        placeId: data.placeId || '',
+        rating: data.rating || 0,
+        totalReviews: data.totalReviews || 0,
+        photoUrl: data.photoUrl || '',
+        website: data.website || '',
+        lastUpdated: new Date()
+      },
+      
       location: {
         country: data.country || 'España',
-        city: data.city,
-        postalCode: data.postalCode,
-        address: data.address,
+        city: city,
+        postalCode: postalCode,
+        address: address,
         timezone: timezone
       },
+      
       config: {
         languages: data.languages || ['es', 'en', 'de', 'fr'],
         defaultLanguage: 'es',
@@ -226,27 +264,39 @@ export async function POST(request: Request) {
         reviewPlatform: data.reviewPlatform || 'google',
         reviewClickCounter: 0,
         theme: {
+          primaryColor: '#4F46E5',
+          secondaryColor: '#10B981',
+          logoUrl: data.photoUrl || ''
         },
         prizes: translatedPrizes,
         features: {
           showScarcityIndicators: true,
-          requireGoogleReview: true
+          requireGoogleReview: true,
+          showGoogleRating: true,
+          showBusinessPhoto: !!data.photoUrl
         }
       },
+      
       contact: {
-        phone: data.phone || '',
-        email: data.email || ''
+        phone: data.businessPhone || data.phone || '',
+        email: data.email || '',
+        website: data.website || ''
       },
+      
       subscription: {
         plan: data.plan || 'trial',
-        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
+        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días de prueba
         status: 'active'
       },
+      
       stats: {
         totalOpinions: 0,
         totalPrizesGiven: 0,
-        avgRating: 0
+        avgRating: data.rating || 0,
+        googleRating: data.rating || 0,
+        googleReviews: data.totalReviews || 0
       },
+      
       active: true,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -269,21 +319,57 @@ export async function POST(request: Request) {
           updatedAt: new Date()
         };
         
-        await db.collection('users').insertOne(newUser);
+        const userResult = await db.collection('users').insertOne(newUser);
+        
+        return NextResponse.json({
+          success: true,
+          businessId: result.insertedId,
+          subdomain: newBusiness.subdomain,
+          user: {
+            id: userResult.insertedId.toString(),
+            email: data.email,
+            name: data.ownerName,
+            role: 'admin',
+            businessId: result.insertedId.toString()
+          },
+          message: 'Negocio y usuario creados exitosamente'
+        });
+      } else {
+        // Usuario ya existe, solo actualizar businessId si es necesario
+        if (!existingUser.businessId) {
+          await db.collection('users').updateOne(
+            { email: data.email },
+            { 
+              $set: { 
+                businessId: result.insertedId.toString(),
+                updatedAt: new Date()
+              }
+            }
+          );
+        }
+        
+        return NextResponse.json({
+          success: true,
+          businessId: result.insertedId,
+          subdomain: newBusiness.subdomain,
+          user: {
+            id: existingUser._id.toString(),
+            email: existingUser.email,
+            name: existingUser.name,
+            role: existingUser.role || 'admin',
+            businessId: result.insertedId.toString()
+          },
+          message: 'Negocio creado y usuario actualizado exitosamente'
+        });
       }
     }
     
+    // Fallback si no se proporcionaron datos de usuario
     return NextResponse.json({
       success: true,
       businessId: result.insertedId,
       subdomain: newBusiness.subdomain,
-      user: {
-        id: result.insertedId.toString(),
-        email: data.email || '',
-        name: data.ownerName || '',
-        role: 'admin',
-        businessId: result.insertedId.toString()
-      }
+      message: 'Negocio creado exitosamente'
     });
     
   } catch (error) {
