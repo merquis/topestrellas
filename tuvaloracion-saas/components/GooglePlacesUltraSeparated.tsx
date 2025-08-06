@@ -448,12 +448,12 @@ export function GooglePlacesUltraSeparated({
 
               {/* Sección "¡Aumenta tus ventas!" */}
               {selectedPlace.rating && selectedPlace.rating < 5.0 && (
-                <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg">
+                <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                   <div className="flex items-start gap-3">
-                    <span className="text-orange-500 text-xl mt-0.5">💡</span>
+                    <span className="text-blue-500 text-xl mt-0.5">💡</span>
                     <div className="flex-1">
-                      <h5 className="font-bold text-orange-800 mb-2">¡Aumenta tus ventas!</h5>
-                      <p className="text-sm text-orange-700 leading-relaxed">
+                      <h5 className="font-semibold text-blue-800 mb-2">¡Aumenta tus ventas!</h5>
+                      <p className="text-sm text-blue-700 leading-relaxed">
                         Con {selectedPlace.rating} estrellas tienes potencial de mejora. ¡No te preocupes! 
                         Vamos a implementar estrategias efectivas para subir tu puntuación y atraer más clientes.
                       </p>
@@ -467,14 +467,14 @@ export function GooglePlacesUltraSeparated({
                 (() => {
                   const reviewData = calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total);
                   return (
-                    <div className="mt-4 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg">
+                    <div className="mt-4 p-4 bg-gradient-to-r from-slate-100 to-gray-100 border border-slate-200 rounded-lg">
                       <div className="flex items-start gap-3">
-                        <span className="text-white text-xl mt-0.5">🚀</span>
+                        <span className="text-slate-600 text-xl mt-0.5">🚀</span>
                         <div className="flex-1">
-                          <h5 className="font-bold text-white mb-2">
+                          <h5 className="font-semibold text-slate-800 mb-2">
                             Tu próximo objetivo: {reviewData.target.toFixed(1)} estrellas
                           </h5>
-                          <p className="text-white/90 text-sm leading-relaxed">
+                          <p className="text-slate-700 text-sm leading-relaxed">
                             {reviewData.reviewsNeeded > 0 
                               ? `Consigue ${reviewData.reviewsNeeded} reseñas de 5 estrellas y verás cómo sube tu puntuación. ¡Vamos a por ello!`
                               : reviewData.message
