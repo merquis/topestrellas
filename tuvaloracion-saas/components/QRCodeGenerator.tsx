@@ -263,7 +263,7 @@ export function BusinessQRComplete({ subdomain, businessName }: BusinessQRComple
           <img
             src={qrResult.dataURL}
             alt={`QR Code for ${businessName}`}
-            className="w-60 h-60 block"
+            className="w-40 h-40 block"
           />
         </div>
       )}
