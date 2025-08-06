@@ -217,7 +217,7 @@ export async function POST(request: Request) {
     // Encontrar un subdominio único
     const uniqueSubdomain = await findUniqueSubdomain(db, baseSubdomain);
     
-    // Usar premios por defecto sin traducción IA para creación rápida
+    // Premios básicos sin traducciones
     const defaultPrizes = data.prizes || [
       'CENA Max 60€',
       'DESCUENTO 30€', 
@@ -228,17 +228,6 @@ export async function POST(request: Request) {
       'MOJITO',
       'CHUPITO'
     ];
-    
-    // Crear premios básicos sin IA para velocidad
-    const basicPrizes = defaultPrizes.map((prize, index) => ({
-      index,
-      translations: {
-        es: { name: prize, emoji: '🎁' },
-        en: { name: prize, emoji: '🎁' },
-        de: { name: prize, emoji: '🎁' },
-        fr: { name: prize, emoji: '🎁' }
-      }
-    }));
 
     // Generar URL de Google Reviews automáticamente si tenemos placeId
     let googleReviewUrl = '';
@@ -284,7 +273,7 @@ export async function POST(request: Request) {
           secondaryColor: '#10B981',
           logoUrl: data.photoUrl || ''
         },
-        prizes: basicPrizes,
+        prizes: defaultPrizes,
         features: {
           showScarcityIndicators: true,
           requireGoogleReview: true,
