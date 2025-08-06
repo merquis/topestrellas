@@ -339,14 +339,14 @@ export function GooglePlacesUltraSeparated({
 
       {/* Vista previa del lugar seleccionado */}
       {selectedPlace && (
-        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-start gap-4">
+        <div className="mt-4 p-6 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-xl shadow-lg">
+          <div className="flex items-start gap-6">
             {showPhoto && selectedPhotoUrl && (
               <div className="flex-shrink-0">
                 <img
                   src={selectedPhotoUrl}
                   alt={selectedPlace.name}
-                  className="rounded-lg object-cover"
+                  className="rounded-xl object-cover shadow-md border-2 border-white"
                   style={{ width: photoSize, height: photoSize }}
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
@@ -356,37 +356,73 @@ export function GooglePlacesUltraSeparated({
             )}
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-start gap-2 mb-2">
-                <span className="text-green-500 mt-0.5">✅</span>
-                <div>
-                  <h4 className="font-semibold text-green-800">
+              <div className="flex items-start gap-3 mb-4">
+                <span className="text-green-500 mt-1 text-xl">✅</span>
+                <div className="flex-1">
+                  <h4 className="text-xl font-bold text-gray-800 mb-1">
                     {selectedPlace.name}
                   </h4>
-                  <p className="text-sm text-green-600 mt-1">
+                  <p className="text-sm text-green-600 font-medium">
                     Datos obtenidos correctamente
                   </p>
                 </div>
               </div>
+
+              {/* Mensaje de aliento personalizado */}
+              {selectedPlace.rating && (
+                <div className="mb-4 p-4 bg-white/70 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">💪</span>
+                    <h5 className="font-semibold text-blue-800">¡Mensaje de motivación!</h5>
+                  </div>
+                  <p className="text-sm text-blue-700 leading-relaxed">
+                    {selectedPlace.rating >= 4.5 
+                      ? `¡Excelente! Con ${selectedPlace.rating} estrellas ya tienes una puntuación fantástica. Vamos a mantenerla y conseguir aún más reseñas positivas para consolidar tu reputación online.`
+                      : selectedPlace.rating >= 4.0
+                      ? `¡Muy bien! Con ${selectedPlace.rating} estrellas tienes una buena base. Vamos a trabajar juntos para llegar a las 5 estrellas y destacar por encima de tu competencia.`
+                      : selectedPlace.rating >= 3.5
+                      ? `Con ${selectedPlace.rating} estrellas tienes potencial de mejora. ¡No te preocupes! Vamos a implementar estrategias efectivas para subir tu puntuación y atraer más clientes.`
+                      : selectedPlace.rating >= 3.0
+                      ? `Tu puntuación actual de ${selectedPlace.rating} estrellas es un punto de partida. ¡Juntos vamos a transformar tu reputación online y conseguir que brillen esas 5 estrellas!`
+                      : `Con ${selectedPlace.rating} estrellas, tienes una gran oportunidad de mejora. ¡No te desanimes! Vamos a crear una estrategia sólida para recuperar la confianza de tus clientes.`
+                    }
+                  </p>
+                </div>
+              )}
               
-              <div className="space-y-1 text-sm text-green-700">
+              <div className="grid grid-cols-1 gap-3">
                 {selectedPlace.rating && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">⭐ Rating:</span>
-                    <span>{selectedPlace.rating}/5</span>
+                  <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-500 text-lg">⭐</span>
+                      <span className="font-semibold text-gray-700">Puntuación:</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold text-yellow-600">{selectedPlace.rating}</span>
+                      <span className="text-gray-500">/5</span>
+                    </div>
                   </div>
                 )}
+                
                 {selectedPlace.user_ratings_total !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">📝 Reseñas:</span>
-                    <span>{selectedPlace.user_ratings_total}</span>
+                  <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-500 text-lg">📝</span>
+                      <span className="font-semibold text-gray-700">Reseñas:</span>
+                    </div>
+                    <span className="text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
                   </div>
                 )}
+                
                 {selectedPlace.formatted_address && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">📍 Dirección:</span>
-                    <span className="text-right max-w-xs truncate">
+                  <div className="p-3 bg-white/80 rounded-lg">
+                    <div className="flex items-start gap-2 mb-2">
+                      <span className="text-red-500 text-lg mt-0.5">📍</span>
+                      <span className="font-semibold text-gray-700">Dirección:</span>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed pl-6 break-words">
                       {selectedPlace.formatted_address}
-                    </span>
+                    </p>
                   </div>
                 )}
               </div>
