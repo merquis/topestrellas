@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { translatePrizesWithAI } from '@/lib/ai-translation';
 
 export async function GET(request: Request) {
   try {
@@ -218,8 +217,8 @@ export async function POST(request: Request) {
     // Encontrar un subdominio único
     const uniqueSubdomain = await findUniqueSubdomain(db, baseSubdomain);
     
-    // Procesar premios con IA
-    const prizesToTranslate = data.prizes || [
+    // Usar premios por defecto sin traducción IA para creación rápida
+    const defaultPrizes = data.prizes || [
       'CENA Max 60€',
       'DESCUENTO 30€', 
       'BOTELLA VINO',
@@ -229,7 +228,17 @@ export async function POST(request: Request) {
       'MOJITO',
       'CHUPITO'
     ];
-    const translatedPrizes = await translatePrizesWithAI(prizesToTranslate);
+    
+    // Crear premios básicos sin IA para velocidad
+    const basicPrizes = defaultPrizes.map((prize, index) => ({
+      index,
+      translations: {
+        es: { name: prize, emoji: '🎁' },
+        en: { name: prize, emoji: '🎁' },
+        de: { name: prize, emoji: '🎁' },
+        fr: { name: prize, emoji: '🎁' }
+      }
+    }));
 
     // Generar URL de Google Reviews automáticamente si tenemos placeId
     let googleReviewUrl = '';
@@ -275,7 +284,7 @@ export async function POST(request: Request) {
           secondaryColor: '#10B981',
           logoUrl: data.photoUrl || ''
         },
-        prizes: translatedPrizes,
+        prizes: basicPrizes,
         features: {
           showScarcityIndicators: true,
           requireGoogleReview: true,

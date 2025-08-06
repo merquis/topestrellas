@@ -409,7 +409,7 @@ export default function AdminDashboard() {
         {/* Register Screen */}
         {currentView === 'register' && (
           <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-6xl">
               {/* Header */}
               <div className="text-center mb-8">
                 <button
@@ -479,20 +479,6 @@ export default function AdminDashboard() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Teléfono
-                      </label>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
-                        placeholder="+34 900 000 000"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Email
                       </label>
                       <input
@@ -507,16 +493,15 @@ export default function AdminDashboard() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Contraseña
+                        Teléfono
                       </label>
                       <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
-                        placeholder="••••••••"
+                        placeholder="+34 900 000 000"
                         required
-                        minLength={6}
                       />
                     </div>
                     
@@ -536,6 +521,21 @@ export default function AdminDashboard() {
                         <option value="tienda">🛍️ Tienda</option>
                         <option value="otro">📦 Otro</option>
                       </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                      />
                     </div>
                     
                     <div>
