@@ -114,8 +114,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
       if (response.ok) {
         setToast({ message: 'Negocio actualizado exitosamente', type: 'success' });
-        const redirectPath = user?.role === 'super_admin' ? '/admin/businesses' : '/admin/my-business';
-        setTimeout(() => router.push(redirectPath), 2000);
+        // No redirigir automáticamente, permanecer en la misma página
       } else {
         const data = await response.json();
         setToast({ message: `Error: ${data.error}`, type: 'error' });
