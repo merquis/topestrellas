@@ -230,12 +230,31 @@ export function GooglePlacesUltraSeparated({
   const [isSelecting, setIsSelecting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Aplicar debounce al query para reducir llamadas a la API
-  const debouncedQuery = useDebounce(query, 500); // 500ms de delay
+  // Aplicar debounce INTELIGENTE al query para reducir llamadas a la API
+  // Más delay para búsquedas cortas, menos para búsquedas largas
+  const debounceDelay = useMemo(() => {
+    if (query.length < 5) return 1200;  // 1.2 segundos para búsquedas cortas
+    if (query.length < 8) return 800;   // 800ms para búsquedas medianas
+    return 600;                         // 600ms para búsquedas largas
+  }, [query.length]);
+  
+  const debouncedQuery = useDebounce(query, debounceDelay);
 
-  // Fetcher memoizado
+  // Determinar mínimo de caracteres dinámicamente
+  const minChars = useMemo(() => {
+    // Para búsquedas muy genéricas, requerir más caracteres
+    const lowerQuery = query.toLowerCase();
+    if (lowerQuery.startsWith('rest')) return 5;  // "restaurante" necesita 5
+    if (lowerQuery.startsWith('bar')) return 4;   // "bar" necesita 4
+    if (lowerQuery.startsWith('cafe')) return 4;  // "cafe" necesita 4
+    if (lowerQuery.startsWith('hotel')) return 5; // "hotel" necesita 5
+    return 4; // Por defecto 4 caracteres
+  }, [query]);
+
+  // Fetcher memoizado con contador de llamadas
   const fetcher = useCallback(async (url: string): Promise<AutocompleteResult[]> => {
     console.log('🔍 Llamada a API de autocompletado:', url);
+    console.log('📊 Query length:', debouncedQuery.length, '| Min chars:', minChars);
     const response = await fetch(url);
     const result: AutocompleteApiResponse = await response.json();
     
@@ -244,21 +263,22 @@ export function GooglePlacesUltraSeparated({
     }
     
     return result.predictions || [];
-  }, []);
+  }, [debouncedQuery.length, minChars]);
 
-  // Una sola instancia de SWR para obtener sugerencias
+  // Una sola instancia de SWR para obtener sugerencias con configuración ULTRA optimizada
   const { data: suggestions = [], error, isLoading } = useSWR(
-    debouncedQuery.length >= 3 ? `/api/google-places/autocomplete?query=${encodeURIComponent(debouncedQuery)}&language=es&types=establishment` : null,
+    debouncedQuery.length >= minChars ? `/api/google-places/autocomplete?query=${encodeURIComponent(debouncedQuery)}&language=es&types=establishment` : null,
     fetcher,
     {
       revalidateOnFocus: false,        // No revalidar al hacer foco
       revalidateIfStale: false,        // No revalidar si está obsoleto
       revalidateOnReconnect: false,    // No revalidar al reconectar
-      dedupingInterval: 2000,          // Deduplicación más agresiva (2 segundos)
-      errorRetryCount: 1,
-      errorRetryInterval: 3000,
+      dedupingInterval: 10000,         // Deduplicación ULTRA agresiva (10 segundos)
+      errorRetryCount: 0,              // No reintentar en caso de error
       suspense: false,
-      keepPreviousData: true          // Mantener datos previos mientras carga
+      keepPreviousData: true,          // Mantener datos previos mientras carga
+      focusThrottleInterval: 30000,    // Throttle de 30 segundos para el foco
+      compare: (a, b) => JSON.stringify(a) === JSON.stringify(b) // Comparación profunda
     }
   );
 
@@ -387,7 +407,7 @@ export function GooglePlacesUltraSeparated({
         onSuggestionClick={handleSuggestionClick}
         selectedIndex={selectedIndex}
         onMouseEnter={handleMouseEnter}
-        showSuggestions={showSuggestions && debouncedQuery.length >= 3}
+        showSuggestions={showSuggestions && debouncedQuery.length >= minChars}
       />
 
       {/* Vista previa del lugar seleccionado */}
