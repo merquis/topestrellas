@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import { BusinessQR } from '@/components/QRCodeGenerator';
+import { QuickQRDesigner } from '@/components/QRDesigner';
 import { checkAuth } from '@/lib/auth';
 
 export default function MyBusinessPage() {
@@ -233,12 +234,19 @@ export default function MyBusinessPage() {
                       </div>
 
                       {/* QR Code Section (30%) */}
-                      <div className="lg:w-[30%] flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 min-h-[160px]">
+                      <div className="lg:w-[30%] flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 min-h-[160px] space-y-3">
                         <BusinessQR
                           subdomain={business.subdomain}
                           businessName={business.name}
                           type="hd"
                           showDownloadButton={true}
+                          className="w-full"
+                        />
+                        
+                        {/* Botón QR Irresistible */}
+                        <QuickQRDesigner
+                          subdomain={business.subdomain}
+                          businessName={business.name}
                           className="w-full"
                         />
                       </div>
