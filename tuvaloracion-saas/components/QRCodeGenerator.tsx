@@ -256,7 +256,7 @@ export function BusinessQRComplete({ subdomain, businessName }: BusinessQRComple
   }
 
   return (
-    <div className="flex flex-col items-center space-y-3 p-3 bg-gray-50 rounded-xl">
+    <div className="flex flex-col items-center space-y-3 pt-1 px-3 pb-3 bg-gray-50 rounded-xl">
       {/* QR Preview */}
       {qrResult && (
         <div className="bg-white p-3 rounded-lg shadow-sm">
