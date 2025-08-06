@@ -147,12 +147,16 @@ export default function MyBusinessPage() {
                     <div className="text-center p-3 bg-yellow-50 rounded-lg">
                       <div className="flex items-center justify-center gap-1 mb-1">
                         <span className="text-yellow-500">★</span>
-                        <span className="text-lg font-bold text-gray-800">4.8</span>
+                        <span className="text-lg font-bold text-gray-800">
+                          {business.googlePlaces?.rating || business.stats?.avgRating || 'N/A'}
+                        </span>
                       </div>
                       <p className="text-xs text-gray-600">Rating</p>
                     </div>
                     <div className="text-center p-3 bg-blue-50 rounded-lg">
-                      <div className="text-lg font-bold text-gray-800 mb-1">247</div>
+                      <div className="text-lg font-bold text-gray-800 mb-1">
+                        {business.googlePlaces?.totalReviews || business.stats?.googleReviews || 0}
+                      </div>
                       <p className="text-xs text-gray-600">Opiniones</p>
                     </div>
                   </div>
