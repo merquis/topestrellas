@@ -80,12 +80,14 @@ const SugerenciasResultado = memo(function SugerenciasResultado({
   query,
   onSuggestionClick,
   selectedIndex,
-  onMouseEnter
+  onMouseEnter,
+  showSuggestions
 }: {
   query: string;
   onSuggestionClick: (suggestion: AutocompleteResult) => void;
   selectedIndex: number;
   onMouseEnter?: (index: number) => void;
+  showSuggestions: boolean;
 }) {
   // Fetcher para SWR
   const fetcher = async (url: string): Promise<AutocompleteResult[]> => {
@@ -114,7 +116,7 @@ const SugerenciasResultado = memo(function SugerenciasResultado({
     }
   );
 
-  if (query.length < 2) return null;
+  if (query.length < 2 || !showSuggestions) return null;
   if (error) return <div className="text-red-500 p-2">Error: {error.message}</div>;
   if (suggestions.length === 0 && !isLoading) return null;
 
@@ -191,6 +193,7 @@ export function GooglePlacesUltraSeparated({
   const [selectedPlace, setSelectedPlace] = useState<GooglePlaceData | null>(null);
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Obtener sugerencias para navegación con teclado
   const { data: suggestions = [] } = useSWR(
@@ -261,6 +264,7 @@ export function GooglePlacesUltraSeparated({
 
   // Manejar selección de sugerencia
   const handleSuggestionClick = useCallback(async (suggestion: AutocompleteResult) => {
+    setShowSuggestions(false); // Ocultar sugerencias inmediatamente
     await selectPlace(suggestion);
     setSelectedIndex(-1);
   }, [selectPlace]);
@@ -294,9 +298,11 @@ export function GooglePlacesUltraSeparated({
   const handleQueryChange = useCallback((newQuery: string) => {
     setQuery(newQuery);
     setSelectedIndex(-1);
+    setShowSuggestions(newQuery.length >= 2); // Mostrar sugerencias cuando hay suficiente texto
     if (newQuery.length === 0) {
       setSelectedPlace(null);
       setSelectedPhotoUrl(null);
+      setShowSuggestions(false);
     }
   }, []);
 
@@ -328,6 +334,7 @@ export function GooglePlacesUltraSeparated({
         onSuggestionClick={handleSuggestionClick}
         selectedIndex={selectedIndex}
         onMouseEnter={handleMouseEnter}
+        showSuggestions={showSuggestions}
       />
 
       {/* Vista previa del lugar seleccionado */}
