@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import FunctionalDashboard from '@/components/admin/FunctionalDashboard';
-import StatsCard from '@/components/admin/StatsCard';
-import Toast from '@/components/Toast';
 import { AuthUser, authenticateUser, checkAuth, saveAuth } from '@/lib/auth';
 import { GooglePlacesUltraSeparated } from '@/components/GooglePlacesUltraSeparated';
 import { GooglePlaceData } from '@/lib/types';
@@ -13,20 +11,29 @@ import { GooglePlaceData } from '@/lib/types';
 export default function AdminDashboard() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [currentView, setCurrentView] = useState<'welcome' | 'login' | 'register'>('welcome');
+  
+  // Login states
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  
+  // Register states
+  const [registrationStep, setRegistrationStep] = useState(1);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
   const [businessType, setBusinessType] = useState('restaurante');
-  const [loginError, setLoginError] = useState('');
   const [selectedBusiness, setSelectedBusiness] = useState<GooglePlaceData | null>(null);
   const [businessPlaceId, setBusinessPlaceId] = useState('');
   const [businessPhotoUrl, setBusinessPhotoUrl] = useState('');
+  const [registerError, setRegisterError] = useState('');
   const [isCreatingBusiness, setIsCreatingBusiness] = useState(false);
-  const [registrationStep, setRegistrationStep] = useState(1); // 1: Datos personales, 2: Búsqueda de negocio
   const [tempUserData, setTempUserData] = useState<any>(null);
+  
+  // Dashboard states
   const [businesses, setBusinesses] = useState([]);
   const [stats, setStats] = useState({
     totalBusinesses: 0,
@@ -41,6 +48,7 @@ export default function AdminDashboard() {
     activePercentage: 0,
     inactivePercentage: 0
   });
+
   const router = useRouter();
 
   useEffect(() => {
@@ -52,43 +60,17 @@ export default function AdminDashboard() {
     setLoading(false);
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    setLoading(true);
-    
-    try {
-      const authUser = await authenticateUser(email, password);
-      if (authUser) {
-        saveAuth(authUser);
-        setUser(authUser);
-        loadDashboardData(authUser);
-      } else {
-        setLoginError('Credenciales incorrectas');
-      }
-    } catch (error) {
-      setLoginError('Error al iniciar sesión');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const loadDashboardData = async (authUser: AuthUser) => {
     try {
-      // Cargar negocios según el rol
       const businessesResponse = await fetch('/api/admin/businesses');
       if (businessesResponse.ok) {
         const data = await businessesResponse.json();
-        
-        // Filtrar según el rol
         const filteredBusinesses = authUser.role === 'super_admin' 
           ? data 
           : data.filter((b: any) => b._id === authUser.businessId);
-        
         setBusinesses(filteredBusinesses);
       }
 
-      // Cargar estadísticas reales
       const statsParams = new URLSearchParams({
         userEmail: authUser.email,
         userRole: authUser.role,
@@ -117,16 +99,26 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoading(true);
+    
+    try {
+      const authUser = await authenticateUser(loginEmail, loginPassword);
+      if (authUser) {
+        saveAuth(authUser);
+        setUser(authUser);
+        loadDashboardData(authUser);
+      } else {
+        setLoginError('Credenciales incorrectas');
+      }
+    } catch (error) {
+      setLoginError('Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBusinessSelected = (place: GooglePlaceData, placeId: string, photoUrl?: string) => {
     setSelectedBusiness(place);
@@ -136,19 +128,18 @@ export default function AdminDashboard() {
 
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError('');
+    setRegisterError('');
     
     if (password !== confirmPassword) {
-      setLoginError('Las contraseñas no coinciden');
+      setRegisterError('Las contraseñas no coinciden');
       return;
     }
 
     if (!name || !email || !phone) {
-      setLoginError('Por favor completa todos los campos personales');
+      setRegisterError('Por favor completa todos los campos');
       return;
     }
 
-    // Guardar datos temporalmente y pasar al paso 2
     setTempUserData({
       name,
       email,
@@ -161,22 +152,18 @@ export default function AdminDashboard() {
 
   const handleStep2Submit = async () => {
     if (!selectedBusiness || !tempUserData) {
-      setLoginError('Por favor busca y selecciona tu negocio');
+      setRegisterError('Por favor busca y selecciona tu negocio');
       return;
     }
 
     setIsCreatingBusiness(true);
     
     try {
-      // Crear el negocio con todos los datos
       const businessData = {
-        // Datos del usuario del paso 1
         ownerName: tempUserData.name,
         email: tempUserData.email,
         phone: tempUserData.phone,
         password: tempUserData.password,
-        
-        // Datos del negocio desde Google Places
         businessName: selectedBusiness.name,
         placeId: businessPlaceId,
         address: selectedBusiness.formatted_address || '',
@@ -185,13 +172,9 @@ export default function AdminDashboard() {
         rating: selectedBusiness.rating || 0,
         totalReviews: selectedBusiness.user_ratings_total || 0,
         photoUrl: businessPhotoUrl,
-        
-        // Configuración por defecto
-        plan: 'trial', // Siempre empezar con prueba gratis
+        plan: 'trial',
         type: tempUserData.businessType,
         country: 'España',
-        
-        // Premios por defecto
         prizes: [
           'CENA Max 60€',
           'DESCUENTO 30€', 
@@ -214,135 +197,262 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const data = await response.json();
-        
-        // Guardar automáticamente la sesión del usuario
         if (data.user) {
           saveAuth(data.user);
           setUser(data.user);
           loadDashboardData(data.user);
         }
-        
-        setLoginError('');
-        // No necesitamos toast, simplemente cargamos el dashboard
+        setRegisterError('');
       } else {
         const data = await response.json();
-        setLoginError(`Error: ${data.error}`);
+        setRegisterError(`Error: ${data.error}`);
       }
     } catch (error) {
-      setLoginError('Error al crear el negocio. Inténtalo de nuevo.');
+      setRegisterError('Error al crear el negocio. Inténtalo de nuevo.');
     } finally {
       setIsCreatingBusiness(false);
     }
   };
 
-  const handleBackToStep1 = () => {
-    setRegistrationStep(1);
+  const resetForms = () => {
+    setLoginEmail('');
+    setLoginPassword('');
+    setLoginError('');
+    setName('');
+    setEmail('');
+    setPhone('');
+    setPassword('');
+    setConfirmPassword('');
+    setBusinessType('restaurante');
     setSelectedBusiness(null);
     setBusinessPlaceId('');
     setBusinessPhotoUrl('');
-    setLoginError('');
+    setRegisterError('');
+    setRegistrationStep(1);
+    setTempUserData(null);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl">
-          <div className="text-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-white font-bold">TV</span>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800">TuValoración</h1>
-            <p className="text-gray-600 mt-2">
-              {activeTab === 'login' ? 'Panel de Administración' : 'Crea tu negocio'}
-            </p>
-          </div>
-          
-          {/* Tabs */}
-          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setActiveTab('login')}
-              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
-                activeTab === 'login'
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Iniciar Sesión
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('register')}
-              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
-                activeTab === 'register'
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Crear Negocio
-            </button>
-          </div>
-          
-          {/* Login Form */}
-          {activeTab === 'login' && (
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="admin@tuvaloracion.com"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-              
-              {loginError && (
-                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-                  {loginError}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        {/* Welcome Screen */}
+        {currentView === 'welcome' && (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
+              {/* Logo */}
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <span className="text-3xl text-white font-bold">TV</span>
                 </div>
-              )}
-              
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02]"
-              >
-                Iniciar Sesión
-              </button>
-            </form>
-          )}
-          
-          {/* Register Form */}
-          {activeTab === 'register' && (
-            <div className="space-y-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">TuValoración</h1>
+                <p className="text-gray-600">Sistema de reseñas y fidelización para negocios</p>
+              </div>
+
+              {/* Main Question */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">¿Eres un negocio?</h2>
+                <p className="text-gray-600 mb-6">Aumenta tus reseñas positivas y fideliza a tus clientes con nuestro sistema de premios</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-4">
+                <button
+                  onClick={() => {
+                    resetForms();
+                    setCurrentView('login');
+                  }}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] shadow-lg"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <span>🔑</span>
+                    <span>Ya tengo cuenta</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    resetForms();
+                    setCurrentView('register');
+                  }}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] shadow-lg"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <span>✨</span>
+                    <span>Crear cuenta nueva</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-8 pt-6 border-t border-gray-100">
+                <p className="text-sm text-gray-500">
+                  ¿Buscas dejar una reseña?
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Accede usando el enlace proporcionado por el establecimiento
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Login Screen */}
+        {currentView === 'login' && (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <button
+                  onClick={() => setCurrentView('welcome')}
+                  className="absolute top-6 left-6 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl text-white font-bold">TV</span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Iniciar Sesión</h2>
+                <p className="text-gray-600">Accede a tu panel de administración</p>
+              </div>
+
+              {/* Login Form */}
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    placeholder="tu@email.com"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                
+                {loginError && (
+                  <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200">
+                    <div className="flex items-center gap-2">
+                      <span className="text-red-500">❌</span>
+                      <span>{loginError}</span>
+                    </div>
+                  </div>
+                )}
+                
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Iniciando sesión...</span>
+                    </div>
+                  ) : (
+                    'Iniciar Sesión'
+                  )}
+                </button>
+              </form>
+
+              {/* Footer */}
+              <div className="mt-8 text-center">
+                <p className="text-sm text-gray-600">
+                  ¿No tienes cuenta?{' '}
+                  <button
+                    onClick={() => {
+                      resetForms();
+                      setCurrentView('register');
+                    }}
+                    className="text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Crear cuenta nueva
+                  </button>
+                </p>
+                <p className="text-xs text-gray-400 mt-4">
+                  ¿Necesitas ayuda? Contacta con soporte
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Register Screen */}
+        {currentView === 'register' && (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <button
+                  onClick={() => {
+                    if (registrationStep === 1) {
+                      setCurrentView('welcome');
+                    } else {
+                      setRegistrationStep(1);
+                      setRegisterError('');
+                    }
+                  }}
+                  className="absolute top-6 left-6 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl text-white font-bold">TV</span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Crear Cuenta</h2>
+                <p className="text-gray-600">
+                  {registrationStep === 1 
+                    ? 'Completa tus datos personales' 
+                    : 'Busca y selecciona tu negocio'
+                  }
+                </p>
+              </div>
+
               {/* Progress Indicator */}
               <div className="flex items-center justify-center mb-8">
                 <div className="flex items-center space-x-4">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold ${
-                    registrationStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+                    registrationStep >= 1 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
-                    1
+                    {registrationStep > 1 ? '✓' : '1'}
                   </div>
-                  <div className={`w-16 h-1 ${registrationStep >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold ${
-                    registrationStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                  <div className={`w-16 h-1 rounded-full transition-all ${
+                    registrationStep >= 2 ? 'bg-green-600' : 'bg-gray-300'
+                  }`}></div>
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+                    registrationStep >= 2 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     2
                   </div>
@@ -351,218 +461,180 @@ export default function AdminDashboard() {
 
               {/* Step 1: Personal Information */}
               {registrationStep === 1 && (
-                <form onSubmit={handleStep1Submit} className="space-y-8">
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 flex items-center gap-2">
-                      📋 Información Personal
-                    </h3>
+                <form onSubmit={handleStep1Submit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre completo
+                      </label>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
+                        placeholder="Juan Pérez"
+                        required
+                      />
+                    </div>
                     
-                    <div className="space-y-6">
-                      {/* Primera fila: Nombre y Teléfono */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Nombre completo
-                          </label>
-                          <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                            placeholder="Juan Pérez"
-                            required
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Teléfono
-                          </label>
-                          <input
-                            type="tel"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                            placeholder="+34 900 000 000"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      {/* Segunda fila: Email y Contraseña */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Email
-                          </label>
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                            placeholder="tu@email.com"
-                            required
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Contraseña
-                          </label>
-                          <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                            placeholder="••••••••"
-                            required
-                            minLength={6}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Tercera fila: Tipo de negocio y Confirmar contraseña */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Tipo de negocio
-                          </label>
-                          <select
-                            value={businessType}
-                            onChange={(e) => setBusinessType(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                          >
-                            <option value="restaurante">🍽️ Restaurante</option>
-                            <option value="cafeteria">☕ Cafetería</option>
-                            <option value="peluqueria">✂️ Peluquería</option>
-                            <option value="hotel">🏨 Hotel</option>
-                            <option value="tienda">🛍️ Tienda</option>
-                            <option value="otro">📦 Otro</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Confirmar contraseña
-                          </label>
-                          <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                            placeholder="••••••••"
-                            required
-                            minLength={6}
-                          />
-                        </div>
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
+                        placeholder="+34 900 000 000"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
+                        placeholder="tu@email.com"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tipo de negocio
+                      </label>
+                      <select
+                        value={businessType}
+                        onChange={(e) => setBusinessType(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
+                      >
+                        <option value="restaurante">🍽️ Restaurante</option>
+                        <option value="cafeteria">☕ Cafetería</option>
+                        <option value="peluqueria">✂️ Peluquería</option>
+                        <option value="hotel">🏨 Hotel</option>
+                        <option value="tienda">🛍️ Tienda</option>
+                        <option value="otro">📦 Otro</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirmar contraseña
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                      />
                     </div>
                   </div>
 
-                  {loginError && (
-                    <div className="bg-red-50 text-red-600 px-6 py-4 rounded-lg text-sm border border-red-200">
-                      <div className="flex items-start gap-2">
-                        <span className="text-red-500 mt-0.5">❌</span>
-                        <span>{loginError}</span>
+                  {registerError && (
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-500">❌</span>
+                        <span>{registerError}</span>
                       </div>
                     </div>
                   )}
                   
-                  <div className="pt-4">
-                    <button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] shadow-lg"
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <span>Continuar</span>
-                        <span>→</span>
-                      </div>
-                    </button>
-                    
-                    <div className="text-center space-y-2 mt-6">
-                      <p className="text-sm text-gray-600">
-                        Paso 1 de 2: Información personal
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        En el siguiente paso buscarás tu negocio
-                      </p>
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] shadow-lg"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Continuar</span>
+                      <span>→</span>
                     </div>
+                  </button>
+                  
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">
+                      Paso 1 de 2: Información personal
+                    </p>
                   </div>
                 </form>
               )}
 
               {/* Step 2: Business Search */}
               {registrationStep === 2 && (
-                <div className="space-y-8">
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 flex items-center gap-2">
-                      🔍 Busca tu Negocio
-                    </h3>
-                    <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-                      <p className="text-sm text-blue-700 mb-4 flex items-start gap-2">
-                        <span className="text-blue-500 mt-0.5">💡</span>
-                        <span>
-                          Busca tu negocio en Google Places. Todos los datos se completarán automáticamente: 
-                          dirección, teléfono, rating, reseñas y foto.
-                        </span>
-                      </p>
-                      
-                      <GooglePlacesUltraSeparated
-                        placeholder="Busca tu negocio (ej: Restaurante Euro, Las Galletas)"
-                        onPlaceSelected={handleBusinessSelected}
-                        onError={(error) => setLoginError(error)}
-                        showPhoto={true}
-                        photoSize={120}
-                        className="w-full"
-                      />
-                    </div>
+                <div className="space-y-6">
+                  <div className="bg-green-50 p-6 rounded-xl border border-green-200">
+                    <p className="text-sm text-green-700 mb-4 flex items-start gap-2">
+                      <span className="text-green-500 mt-0.5">💡</span>
+                      <span>
+                        Busca tu negocio en Google Places. Todos los datos se completarán automáticamente: 
+                        dirección, teléfono, rating, reseñas y foto.
+                      </span>
+                    </p>
+                    
+                    <GooglePlacesUltraSeparated
+                      placeholder="Busca tu negocio (ej: Restaurante Euro, Las Galletas)"
+                      onPlaceSelected={handleBusinessSelected}
+                      onError={(error) => setRegisterError(error)}
+                      showPhoto={true}
+                      photoSize={120}
+                      className="w-full"
+                    />
                   </div>
 
-                  {loginError && (
-                    <div className="bg-red-50 text-red-600 px-6 py-4 rounded-lg text-sm border border-red-200">
-                      <div className="flex items-start gap-2">
-                        <span className="text-red-500 mt-0.5">❌</span>
-                        <span>{loginError}</span>
+                  {registerError && (
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-500">❌</span>
+                        <span>{registerError}</span>
                       </div>
                     </div>
                   )}
                   
-                  <div className="pt-4 flex gap-4">
-                    <button
-                      type="button"
-                      onClick={handleBackToStep1}
-                      className="flex-1 bg-gray-100 text-gray-700 py-4 px-6 rounded-lg font-semibold text-lg hover:bg-gray-200 transition-all"
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <span>←</span>
-                        <span>Atrás</span>
+                  <button
+                    type="button"
+                    onClick={handleStep2Submit}
+                    disabled={isCreatingBusiness || !selectedBusiness}
+                    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                  >
+                    {isCreatingBusiness ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                        <span>Creando tu cuenta...</span>
                       </div>
-                    </button>
-                    
-                    <button
-                      type="button"
-                      onClick={handleStep2Submit}
-                      disabled={isCreatingBusiness || !selectedBusiness}
-                      className="flex-2 bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
-                    >
-                      {isCreatingBusiness ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                          <span>Creando tu cuenta...</span>
-                        </div>
-                      ) : selectedBusiness ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <span>✅</span>
-                          <span>Crear cuenta para {selectedBusiness.name}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                          <span>🔍</span>
-                          <span>Primero busca tu negocio</span>
-                        </div>
-                      )}
-                    </button>
-                  </div>
+                    ) : selectedBusiness ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <span>✅</span>
+                        <span>Crear cuenta para {selectedBusiness.name}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <span>🔍</span>
+                        <span>Primero busca tu negocio</span>
+                      </div>
+                    )}
+                  </button>
                   
                   <div className="text-center space-y-2">
                     <p className="text-sm text-gray-600">
@@ -574,15 +646,25 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+
+              {/* Footer */}
+              <div className="mt-8 text-center">
+                <p className="text-sm text-gray-600">
+                  ¿Ya tienes cuenta?{' '}
+                  <button
+                    onClick={() => {
+                      resetForms();
+                      setCurrentView('login');
+                    }}
+                    className="text-green-600 hover:text-green-700 font-medium"
+                  >
+                    Iniciar sesión
+                  </button>
+                </p>
+              </div>
             </div>
-          )}
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
-              ¿Necesitas ayuda? Contacta con soporte
-            </p>
           </div>
-        </div>
+        )}
       </div>
     );
   }
