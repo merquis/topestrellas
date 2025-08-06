@@ -374,6 +374,20 @@ export default function AdminDashboard() {
                       
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Teléfono
+                        </label>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                          placeholder="+34 900 000 000"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Email
                         </label>
                         <input
@@ -388,15 +402,16 @@ export default function AdminDashboard() {
                       
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Teléfono
+                          Contraseña
                         </label>
                         <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                          placeholder="+34 900 000 000"
+                          placeholder="••••••••"
                           required
+                          minLength={6}
                         />
                       </div>
                       
@@ -416,21 +431,6 @@ export default function AdminDashboard() {
                           <option value="tienda">🛍️ Tienda</option>
                           <option value="otro">📦 Otro</option>
                         </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Contraseña
-                        </label>
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                          placeholder="••••••••"
-                          required
-                          minLength={6}
-                        />
                       </div>
                       
                       <div>
