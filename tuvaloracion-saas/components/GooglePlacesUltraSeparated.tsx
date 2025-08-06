@@ -409,45 +409,7 @@ export function GooglePlacesUltraSeparated({
                 </div>
               </div>
 
-              {/* Mensaje de aliento personalizado */}
-              {selectedPlace.rating && (
-                <div className="mb-4 p-4 bg-white/70 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">💰</span>
-                    <h5 className="font-semibold text-green-800">¡Aumenta tus ventas!</h5>
-                  </div>
-                  <p className="text-sm text-green-700 leading-relaxed">
-                    {selectedPlace.rating >= 4.5 
-                      ? `¡Excelente! Con ${selectedPlace.rating} estrellas ya tienes una puntuación fantástica. Vamos a mantenerla y conseguir aún más reseñas positivas para consolidar tu reputación online.`
-                      : selectedPlace.rating >= 4.0
-                      ? `¡Muy bien! Con ${selectedPlace.rating} estrellas tienes una buena base. Vamos a trabajar juntos para mejorar tu puntuación y atraer más clientes que tu competencia.`
-                      : selectedPlace.rating >= 3.5
-                      ? `Con ${selectedPlace.rating} estrellas tienes potencial de mejora. ¡No te preocupes! Vamos a implementar estrategias efectivas para subir tu puntuación y atraer más clientes.`
-                      : selectedPlace.rating >= 3.0
-                      ? `Tu puntuación actual de ${selectedPlace.rating} estrellas es un punto de partida. ¡Juntos vamos a transformar tu reputación online y generar más ingresos!`
-                      : `Con ${selectedPlace.rating} estrellas, tienes una gran oportunidad de mejora. ¡No te desanimes! Vamos a crear una estrategia sólida para recuperar la confianza de tus clientes.`
-                    }
-                  </p>
-                </div>
-              )}
-
-              {/* Próximo paso con cálculo dinámico */}
-              {selectedPlace.rating && selectedPlace.user_ratings_total && (
-                <div className="mb-4 p-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg text-white">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">🚀</span>
-                    <h5 className="font-semibold">Tu próximo objetivo: {calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total).target.toFixed(1)} estrellas</h5>
-                  </div>
-                  <p className="text-sm leading-relaxed">
-                    {calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total).reviewsNeeded > 0 
-                      ? `Consigue ${calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total).reviewsNeeded} reseñas de 5 estrellas y verás cómo sube tu puntuación. ¡Vamos a por ello!`
-                      : `¡Excelente! Ya tienes la puntuación perfecta. Mantén este nivel de calidad.`
-                    }
-                  </p>
-                </div>
-              )}
-              
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-3 mb-4">
                 {selectedPlace.rating && (
                   <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -464,7 +426,7 @@ export function GooglePlacesUltraSeparated({
                 {selectedPlace.user_ratings_total !== undefined && (
                   <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <span className="text-blue-500 text-lg">📝</span>
+                      <span className="text-blue-500 text-lg">📊</span>
                       <span className="font-semibold text-gray-700">Reseñas:</span>
                     </div>
                     <span className="text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
@@ -483,6 +445,47 @@ export function GooglePlacesUltraSeparated({
                   </div>
                 )}
               </div>
+
+              {/* Sección "¡Aumenta tus ventas!" */}
+              {selectedPlace.rating && selectedPlace.rating < 5.0 && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <span className="text-orange-500 text-xl mt-0.5">💡</span>
+                    <div className="flex-1">
+                      <h5 className="font-bold text-orange-800 mb-2">¡Aumenta tus ventas!</h5>
+                      <p className="text-sm text-orange-700 leading-relaxed">
+                        Con {selectedPlace.rating} estrellas tienes potencial de mejora. ¡No te preocupes! 
+                        Vamos a implementar estrategias efectivas para subir tu puntuación y atraer más clientes.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sección "Tu próximo objetivo" */}
+              {selectedPlace.rating && selectedPlace.user_ratings_total && (
+                (() => {
+                  const reviewData = calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total);
+                  return (
+                    <div className="mt-4 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <span className="text-white text-xl mt-0.5">🚀</span>
+                        <div className="flex-1">
+                          <h5 className="font-bold text-white mb-2">
+                            Tu próximo objetivo: {reviewData.target.toFixed(1)} estrellas
+                          </h5>
+                          <p className="text-white/90 text-sm leading-relaxed">
+                            {reviewData.reviewsNeeded > 0 
+                              ? `Consigue ${reviewData.reviewsNeeded} reseñas de 5 estrellas y verás cómo sube tu puntuación. ¡Vamos a por ello!`
+                              : reviewData.message
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
             </div>
           </div>
         </div>
