@@ -17,29 +17,14 @@ interface QRTemplate {
 
 const QR_TEMPLATES: QRTemplate[] = [
   {
-    id: 'irresistible',
+    id: 'restaurantes-01',
     name: 'Irresistible',
     description: 'Diseño llamativo con premio garantizado - ¡Perfecto para atraer clientes!'
-  },
-  {
-    id: 'professional',
-    name: 'Profesional',
-    description: 'Diseño elegante y corporativo'
-  },
-  {
-    id: 'modern',
-    name: 'Moderno',
-    description: 'Diseño minimalista y contemporáneo'
-  },
-  {
-    id: 'elegant',
-    name: 'Elegante',
-    description: 'Diseño sofisticado con toques dorados'
   }
 ];
 
 export default function QRDesigner({ subdomain, businessName, className = '' }: QRDesignerProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('irresistible');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('restaurantes-01');
   const [selectedLanguage, setSelectedLanguage] = useState<'es' | 'en'>('es');
   const [selectedDPI, setSelectedDPI] = useState<number>(300);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -169,11 +154,11 @@ export default function QRDesigner({ subdomain, businessName, className = '' }: 
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-800">{template.name}</h4>
                       <p className="text-sm text-gray-600">{template.description}</p>
-                      {template.id === 'irresistible' && (
-                        <span className="inline-block mt-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                          ⭐ Recomendado
-                        </span>
-                      )}
+      {template.id === 'restaurantes-01' && (
+        <span className="inline-block mt-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+          ⭐ Recomendado
+        </span>
+      )}
                     </div>
                   </div>
                 </div>
@@ -343,7 +328,7 @@ export function QuickQRDesigner({ subdomain, businessName, className = '' }: Qui
         body: JSON.stringify({
           businessName,
           url: `https://${subdomain}.tuvaloracion.com`,
-          template: 'irresistible',
+          template: 'restaurantes-01',
           language: 'es',
           dpi: 300
         }),
