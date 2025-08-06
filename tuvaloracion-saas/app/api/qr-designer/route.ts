@@ -123,22 +123,24 @@ export async function POST(request: NextRequest) {
     const templateHeight = templateMetadata.height || 1240;
     
     // Calcular la posición central para el QR usando las dimensiones reales del QR recortado
-    // Movido un poco hacia abajo
+    // Centrado con ligero ajuste hacia arriba
     const qrX = Math.round((templateWidth - actualQrWidth) / 2);
-    const qrY = Math.round((templateHeight - actualQrHeight) / 2) - 60; // Movido hacia abajo (menos offset)
+    const qrY = Math.round((templateHeight - actualQrHeight) / 2) - 80; // Subido un poco para mejor centrado
     
-    // Componer la imagen: plantilla + QR
+    // Componer la imagen: plantilla + QR con transparencia
     const compositeImage = await sharp(templateBuffer)
       .composite([
         {
           input: qrBuffer,
           top: qrY,
-          left: qrX
+          left: qrX,
+          blend: 'over' // Asegurar que respete la transparencia
         }
       ])
       .png({
         quality: 100,
-        compressionLevel: 0 // Sin compresión para máxima calidad
+        compressionLevel: 0, // Sin compresión para máxima calidad
+        palette: false // Evitar paleta que podría afectar transparencia
       })
       .toBuffer();
     
