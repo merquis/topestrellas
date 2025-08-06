@@ -217,17 +217,6 @@ export async function POST(request: Request) {
     // Encontrar un subdominio único
     const uniqueSubdomain = await findUniqueSubdomain(db, baseSubdomain);
     
-    // Premios básicos sin traducciones
-    const defaultPrizes = data.prizes || [
-      'CENA Max 60€',
-      'DESCUENTO 30€', 
-      'BOTELLA VINO',
-      'HELADO',
-      'CERVEZA',
-      'REFRESCO',
-      'MOJITO',
-      'CHUPITO'
-    ];
 
     // Generar URL de Google Reviews automáticamente si tenemos placeId
     let googleReviewUrl = '';
@@ -273,7 +262,6 @@ export async function POST(request: Request) {
           secondaryColor: '#10B981',
           logoUrl: data.photoUrl || ''
         },
-        prizes: defaultPrizes,
         features: {
           showScarcityIndicators: true,
           requireGoogleReview: true,
