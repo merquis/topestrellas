@@ -24,6 +24,19 @@ RUN npm install
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
+# Install runtime dependencies for Canvas (needed during build)
+RUN apk add --no-cache \
+    cairo \
+    jpeg \
+    pango \
+    musl \
+    giflib \
+    pixman \
+    pangomm \
+    libjpeg-turbo \
+    freetype
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
