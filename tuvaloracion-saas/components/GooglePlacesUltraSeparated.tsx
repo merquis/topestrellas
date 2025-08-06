@@ -211,6 +211,7 @@ interface GooglePlacesUltraSeparatedProps {
   disabled?: boolean;
   showPhoto?: boolean;
   photoSize?: number;
+  hidePromotionalMessages?: boolean;
 }
 
 export function GooglePlacesUltraSeparated({
@@ -220,7 +221,8 @@ export function GooglePlacesUltraSeparated({
   className = "",
   disabled = false,
   showPhoto = true,
-  photoSize = 80
+  photoSize = 80,
+  hidePromotionalMessages = false
 }: GooglePlacesUltraSeparatedProps) {
   // Estados completamente separados
   const [query, setQuery] = useState('');
@@ -230,11 +232,11 @@ export function GooglePlacesUltraSeparated({
   const [isSelecting, setIsSelecting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // OPTIMIZACIÓN EXTREMA: Debounce más agresivo y estable
-  const debounceDelay = 1000; // 1.0 segundos FIJO para máxima estabilidad
+  // OPTIMIZACIÓN: Debounce más rápido para mejor UX
+  const debounceDelay = 500; // 0.5 segundos para respuesta más rápida
   const debouncedQuery = useDebounce(query, debounceDelay);
 
-  // SIEMPRE 4 caracteres mínimo para evitar búsquedas genéricas
+  // 4 caracteres mínimo para evitar búsquedas genéricas
   const minChars = 4;
 
   // Cache mejorado con soporte para fallos
@@ -651,8 +653,8 @@ export function GooglePlacesUltraSeparated({
                 )}
               </div>
 
-              {/* Sección "¡Aumenta tus ventas!" */}
-              {selectedPlace.rating && selectedPlace.rating < 5.0 && (
+              {/* Sección "¡Aumenta tus ventas!" - Solo mostrar si no están ocultos los mensajes promocionales */}
+              {!hidePromotionalMessages && selectedPlace.rating && selectedPlace.rating < 5.0 && (
                 <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg">
                   <div className="flex items-start gap-3">
                     <span className="text-orange-500 text-xl mt-0.5">💡</span>
@@ -667,8 +669,8 @@ export function GooglePlacesUltraSeparated({
                 </div>
               )}
 
-              {/* Sección "Tu próximo objetivo" */}
-              {selectedPlace.rating && selectedPlace.user_ratings_total && (
+              {/* Sección "Tu próximo objetivo" - Solo mostrar si no están ocultos los mensajes promocionales */}
+              {!hidePromotionalMessages && selectedPlace.rating && selectedPlace.user_ratings_total && (
                 (() => {
                   const reviewData = calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total);
                   return (

@@ -174,17 +174,7 @@ export default function AdminDashboard() {
         photoUrl: businessPhotoUrl,
         plan: 'trial',
         type: tempUserData.businessType,
-        country: 'España',
-        prizes: [
-          'CENA Max 60€',
-          'DESCUENTO 30€', 
-          'BOTELLA VINO',
-          'HELADO',
-          'CERVEZA',
-          'REFRESCO',
-          'MOJITO',
-          'CHUPITO'
-        ]
+        country: 'España'
       };
       
       const response = await fetch('/api/admin/businesses', {
@@ -600,6 +590,7 @@ export default function AdminDashboard() {
                       showPhoto={true}
                       photoSize={120}
                       className="w-full"
+                      hidePromotionalMessages={true}
                     />
                   </div>
 
@@ -612,29 +603,31 @@ export default function AdminDashboard() {
                     </div>
                   )}
                   
-                  <button
-                    type="button"
-                    onClick={handleStep2Submit}
-                    disabled={isCreatingBusiness || !selectedBusiness}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
-                  >
-                    {isCreatingBusiness ? (
-                      <div className="flex items-center justify-center gap-3">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                        <span>Creando tu cuenta...</span>
-                      </div>
-                    ) : selectedBusiness ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <span>✅</span>
-                        <span>Crear cuenta para {selectedBusiness.name}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center gap-2">
-                        <span>🔍</span>
-                        <span>Primero busca tu negocio</span>
-                      </div>
-                    )}
-                  </button>
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleStep2Submit}
+                      disabled={isCreatingBusiness || !selectedBusiness}
+                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                    >
+                      {isCreatingBusiness ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                          <span>Creando tu cuenta...</span>
+                        </div>
+                      ) : selectedBusiness ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <span>✅</span>
+                          <span>Crear cuenta para {selectedBusiness.name}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2">
+                          <span>🔍</span>
+                          <span>Primero busca tu negocio</span>
+                        </div>
+                      )}
+                    </button>
+                  </div>
                   
                   <div className="text-center space-y-2">
                     <p className="text-sm text-gray-600">
