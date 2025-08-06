@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     
     // Generar el código QR 3mm más pequeño (35px menos a 300 DPI)
     const qrSize = 465; // Reducido de 500 a 465 (3mm menos)
-    const qrBuffer = await QRCode.toBuffer(url, {
+    const qrBufferOriginal = await QRCode.toBuffer(url, {
       width: qrSize,
       margin: 0, // Sin margen para aprovechar todo el espacio
       color: {
@@ -79,6 +79,21 @@ export async function POST(request: NextRequest) {
       errorCorrectionLevel: 'H'
     });
     
+    // Recortar el QR para eliminar cualquier margen blanco
+    // trim() elimina automáticamente los píxeles blancos del borde
+    const qrTrimmed = sharp(qrBufferOriginal)
+      .trim({
+        background: { r: 255, g: 255, b: 255 }, // Detectar y eliminar blanco
+        threshold: 0 // Sin tolerancia, eliminar todo el blanco del borde
+      });
+    
+    const qrBuffer = await qrTrimmed.toBuffer();
+    
+    // Obtener las dimensiones del QR recortado
+    const qrMetadata = await sharp(qrBuffer).metadata();
+    const actualQrWidth = qrMetadata.width || qrSize;
+    const actualQrHeight = qrMetadata.height || qrSize;
+    
     // Cargar la plantilla
     const templateBuffer = await fs.readFile(templatePath);
     
@@ -87,10 +102,10 @@ export async function POST(request: NextRequest) {
     const templateWidth = templateMetadata.width || 874;
     const templateHeight = templateMetadata.height || 1240;
     
-    // Calcular la posición central para el QR
+    // Calcular la posición central para el QR usando las dimensiones reales del QR recortado
     // Subido 1.5mm (18px a 300 DPI)
-    const qrX = Math.round((templateWidth - qrSize) / 2);
-    const qrY = Math.round((templateHeight - qrSize) / 2) - 93; // Subido de -75 a -93 (18px hacia arriba)
+    const qrX = Math.round((templateWidth - actualQrWidth) / 2);
+    const qrY = Math.round((templateHeight - actualQrHeight) / 2) - 93; // Subido de -75 a -93 (18px hacia arriba)
     
     // Componer la imagen: plantilla + QR
     const compositeImage = await sharp(templateBuffer)
