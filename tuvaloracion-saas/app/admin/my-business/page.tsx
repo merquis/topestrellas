@@ -113,94 +113,124 @@ export default function MyBusinessPage() {
 
         {/* Business Cards */}
         {filteredBusinesses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {filteredBusinesses.map((business: any) => (
               <div key={business._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-gray-800 mb-1">{business.name}</h3>
-                      <a 
-                        href={`https://${business.subdomain}.tuvaloracion.com`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                      >
-                        {business.subdomain}.tuvaloracion.com
-                        <span className="text-xs">↗</span>
-                      </a>
-                    </div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      business.active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-1 ${
-                        business.active ? 'bg-green-500' : 'bg-red-500'
-                      }`}></span>
-                      {business.active ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <span className="text-yellow-500">★</span>
-                        <span className="text-lg font-bold text-gray-800">
-                          {business.googlePlaces?.rating || business.stats?.avgRating || 'N/A'}
+                <div className="flex flex-col md:flex-row">
+                  {/* Business Image */}
+                  <div className="md:w-32 md:h-32 w-full h-48 flex-shrink-0">
+                    {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
+                      <img
+                        src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
+                        alt={business.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=4F46E5&color=fff&size=128`;
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span className="text-white text-2xl font-bold">
+                          {business.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600">Rating</p>
-                    </div>
-                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                      <div className="text-lg font-bold text-gray-800 mb-1">
-                        {business.googlePlaces?.totalReviews || business.stats?.googleReviews || 0}
+                    )}
+                  </div>
+
+                  {/* Business Info */}
+                  <div className="flex-1 p-6">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                      {/* Main Info */}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold text-gray-800 mb-1">{business.name}</h3>
+                            <a 
+                              href={`https://${business.subdomain}.tuvaloracion.com`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                            >
+                              {business.subdomain}.tuvaloracion.com
+                              <span className="text-xs">↗</span>
+                            </a>
+                          </div>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            business.active 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full mr-1 ${
+                              business.active ? 'bg-green-500' : 'bg-red-500'
+                            }`}></span>
+                            {business.active ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </div>
+
+                        {/* Stats Row */}
+                        <div className="flex flex-wrap items-center gap-4 mb-3">
+                          <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-lg">
+                            <span className="text-yellow-500">★</span>
+                            <span className="font-bold text-gray-800">
+                              {business.googlePlaces?.rating || business.stats?.avgRating || 'N/A'}
+                            </span>
+                            <span className="text-xs text-gray-600">Rating</span>
+                          </div>
+                          <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-lg">
+                            <span className="text-blue-500">📊</span>
+                            <span className="font-bold text-gray-800">
+                              {business.googlePlaces?.totalReviews || business.stats?.googleReviews || 0}
+                            </span>
+                            <span className="text-xs text-gray-600">Opiniones</span>
+                          </div>
+                          {/* Plan */}
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            business.subscription?.plan === 'premium' 
+                              ? 'bg-purple-100 text-purple-800'
+                              : business.subscription?.plan === 'basic'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            Plan {business.subscription?.plan || 'Trial'}
+                          </span>
+                        </div>
+
+                        {/* Contact Info */}
+                        {(business.contact?.email || business.contact?.phone) && (
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                            {business.contact?.email && (
+                              <span className="flex items-center gap-1">
+                                <span>📧</span>
+                                {business.contact.email}
+                              </span>
+                            )}
+                            {business.contact?.phone && (
+                              <span className="flex items-center gap-1">
+                                <span>📞</span>
+                                {business.contact.phone}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-xs text-gray-600">Opiniones</p>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 md:flex-col md:w-auto w-full">
+                        <button
+                          onClick={() => router.push(`/admin/edit-business/${business._id}`)}
+                          className="flex-1 md:flex-none bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap"
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
+                          onClick={() => window.open(`https://${business.subdomain}.tuvaloracion.com`, '_blank')}
+                          className="flex-1 md:flex-none bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium whitespace-nowrap"
+                        >
+                          👁️ Ver Sitio
+                        </button>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Contact Info */}
-                  {(business.contact?.email || business.contact?.phone) && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Contacto</h4>
-                      {business.contact?.email && (
-                        <p className="text-xs text-gray-600 mb-1">📧 {business.contact.email}</p>
-                      )}
-                      {business.contact?.phone && (
-                        <p className="text-xs text-gray-600">📞 {business.contact.phone}</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Plan */}
-                  <div className="mb-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      business.subscription?.plan === 'premium' 
-                        ? 'bg-purple-100 text-purple-800'
-                        : business.subscription?.plan === 'basic'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      Plan {business.subscription?.plan || 'Trial'}
-                    </span>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => router.push(`/admin/edit-business/${business._id}`)}
-                      className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      ✏️ Editar
-                    </button>
-                    <button
-                      onClick={() => window.open(`https://${business.subdomain}.tuvaloracion.com`, '_blank')}
-                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                    >
-                      👁️ Ver Sitio
-                    </button>
                   </div>
                 </div>
               </div>
