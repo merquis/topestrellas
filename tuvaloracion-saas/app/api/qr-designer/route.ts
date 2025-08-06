@@ -573,8 +573,11 @@ export async function POST(request: NextRequest) {
     
     await browser.close();
     
+    // Convertir Buffer a Uint8Array para NextResponse
+    const imageBuffer = new Uint8Array(screenshot);
+    
     // Retornar imagen
-    return new NextResponse(screenshot, {
+    return new NextResponse(imageBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'image/png',
