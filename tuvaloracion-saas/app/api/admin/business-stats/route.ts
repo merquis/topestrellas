@@ -25,8 +25,7 @@ function getCompetenciaPrice(numReviews: number): number {
 
 export async function GET(request: NextRequest) {
   try {
-    const url = new URL(request.url);
-    const { searchParams } = url;
+    const { searchParams } = new URL(request.url);
     const userEmail = searchParams.get('userEmail');
     const userRole = searchParams.get('userRole');
     const businessId = searchParams.get('businessId');
