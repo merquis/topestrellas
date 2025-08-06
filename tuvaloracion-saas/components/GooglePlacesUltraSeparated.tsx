@@ -1,8 +1,25 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo, useMemo } from 'react';
 import useSWR from 'swr';
 import { GooglePlaceData, AutocompleteResult, AutocompleteApiResponse, GooglePlacesApiResponse } from '@/lib/types';
+
+// Hook personalizado para debounce
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 // ===== COMPONENTE INPUT COMPLETAMENTE AISLADO =====
 const InputBusqueda = memo(function InputBusqueda({ 
@@ -77,46 +94,23 @@ const InputBusqueda = memo(function InputBusqueda({
 
 // ===== COMPONENTE SUGERENCIAS COMPLETAMENTE SEPARADO =====
 const SugerenciasResultado = memo(function SugerenciasResultado({ 
-  query,
+  suggestions,
+  isLoading,
+  error,
   onSuggestionClick,
   selectedIndex,
   onMouseEnter,
   showSuggestions
 }: {
-  query: string;
+  suggestions: AutocompleteResult[];
+  isLoading: boolean;
+  error: any;
   onSuggestionClick: (suggestion: AutocompleteResult) => void;
   selectedIndex: number;
   onMouseEnter?: (index: number) => void;
   showSuggestions: boolean;
 }) {
-  // Fetcher para SWR
-  const fetcher = async (url: string): Promise<AutocompleteResult[]> => {
-    const response = await fetch(url);
-    const result: AutocompleteApiResponse = await response.json();
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Error al buscar lugares');
-    }
-    
-    return result.predictions || [];
-  };
-
-  // SWR con configuración ultra-optimizada para evitar re-renders
-  const { data: suggestions = [], error, isLoading } = useSWR(
-    query.length >= 2 ? `/api/google-places/autocomplete?query=${encodeURIComponent(query)}&language=es&types=establishment` : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,        // CRÍTICO: No revalidar al hacer foco
-      revalidateIfStale: false,        // CRÍTICO: No revalidar si está obsoleto
-      revalidateOnReconnect: false,    // CRÍTICO: No revalidar al reconectar
-      dedupingInterval: 300,           // Deduplicación inteligente
-      errorRetryCount: 1,
-      errorRetryInterval: 1000,
-      suspense: false                  // CRÍTICO: No usar suspense
-    }
-  );
-
-  if (query.length < 2 || !showSuggestions) return null;
+  if (!showSuggestions) return null;
   if (error) return <div className="text-red-500 p-2">Error: {error.message}</div>;
   if (suggestions.length === 0 && !isLoading) return null;
 
@@ -236,19 +230,35 @@ export function GooglePlacesUltraSeparated({
   const [isSelecting, setIsSelecting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Obtener sugerencias para navegación con teclado
-  const { data: suggestions = [] } = useSWR(
-    query.length >= 2 ? `/api/google-places/autocomplete?query=${encodeURIComponent(query)}&language=es&types=establishment` : null,
-    async (url: string) => {
-      const response = await fetch(url);
-      const result: AutocompleteApiResponse = await response.json();
-      return result.success ? result.predictions || [] : [];
-    },
+  // Aplicar debounce al query para reducir llamadas a la API
+  const debouncedQuery = useDebounce(query, 500); // 500ms de delay
+
+  // Fetcher memoizado
+  const fetcher = useCallback(async (url: string): Promise<AutocompleteResult[]> => {
+    console.log('🔍 Llamada a API de autocompletado:', url);
+    const response = await fetch(url);
+    const result: AutocompleteApiResponse = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Error al buscar lugares');
+    }
+    
+    return result.predictions || [];
+  }, []);
+
+  // Una sola instancia de SWR para obtener sugerencias
+  const { data: suggestions = [], error, isLoading } = useSWR(
+    debouncedQuery.length >= 3 ? `/api/google-places/autocomplete?query=${encodeURIComponent(debouncedQuery)}&language=es&types=establishment` : null,
+    fetcher,
     {
-      revalidateOnFocus: false,
-      revalidateIfStale: false,
-      revalidateOnReconnect: false,
-      suspense: false
+      revalidateOnFocus: false,        // No revalidar al hacer foco
+      revalidateIfStale: false,        // No revalidar si está obsoleto
+      revalidateOnReconnect: false,    // No revalidar al reconectar
+      dedupingInterval: 2000,          // Deduplicación más agresiva (2 segundos)
+      errorRetryCount: 1,
+      errorRetryInterval: 3000,
+      suspense: false,
+      keepPreviousData: true          // Mantener datos previos mientras carga
     }
   );
 
@@ -371,11 +381,13 @@ export function GooglePlacesUltraSeparated({
 
       {/* Sugerencias completamente separadas */}
       <SugerenciasResultado
-        query={query}
+        suggestions={suggestions}
+        isLoading={isLoading}
+        error={error}
         onSuggestionClick={handleSuggestionClick}
         selectedIndex={selectedIndex}
         onMouseEnter={handleMouseEnter}
-        showSuggestions={showSuggestions}
+        showSuggestions={showSuggestions && debouncedQuery.length >= 3}
       />
 
       {/* Vista previa del lugar seleccionado */}
