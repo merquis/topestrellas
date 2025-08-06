@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Generar el código QR al máximo tamaño para el área blanca
-    const qrSize = 500; // Tamaño máximo para llenar completamente el área blanca
+    const qrSize = 600; // Tamaño máximo para llenar completamente el área blanca
     const qrBuffer = await QRCode.toBuffer(url, {
       width: qrSize,
       margin: 0, // Sin margen para aprovechar todo el espacio
