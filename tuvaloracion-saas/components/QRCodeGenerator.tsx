@@ -259,11 +259,11 @@ export function BusinessQRComplete({ subdomain, businessName }: BusinessQRComple
     <div className="flex flex-col items-center space-y-3 pt-2 px-3 pb-3 bg-gray-50 rounded-xl">
       {/* QR Preview */}
       {qrResult && (
-        <div className="bg-white p-2 rounded-lg shadow-sm">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <img
             src={qrResult.dataURL}
             alt={`QR Code for ${businessName}`}
-            className="w-60 h-60"
+            className="w-60 h-60 block"
           />
         </div>
       )}
