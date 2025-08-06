@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
+import { BusinessQR } from '@/components/QRCodeGenerator';
 import { checkAuth } from '@/lib/auth';
 
 export default function MyBusinessPage() {
@@ -138,11 +139,11 @@ export default function MyBusinessPage() {
                     )}
                   </div>
 
-                  {/* Business Info */}
+                  {/* Business Info + QR Layout */}
                   <div className="flex-1 p-6">
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                      {/* Main Info */}
-                      <div className="flex-1">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      {/* Main Info (70%) */}
+                      <div className="flex-1 lg:w-[70%]">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <h3 className="text-xl font-bold text-gray-800 mb-1">{business.name}</h3>
@@ -213,22 +214,33 @@ export default function MyBusinessPage() {
                             )}
                           </div>
                         )}
+
+                        {/* Actions */}
+                        <div className="flex gap-2 mt-4">
+                          <button
+                            onClick={() => router.push(`/admin/edit-business/${business._id}`)}
+                            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            onClick={() => window.open(`https://${business.subdomain}.tuvaloracion.com`, '_blank')}
+                            className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                          >
+                            👁️ Ver Sitio
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex gap-2 md:flex-col md:w-auto w-full">
-                        <button
-                          onClick={() => router.push(`/admin/edit-business/${business._id}`)}
-                          className="flex-1 md:flex-none bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap"
-                        >
-                          ✏️ Editar
-                        </button>
-                        <button
-                          onClick={() => window.open(`https://${business.subdomain}.tuvaloracion.com`, '_blank')}
-                          className="flex-1 md:flex-none bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium whitespace-nowrap"
-                        >
-                          👁️ Ver Sitio
-                        </button>
+                      {/* QR Code Section (30%) */}
+                      <div className="lg:w-[30%] flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 min-h-[160px]">
+                        <BusinessQR
+                          subdomain={business.subdomain}
+                          businessName={business.name}
+                          type="display"
+                          showDownloadButton={true}
+                          className="w-full"
+                        />
                       </div>
                     </div>
                   </div>
