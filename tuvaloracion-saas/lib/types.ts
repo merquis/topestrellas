@@ -178,6 +178,66 @@ export interface EmailValidation {
   usedAt: Date;
 }
 
+// Google Places API types
+export interface GoogleReview {
+  author_name: string;
+  author_url?: string;
+  language: string;
+  profile_photo_url: string;
+  rating: number; // 1-5
+  relative_time_description: string; // "hace 2 meses"
+  text: string; // Texto completo de la reseña
+  time: number; // Timestamp Unix
+  translated?: boolean;
+}
+
+export interface GooglePlaceData {
+  name?: string;
+  rating?: number;
+  user_ratings_total?: number;
+  reviews?: GoogleReview[];
+  formatted_address?: string;
+  international_phone_number?: string;
+  website?: string;
+  opening_hours?: {
+    open_now: boolean;
+    periods: Array<{
+      close: { day: number; time: string };
+      open: { day: number; time: string };
+    }>;
+    weekday_text: string[];
+  };
+  photos?: Array<{
+    height: number;
+    width: number;
+    photo_reference: string;
+  }>;
+}
+
+export interface GooglePlacesApiResponse {
+  success: boolean;
+  data?: GooglePlaceData;
+  error?: string;
+  placeId?: string;
+}
+
+export interface GooglePlacesRequest {
+  placeId?: string;
+  url?: string;
+  fields?: string[];
+  language?: string;
+}
+
+// Available Google Places API fields
+export const GOOGLE_PLACES_FIELDS = {
+  BASIC: ['name', 'rating', 'user_ratings_total'],
+  CONTACT: ['formatted_address', 'international_phone_number', 'website'],
+  ATMOSPHERE: ['opening_hours', 'price_level'],
+  REVIEWS: ['reviews'],
+  PHOTOS: ['photos'],
+  ALL: ['name', 'rating', 'user_ratings_total', 'reviews', 'formatted_address', 'international_phone_number', 'website', 'opening_hours', 'photos']
+} as const;
+
 // Default templates
 export const BUSINESS_TEMPLATES = {
   restaurante: {
