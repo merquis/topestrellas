@@ -53,7 +53,7 @@ export const QR_PRESETS = {
   // Para alta calidad en pantalla (600x600px)
   hd: {
     width: 600,
-    margin: 3,
+    margin: 0,
     color: {
       dark: '#000000',
       light: '#FFFFFF'

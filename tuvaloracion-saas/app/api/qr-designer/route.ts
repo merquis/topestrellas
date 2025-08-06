@@ -67,32 +67,52 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Generar el código QR 3mm más pequeño (35px menos a 300 DPI)
-    const qrSize = 465; // Reducido de 500 a 465 (3mm menos)
-    const qrBufferOriginal = await QRCode.toBuffer(url, {
-      width: qrSize,
-      margin: 0, // Sin margen para aprovechar todo el espacio
+    // Generar el código QR con un tamaño de módulo específico
+    // Usamos un enfoque diferente: generar con scale para controlar el tamaño del módulo
+    const moduleSize = 10; // Tamaño de cada módulo del QR en píxeles
+    const qrDataURL = await QRCode.toDataURL(url, {
+      scale: moduleSize,
+      margin: 0,
       color: {
         dark: '#000000',
         light: '#FFFFFF'
       },
-      errorCorrectionLevel: 'H'
+      errorCorrectionLevel: 'H',
+      type: 'image/png'
     });
     
-    // Recortar el QR para eliminar cualquier margen blanco
-    // trim() elimina automáticamente los píxeles blancos del borde
-    const qrTrimmed = sharp(qrBufferOriginal)
+    // Convertir dataURL a buffer
+    const base64Data = qrDataURL.replace(/^data:image\/png;base64,/, '');
+    const qrBufferOriginal = Buffer.from(base64Data, 'base64');
+    
+    // Primero, obtener las dimensiones del QR original
+    const originalMetadata = await sharp(qrBufferOriginal).metadata();
+    console.log('QR original dimensions:', originalMetadata.width, 'x', originalMetadata.height);
+    
+    // Recortar agresivamente: detectar donde empieza el contenido negro
+    // Usamos trim con threshold muy bajo para detectar cualquier píxel no blanco
+    const qrTrimmed = await sharp(qrBufferOriginal)
       .trim({
-        background: { r: 255, g: 255, b: 255 }, // Detectar y eliminar blanco
-        threshold: 0 // Sin tolerancia, eliminar todo el blanco del borde
-      });
+        threshold: 10 // Umbral bajo para detectar el primer píxel oscuro
+      })
+      .toBuffer();
     
-    const qrBuffer = await qrTrimmed.toBuffer();
+    // Obtener las dimensiones después del recorte
+    const trimmedMetadata = await sharp(qrTrimmed).metadata();
+    console.log('QR trimmed dimensions:', trimmedMetadata.width, 'x', trimmedMetadata.height);
     
-    // Obtener las dimensiones del QR recortado
-    const qrMetadata = await sharp(qrBuffer).metadata();
-    const actualQrWidth = qrMetadata.width || qrSize;
-    const actualQrHeight = qrMetadata.height || qrSize;
+    // Redimensionar el QR recortado al tamaño deseado (465px)
+    const targetQrSize = 465;
+    const qrBuffer = await sharp(qrTrimmed)
+      .resize(targetQrSize, targetQrSize, {
+        fit: 'fill', // Usar 'fill' para forzar el tamaño exacto
+        kernel: sharp.kernel.nearest // Usar nearest para mantener los bordes nítidos
+      })
+      .toBuffer();
+    
+    // Usar el tamaño objetivo para el posicionamiento
+    const actualQrWidth = targetQrSize;
+    const actualQrHeight = targetQrSize;
     
     // Cargar la plantilla
     const templateBuffer = await fs.readFile(templatePath);
