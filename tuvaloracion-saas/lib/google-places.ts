@@ -404,6 +404,6 @@ export class GooglePlacesService {
    * Valida si un query de búsqueda es válido
    */
   static validateSearchQuery(query: string): boolean {
-    return query && query.trim().length >= 2 && query.trim().length <= 100;
+    return Boolean(query && query.trim().length >= 2 && query.trim().length <= 100);
   }
 }
