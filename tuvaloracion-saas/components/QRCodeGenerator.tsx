@@ -139,6 +139,7 @@ interface BusinessQRProps {
   type?: QRType;
   className?: string;
   showDownloadButton?: boolean;
+  variant?: 'basic' | 'full';
 }
 
 export function BusinessQR({
@@ -146,9 +147,14 @@ export function BusinessQR({
   businessName,
   type = 'display',
   className = '',
-  showDownloadButton = true
+  showDownloadButton = true,
+  variant = 'basic'
 }: BusinessQRProps) {
   const url = `https://${subdomain}.tuvaloracion.com`;
+  
+  if (variant === 'full') {
+    return <BusinessQRComplete subdomain={subdomain} businessName={businessName || ''} />;
+  }
   
   return (
     <QRCodeGenerator
@@ -158,6 +164,167 @@ export function BusinessQR({
       showDownloadButton={showDownloadButton}
       downloadButtonText={`📥 Descargar QR${businessName ? ` - ${businessName}` : ''}`}
     />
+  );
+}
+
+/**
+ * Componente completo con QR básico e Irresistible
+ */
+interface BusinessQRCompleteProps {
+  subdomain: string;
+  businessName: string;
+}
+
+export function BusinessQRComplete({ subdomain, businessName }: BusinessQRCompleteProps) {
+  const [qrResult, setQrResult] = useState<QRResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [downloadingBasic, setDownloadingBasic] = useState(false);
+  const [downloadingIrresistible, setDownloadingIrresistible] = useState(false);
+  
+  const url = `https://${subdomain}.tuvaloracion.com`;
+
+  useEffect(() => {
+    generateQR();
+  }, [url]);
+
+  const generateQR = async () => {
+    setLoading(true);
+    try {
+      const result = await QRGenerator.generate(url, 'display');
+      setQrResult(result);
+    } catch (err) {
+      console.error('Error generating QR:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadBasic = async () => {
+    setDownloadingBasic(true);
+    try {
+      const result = await QRGenerator.generate(url, 'hd');
+      QRGenerator.downloadQR(result);
+    } catch (error) {
+      console.error('Error downloading basic QR:', error);
+    } finally {
+      setDownloadingBasic(false);
+    }
+  };
+
+  const handleDownloadIrresistible = async () => {
+    setDownloadingIrresistible(true);
+    try {
+      const response = await fetch('/api/qr-designer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          businessName,
+          url,
+          template: 'restaurantes-01',
+          dpi: 300
+        }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `QR-${businessName}-irresistible.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(downloadUrl);
+      }
+    } catch (err) {
+      console.error('Error downloading irresistible QR:', err);
+    } finally {
+      setDownloadingIrresistible(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center space-y-4 p-4 bg-gray-50 rounded-xl">
+      {/* QR Preview */}
+      {qrResult && (
+        <div className="bg-white p-3 rounded-lg shadow-sm">
+          <img
+            src={qrResult.dataURL}
+            alt={`QR Code for ${businessName}`}
+            className="w-32 h-32"
+          />
+        </div>
+      )}
+      
+      {/* Business Info */}
+      <div className="text-center">
+        <p className="text-sm font-medium text-gray-800">{businessName}</p>
+        <p className="text-xs text-gray-500">{subdomain}.tuvaloracion.com</p>
+      </div>
+
+      {/* Download Buttons */}
+      <div className="w-full space-y-2">
+        {/* Basic QR Button */}
+        <button
+          onClick={handleDownloadBasic}
+          disabled={downloadingBasic}
+          className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm font-medium"
+        >
+          {downloadingBasic ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              <span>Generando...</span>
+            </>
+          ) : (
+            <>
+              <span>📥</span>
+              <span>Descargar QR Básico</span>
+            </>
+          )}
+        </button>
+
+        {/* Irresistible QR Button */}
+        <button
+          onClick={handleDownloadIrresistible}
+          disabled={downloadingIrresistible}
+          className="w-full px-4 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm font-medium shadow-md"
+        >
+          {downloadingIrresistible ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              <span>Generando...</span>
+            </>
+          ) : (
+            <>
+              <span>🎨</span>
+              <span>Descargar QR Irresistible</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Info Text */}
+      <div className="text-center space-y-1">
+        <p className="text-xs text-gray-500">
+          <span className="font-medium">QR Básico:</span> Alta calidad 600×600px
+        </p>
+        <p className="text-xs text-gray-500">
+          <span className="font-medium">QR Irresistible:</span> Diseño A7 con plantilla
+        </p>
+      </div>
+    </div>
   );
 }
 
