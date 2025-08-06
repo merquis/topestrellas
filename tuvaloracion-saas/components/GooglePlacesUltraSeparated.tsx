@@ -167,6 +167,47 @@ const SugerenciasResultado = memo(function SugerenciasResultado({
   );
 });
 
+// ===== FUNCIÓN PARA CALCULAR RESEÑAS NECESARIAS =====
+const calculateReviewsNeeded = (currentRating: number, totalReviews: number) => {
+  // Si ya está en 5.0, mostrar mensaje especial
+  if (currentRating >= 5.0) {
+    return {
+      target: 5.0,
+      reviewsNeeded: 0,
+      message: `¡Excelente! Mantén tu puntuación perfecta de 5.0⭐`
+    };
+  }
+  
+  // Calcular el siguiente objetivo (SIEMPRE la siguiente décima superior)
+  // Redondear hacia arriba a la siguiente décima
+  let targetRating = Math.ceil(currentRating * 10) / 10;
+  
+  // Si ya está exactamente en una décima (ej: 4.0, 4.1, 4.2), subir a la siguiente
+  if (Math.abs(currentRating - targetRating) < 0.01) {
+    targetRating = Math.min(5.0, targetRating + 0.1);
+  }
+  
+  // Calcular suma actual de puntuaciones
+  const currentSum = currentRating * totalReviews;
+  
+  // Resolver ecuación: (currentSum + 5*x) / (totalReviews + x) = targetRating
+  // currentSum + 5*x = targetRating * (totalReviews + x)
+  // currentSum + 5*x = targetRating * totalReviews + targetRating * x
+  // 5*x - targetRating * x = targetRating * totalReviews - currentSum
+  // x * (5 - targetRating) = targetRating * totalReviews - currentSum
+  // x = (targetRating * totalReviews - currentSum) / (5 - targetRating)
+  
+  const reviewsNeeded = Math.ceil(
+    (targetRating * totalReviews - currentSum) / (5 - targetRating)
+  );
+  
+  return {
+    target: targetRating,
+    reviewsNeeded: Math.max(0, reviewsNeeded),
+    message: `Para llegar a ${targetRating.toFixed(1)}⭐: Te faltan ${Math.max(0, reviewsNeeded)} reseñas de 5⭐`
+  };
+};
+
 // ===== COMPONENTE PRINCIPAL ORQUESTADOR =====
 interface GooglePlacesUltraSeparatedProps {
   onPlaceSelected?: (place: GooglePlaceData, placeId: string, photoUrl?: string) => void;
@@ -385,6 +426,22 @@ export function GooglePlacesUltraSeparated({
                       : selectedPlace.rating >= 3.0
                       ? `Tu puntuación actual de ${selectedPlace.rating} estrellas es un punto de partida. ¡Juntos vamos a transformar tu reputación online y generar más ingresos!`
                       : `Con ${selectedPlace.rating} estrellas, tienes una gran oportunidad de mejora. ¡No te desanimes! Vamos a crear una estrategia sólida para recuperar la confianza de tus clientes.`
+                    }
+                  </p>
+                </div>
+              )}
+
+              {/* Próximo paso con cálculo dinámico */}
+              {selectedPlace.rating && selectedPlace.user_ratings_total && (
+                <div className="mb-4 p-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🚀</span>
+                    <h5 className="font-semibold">Tu próximo objetivo: {calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total).target.toFixed(1)} estrellas</h5>
+                  </div>
+                  <p className="text-sm leading-relaxed">
+                    {calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total).reviewsNeeded > 0 
+                      ? `Consigue ${calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total).reviewsNeeded} reseñas de 5 estrellas y verás cómo sube tu puntuación. ¡Vamos a por ello!`
+                      : `¡Excelente! Ya tienes la puntuación perfecta. Mantén este nivel de calidad.`
                     }
                   </p>
                 </div>
