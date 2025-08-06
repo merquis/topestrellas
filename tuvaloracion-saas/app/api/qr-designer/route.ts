@@ -101,8 +101,8 @@ export async function POST(request: NextRequest) {
     const trimmedMetadata = await sharp(qrTrimmed).metadata();
     console.log('QR trimmed dimensions:', trimmedMetadata.width, 'x', trimmedMetadata.height);
     
-    // Redimensionar el QR recortado al tamaño deseado (465px)
-    const targetQrSize = 465;
+    // Redimensionar el QR recortado al tamaño deseado - AUMENTADO para mayor visibilidad
+    const targetQrSize = 550;
     const qrBuffer = await sharp(qrTrimmed)
       .resize(targetQrSize, targetQrSize, {
         fit: 'fill', // Usar 'fill' para forzar el tamaño exacto
