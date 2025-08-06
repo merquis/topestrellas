@@ -122,7 +122,7 @@ export default function MyBusinessPage() {
                   {/* Left Section - Image and Main Info */}
                   <div className="flex-1 flex flex-col md:flex-row">
                     {/* Business Image - Más grande y cuadrada */}
-                    <div className="w-full md:w-48 h-48 md:h-auto relative flex-shrink-0 overflow-hidden">
+                    <div className="w-full md:w-56 h-56 md:h-auto relative flex-shrink-0 overflow-hidden">
                       {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
                         <img
                           src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
