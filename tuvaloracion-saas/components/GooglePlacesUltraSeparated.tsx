@@ -231,7 +231,7 @@ export function GooglePlacesUltraSeparated({
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // OPTIMIZACIÓN EXTREMA: Debounce más agresivo y estable
-  const debounceDelay = 1500; // 1.5 segundos FIJO para máxima estabilidad
+  const debounceDelay = 1000; // 1.0 segundos FIJO para máxima estabilidad
   const debouncedQuery = useDebounce(query, debounceDelay);
 
   // SIEMPRE 4 caracteres mínimo para evitar búsquedas genéricas
