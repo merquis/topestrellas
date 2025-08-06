@@ -197,6 +197,12 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
       // Generar URL de Google Reviews usando el placeId
       googleReviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`
     }));
+
+    // Mostrar toast de confirmación
+    setToast({ 
+      message: `✅ Datos actualizados: ${place.name} (${place.rating}⭐, ${place.user_ratings_total} reseñas)`, 
+      type: 'success' 
+    });
   };
 
   const handleAutocompleteError = (error: string) => {
