@@ -28,11 +28,11 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    let finalPlaceId = placeId;
+    let finalPlaceId: string | undefined = placeId || undefined;
     
     // Si se proporciona URL, extraer Place ID
     if (url && !placeId) {
-      finalPlaceId = GooglePlacesService.extractPlaceId(url);
+      finalPlaceId = GooglePlacesService.extractPlaceId(url) || undefined;
     }
     
     if (!finalPlaceId) {
@@ -90,11 +90,11 @@ export async function POST(request: NextRequest) {
       fields = requestFields;
     }
     
-    let finalPlaceId = placeId;
+    let finalPlaceId: string | undefined = placeId || undefined;
     
     // Si se proporciona URL, extraer Place ID
     if (url && !placeId) {
-      finalPlaceId = GooglePlacesService.extractPlaceId(url);
+      finalPlaceId = GooglePlacesService.extractPlaceId(url) || undefined;
     }
     
     if (!finalPlaceId) {
@@ -146,10 +146,10 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { placeId, url, language = 'es' } = body;
     
-    let finalPlaceId = placeId;
+    let finalPlaceId: string | undefined = placeId || undefined;
     
     if (url && !placeId) {
-      finalPlaceId = GooglePlacesService.extractPlaceId(url);
+      finalPlaceId = GooglePlacesService.extractPlaceId(url) || undefined;
     }
     
     if (!finalPlaceId) {
