@@ -119,7 +119,7 @@ export default function MyBusinessPage() {
               <div key={business._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="flex flex-col md:flex-row">
                   {/* Business Image */}
-                  <div className="w-32 overflow-hidden rounded-xl relative flex-shrink-0" style={{ aspectRatio: '1 / 1' }}>
+                  <div className="w-32 overflow-hidden rounded-l-xl relative flex-shrink-0" style={{ aspectRatio: '1 / 1' }}>
                     {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
                       <img
                         src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
