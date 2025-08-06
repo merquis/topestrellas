@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
       .toBuffer();
     
     // Retornar imagen
-    return new NextResponse(optimizedBuffer, {
+    return new NextResponse(new Uint8Array(optimizedBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'image/png',
