@@ -2,19 +2,7 @@ FROM node:18-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    musl-dev \
-    giflib-dev \
-    pixman-dev \
-    pangomm-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    python3 \
-    make \
-    g++
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies
@@ -24,19 +12,6 @@ RUN npm install
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-
-# Install runtime dependencies for Canvas (needed during build)
-RUN apk add --no-cache \
-    cairo \
-    jpeg \
-    pango \
-    musl \
-    giflib \
-    pixman \
-    pangomm \
-    libjpeg-turbo \
-    freetype
-
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -50,18 +25,6 @@ RUN npm run build
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
-
-# Install runtime dependencies for Canvas
-RUN apk add --no-cache \
-    cairo \
-    jpeg \
-    pango \
-    musl \
-    giflib \
-    pixman \
-    pangomm \
-    libjpeg-turbo \
-    freetype
 
 ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.

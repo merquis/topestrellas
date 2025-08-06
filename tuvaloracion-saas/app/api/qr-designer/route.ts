@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCanvas } from 'canvas';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
 
@@ -61,159 +60,14 @@ function getDimensions(dpi: number = 300): { width: number; height: number } {
 }
 
 /**
- * Crea el diseño "Irresistible" usando Canvas nativo
+ * Crea el diseño "Irresistible" usando Sharp (sin Canvas)
  */
 async function createIrresistibleDesign(config: QRDesignConfig): Promise<Buffer> {
-  const canvas = createCanvas(config.width, config.height);
-  const ctx = canvas.getContext('2d');
-  
   const texts = QR_TEXTS[config.language];
   
-  // Fondo con gradiente azul-púrpura (igual que la imagen de ejemplo)
-  const gradient = ctx.createLinearGradient(0, 0, config.width, config.height);
-  gradient.addColorStop(0, '#667eea');
-  gradient.addColorStop(1, '#764ba2');
-  
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, config.width, config.height);
-  
-  // Configurar fuente para títulos
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  // Título principal - "PARTICIPA Y DEJA" (más grande y prominente)
-  const fontSize1 = Math.round(config.width * 0.055); // Más grande
-  ctx.font = `bold ${fontSize1}px Arial`;
-  ctx.fillStyle = '#FFD700'; // Dorado brillante
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 3;
-  ctx.fillText(texts.participate, config.width / 2, config.height * 0.12);
-  ctx.strokeText(texts.participate, config.width / 2, config.height * 0.12);
-  
-  // Título secundario - "TU OPINIÓN!" (más grande)
-  const fontSize2 = Math.round(config.width * 0.048);
-  ctx.font = `bold ${fontSize2}px Arial`;
-  ctx.fillStyle = '#FFD700';
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 3;
-  ctx.fillText(texts.opinion, config.width / 2, config.height * 0.19);
-  ctx.strokeText(texts.opinion, config.width / 2, config.height * 0.19);
-  
-  // Subtítulo en inglés (más pequeño y blanco)
-  if (config.language === 'es') {
-    const fontSize3 = Math.round(config.width * 0.025);
-    ctx.font = `${fontSize3}px Arial`;
-    ctx.fillStyle = 'white';
-    ctx.strokeStyle = 'transparent';
-    ctx.fillText('PARTICIPATE AND LEAVE YOUR REVIEW!', config.width / 2, config.height * 0.24);
-  }
-  
-  // Marco para el QR con bordes redondeados (más grande)
-  const qrSize = Math.round(config.width * 0.45); // Más grande
-  const qrX = config.width / 2 - (qrSize + 30) / 2;
-  const qrY = config.height / 2 - 30 - (qrSize + 30) / 2;
-  
-  // Marco blanco con bordes redondeados
-  ctx.fillStyle = 'white';
-  ctx.beginPath();
-  ctx.roundRect(qrX, qrY, qrSize + 30, qrSize + 30, 15);
-  ctx.fill();
-  
-  // Generar código QR
-  const qrDataURL = await QRCode.toDataURL(config.url, {
-    width: qrSize,
-    margin: 1,
-    color: {
-      dark: '#000000',
-      light: '#FFFFFF'
-    },
-    errorCorrectionLevel: 'H'
-  });
-  
-  // Cargar y dibujar QR
-  const qrImage = await loadImage(qrDataURL);
-  ctx.drawImage(qrImage, qrX + 15, qrY + 15, qrSize, qrSize);
-  
-  // URL debajo del QR
-  const fontSize4 = Math.round(config.width * 0.018);
-  ctx.font = `${fontSize4}px Arial`;
-  ctx.fillStyle = 'white';
-  ctx.fillText(config.url.replace('https://', ''), config.width / 2, config.height * 0.72);
-  
-  // Emoji grande y llamativo
-  const emojiSize = Math.round(config.width * 0.08);
-  ctx.font = `${emojiSize}px Arial`;
-  ctx.fillText('😊', config.width * 0.15, config.height * 0.78);
-  
-  // Texto "ESCANEA EL CÓDIGO!" (más grande y prominente)
-  const fontSize5 = Math.round(config.width * 0.032);
-  ctx.font = `bold ${fontSize5}px Arial`;
-  ctx.fillStyle = 'white';
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 2;
-  ctx.fillText(texts.scan, config.width / 2, config.height * 0.78);
-  ctx.strokeText(texts.scan, config.width / 2, config.height * 0.78);
-  
-  // Subtítulo en inglés para scan
-  if (config.language === 'es') {
-    const fontSize6 = Math.round(config.width * 0.025);
-    ctx.font = `bold ${fontSize6}px Arial`;
-    ctx.fillStyle = '#FFD700';
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 1;
-    ctx.fillText('SCAN THE CODE!', config.width / 2, config.height * 0.83);
-    ctx.strokeText('SCAN THE CODE!', config.width / 2, config.height * 0.83);
-  }
-  
-  // "PREMIO GARANTIZADO!" (más grande y prominente)
-  const fontSize7 = Math.round(config.width * 0.042);
-  ctx.font = `bold ${fontSize7}px Arial`;
-  ctx.fillStyle = '#FFD700';
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 3;
-  ctx.fillText(texts.guaranteed, config.width / 2, config.height * 0.90);
-  ctx.strokeText(texts.guaranteed, config.width / 2, config.height * 0.90);
-  
-  // Subtítulo en inglés para premio
-  if (config.language === 'es') {
-    const fontSize8 = Math.round(config.width * 0.028);
-    ctx.font = `bold ${fontSize8}px Arial`;
-    ctx.fillStyle = 'white';
-    ctx.strokeStyle = 'transparent';
-    ctx.fillText('GUARANTEED PRIZE!', config.width / 2, config.height * 0.95);
-  }
-  
-  // Convertir canvas a buffer
-  return canvas.toBuffer('image/png');
-}
-
-/**
- * Crea el diseño profesional usando Canvas nativo
- */
-async function createProfessionalDesign(config: QRDesignConfig): Promise<Buffer> {
-  const canvas = createCanvas(config.width, config.height);
-  const ctx = canvas.getContext('2d');
-  
-  const texts = QR_TEXTS[config.language];
-  
-  // Fondo blanco limpio
-  ctx.fillStyle = '#F8FAFC';
-  ctx.fillRect(0, 0, config.width, config.height);
-  
-  // Header con color corporativo
-  ctx.fillStyle = '#2563EB';
-  ctx.fillRect(0, 0, config.width, 80);
-  
-  // Título en header
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = 'bold 18px Arial';
-  ctx.fillStyle = 'white';
-  ctx.fillText(texts.participate + ' ' + texts.opinion, config.width / 2, 40);
-  
-  // Generar y dibujar QR Code centrado
+  // Generar código QR primero
   const qrSize = Math.round(config.width * 0.4);
-  const qrDataURL = await QRCode.toDataURL(config.url, {
+  const qrBuffer = await QRCode.toBuffer(config.url, {
     width: qrSize,
     margin: 2,
     color: {
@@ -223,33 +77,201 @@ async function createProfessionalDesign(config: QRDesignConfig): Promise<Buffer>
     errorCorrectionLevel: 'H'
   });
   
-  const qrImage = await loadImage(qrDataURL);
-  ctx.drawImage(qrImage, config.width / 2 - qrSize / 2, config.height / 2 - 10 - qrSize / 2, qrSize, qrSize);
+  // Crear fondo con gradiente usando Sharp
+  const gradientSvg = `
+    <svg width="${config.width}" height="${config.height}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grad)" />
+      
+      <!-- Título principal -->
+      <text x="${config.width/2}" y="${config.height * 0.12}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="${Math.round(config.width * 0.055)}" 
+            fill="#FFD700" 
+            stroke="#000000" 
+            stroke-width="2">${texts.participate}</text>
+      
+      <!-- Título secundario -->
+      <text x="${config.width/2}" y="${config.height * 0.19}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="${Math.round(config.width * 0.048)}" 
+            fill="#FFD700" 
+            stroke="#000000" 
+            stroke-width="2">${texts.opinion}</text>
+      
+      <!-- Subtítulo en inglés -->
+      ${config.language === 'es' ? `
+      <text x="${config.width/2}" y="${config.height * 0.24}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-size="${Math.round(config.width * 0.025)}" 
+            fill="white">PARTICIPATE AND LEAVE YOUR REVIEW!</text>
+      ` : ''}
+      
+      <!-- Marco blanco para QR -->
+      <rect x="${config.width/2 - (qrSize + 30)/2}" 
+            y="${config.height/2 - 30 - (qrSize + 30)/2}" 
+            width="${qrSize + 30}" 
+            height="${qrSize + 30}" 
+            fill="white" 
+            rx="15" />
+      
+      <!-- URL debajo del QR -->
+      <text x="${config.width/2}" y="${config.height * 0.72}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-size="${Math.round(config.width * 0.018)}" 
+            fill="white">${config.url.replace('https://', '')}</text>
+      
+      <!-- Texto ESCANEA EL CÓDIGO -->
+      <text x="${config.width/2}" y="${config.height * 0.78}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="${Math.round(config.width * 0.032)}" 
+            fill="white" 
+            stroke="#FFD700" 
+            stroke-width="1">${texts.scan}</text>
+      
+      <!-- Subtítulo en inglés para scan -->
+      ${config.language === 'es' ? `
+      <text x="${config.width/2}" y="${config.height * 0.83}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="${Math.round(config.width * 0.025)}" 
+            fill="#FFD700" 
+            stroke="#000000" 
+            stroke-width="1">SCAN THE CODE!</text>
+      ` : ''}
+      
+      <!-- PREMIO GARANTIZADO -->
+      <text x="${config.width/2}" y="${config.height * 0.90}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="${Math.round(config.width * 0.042)}" 
+            fill="#FFD700" 
+            stroke="#000000" 
+            stroke-width="2">${texts.guaranteed}</text>
+      
+      <!-- Subtítulo en inglés para premio -->
+      ${config.language === 'es' ? `
+      <text x="${config.width/2}" y="${config.height * 0.95}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="${Math.round(config.width * 0.028)}" 
+            fill="white">GUARANTEED PRIZE!</text>
+      ` : ''}
+    </svg>
+  `;
   
-  // Texto de instrucción
-  ctx.font = '14px Arial';
-  ctx.fillStyle = '#1F2937';
-  ctx.fillText(texts.scan, config.width / 2, config.height / 2 + 80);
+  // Crear imagen base con Sharp
+  const baseImage = await sharp(Buffer.from(gradientSvg))
+    .png()
+    .toBuffer();
   
-  // Nombre del negocio
-  ctx.font = 'bold 16px Arial';
-  ctx.fillStyle = '#2563EB';
-  ctx.fillText(config.businessName, config.width / 2, config.height - 60);
+  // Superponer el QR en el centro
+  const qrX = Math.round(config.width/2 - qrSize/2);
+  const qrY = Math.round(config.height/2 - 30 - qrSize/2);
   
-  return canvas.toBuffer('image/png');
+  const finalImage = await sharp(baseImage)
+    .composite([
+      {
+        input: qrBuffer,
+        left: qrX,
+        top: qrY
+      }
+    ])
+    .png()
+    .toBuffer();
+  
+  return finalImage;
 }
 
 /**
- * Helper para cargar imagen desde data URL
+ * Crea el diseño profesional usando Sharp
  */
-async function loadImage(dataURL: string): Promise<any> {
-  const { Image } = await import('canvas');
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = dataURL;
+async function createProfessionalDesign(config: QRDesignConfig): Promise<Buffer> {
+  const texts = QR_TEXTS[config.language];
+  
+  // Generar código QR
+  const qrSize = Math.round(config.width * 0.4);
+  const qrBuffer = await QRCode.toBuffer(config.url, {
+    width: qrSize,
+    margin: 2,
+    color: {
+      dark: '#000000',
+      light: '#FFFFFF'
+    },
+    errorCorrectionLevel: 'H'
   });
+  
+  // Crear diseño profesional con SVG
+  const professionalSvg = `
+    <svg width="${config.width}" height="${config.height}" xmlns="http://www.w3.org/2000/svg">
+      <!-- Fondo blanco -->
+      <rect width="100%" height="100%" fill="#F8FAFC" />
+      
+      <!-- Header azul -->
+      <rect width="100%" height="80" fill="#2563EB" />
+      
+      <!-- Título en header -->
+      <text x="${config.width/2}" y="40" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="18" 
+            fill="white">${texts.participate} ${texts.opinion}</text>
+      
+      <!-- Texto de instrucción -->
+      <text x="${config.width/2}" y="${config.height/2 + 80}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-size="14" 
+            fill="#1F2937">${texts.scan}</text>
+      
+      <!-- Nombre del negocio -->
+      <text x="${config.width/2}" y="${config.height - 60}" 
+            text-anchor="middle" 
+            font-family="Arial" 
+            font-weight="bold" 
+            font-size="16" 
+            fill="#2563EB">${config.businessName}</text>
+    </svg>
+  `;
+  
+  // Crear imagen base
+  const baseImage = await sharp(Buffer.from(professionalSvg))
+    .png()
+    .toBuffer();
+  
+  // Superponer el QR
+  const qrX = Math.round(config.width/2 - qrSize/2);
+  const qrY = Math.round(config.height/2 - 10 - qrSize/2);
+  
+  const finalImage = await sharp(baseImage)
+    .composite([
+      {
+        input: qrBuffer,
+        left: qrX,
+        top: qrY
+      }
+    ])
+    .png()
+    .toBuffer();
+  
+  return finalImage;
 }
 
 /**

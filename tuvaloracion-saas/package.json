@@ -35,9 +35,7 @@
     "framer-motion": "^10.17.9",
     "swr": "^2.2.4",
     "qrcode": "^1.5.3",
-    "fabric": "^5.3.0",
-    "sharp": "^0.33.2",
-    "canvas": "^2.11.2"
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
@@ -47,7 +45,6 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/nodemailer": "^6.4.14",
     "@types/qrcode": "^1.5.5",
-    "@types/fabric": "^5.3.0",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
