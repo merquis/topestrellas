@@ -143,9 +143,9 @@ export default function MyBusinessPage() {
                     </div>
 
                     {/* Business Info - Diseño mejorado */}
-                    <div className="flex-1 p-5 lg:p-6">
+                    <div className="flex-1 p-4 lg:p-5">
                       {/* Header con título y URL */}
-                      <div className="mb-4">
+                      <div className="mb-3">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="text-2xl font-bold text-gray-900">{business.name}</h3>
                           {/* Badge de estado alineado con el título */}
@@ -171,7 +171,7 @@ export default function MyBusinessPage() {
                       </div>
 
                       {/* Stats Cards - Diseño más visual */}
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                         <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-3">
                           <div className="flex items-center justify-between">
                             <div>
@@ -214,7 +214,7 @@ export default function MyBusinessPage() {
 
                       {/* Contact Info - Diseño más limpio */}
                       {(business.contact?.email || business.contact?.phone) && (
-                        <div className="bg-gray-50 rounded-xl p-3 mb-5">
+                        <div className="bg-gray-50 rounded-xl p-3 mb-4">
                           <div className="flex flex-wrap items-center gap-4 text-sm">
                             {business.contact?.email && (
                               <div className="flex items-center gap-2 text-gray-700">
@@ -262,7 +262,7 @@ export default function MyBusinessPage() {
                   </div>
 
                   {/* QR Code Section - NO MODIFICAR */}
-                  <div className="lg:w-80 p-5 lg:p-6 bg-gradient-to-br from-gray-50 to-white border-l border-gray-100">
+                  <div className="lg:w-80 p-4 lg:p-5 bg-gradient-to-br from-gray-50 to-white border-l border-gray-100">
                     <BusinessQR
                       subdomain={business.subdomain}
                       businessName={business.name}
