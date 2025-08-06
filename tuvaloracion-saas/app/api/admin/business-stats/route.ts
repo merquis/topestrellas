@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+// Marcar esta ruta como dinámica para evitar pre-renderizado estático
+export const dynamic = 'force-dynamic';
+
 // Precios de la competencia para calcular ahorros
 const COMPETENCIA_PRICES = {
   1: 7.19,
