@@ -230,31 +230,48 @@ export function GooglePlacesUltraSeparated({
   const [isSelecting, setIsSelecting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Aplicar debounce INTELIGENTE al query para reducir llamadas a la API
-  // Más delay para búsquedas cortas, menos para búsquedas largas
-  const debounceDelay = useMemo(() => {
-    if (query.length < 5) return 1200;  // 1.2 segundos para búsquedas cortas
-    if (query.length < 8) return 800;   // 800ms para búsquedas medianas
-    return 600;                         // 600ms para búsquedas largas
-  }, [query.length]);
-  
+  // OPTIMIZACIÓN EXTREMA: Debounce más agresivo y estable
+  const debounceDelay = 1500; // 1.5 segundos FIJO para máxima estabilidad
   const debouncedQuery = useDebounce(query, debounceDelay);
 
-  // Determinar mínimo de caracteres dinámicamente
-  const minChars = useMemo(() => {
-    // Para búsquedas muy genéricas, requerir más caracteres
-    const lowerQuery = query.toLowerCase();
-    if (lowerQuery.startsWith('rest')) return 5;  // "restaurante" necesita 5
-    if (lowerQuery.startsWith('bar')) return 4;   // "bar" necesita 4
-    if (lowerQuery.startsWith('cafe')) return 4;  // "cafe" necesita 4
-    if (lowerQuery.startsWith('hotel')) return 5; // "hotel" necesita 5
-    return 4; // Por defecto 4 caracteres
-  }, [query]);
+  // SIEMPRE 4 caracteres mínimo para evitar búsquedas genéricas
+  const minChars = 4;
 
-  // Fetcher memoizado con contador de llamadas
+  // Cache manual para evitar llamadas repetidas
+  const cacheRef = useRef<Map<string, { data: AutocompleteResult[], timestamp: number }>>(new Map());
+  const CACHE_DURATION = 60000; // Cache de 1 minuto
+
+  // Limpiar cache viejo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      cacheRef.current.forEach((value, key) => {
+        if (now - value.timestamp > CACHE_DURATION) {
+          cacheRef.current.delete(key);
+        }
+      });
+    }, 30000); // Limpiar cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetcher con cache manual
   const fetcher = useCallback(async (url: string): Promise<AutocompleteResult[]> => {
-    console.log('🔍 Llamada a API de autocompletado:', url);
-    console.log('📊 Query length:', debouncedQuery.length, '| Min chars:', minChars);
+    // Extraer el query de la URL para usar como clave de cache
+    const urlParams = new URLSearchParams(url.split('?')[1]);
+    const queryParam = urlParams.get('query') || '';
+    
+    // Verificar cache primero
+    const cached = cacheRef.current.get(queryParam);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      console.log('✅ Usando cache para:', queryParam);
+      return cached.data;
+    }
+
+    // Si no está en cache, hacer la llamada
+    console.log('🔍 Nueva llamada a API para:', queryParam);
+    console.log('📊 Timestamp:', new Date().toISOString());
+    
     const response = await fetch(url);
     const result: AutocompleteApiResponse = await response.json();
     
@@ -262,23 +279,50 @@ export function GooglePlacesUltraSeparated({
       throw new Error(result.error || 'Error al buscar lugares');
     }
     
-    return result.predictions || [];
-  }, [debouncedQuery.length, minChars]);
+    // Guardar en cache
+    const predictions = result.predictions || [];
+    cacheRef.current.set(queryParam, {
+      data: predictions,
+      timestamp: Date.now()
+    });
+    
+    return predictions;
+  }, []);
 
-  // Una sola instancia de SWR para obtener sugerencias con configuración ULTRA optimizada
+  // Crear una clave estable para SWR que solo cambie cuando realmente necesitemos buscar
+  const swrKey = useMemo(() => {
+    // Solo hacer búsqueda si:
+    // 1. El query tiene al menos minChars caracteres
+    // 2. Las sugerencias están visibles
+    // 3. No estamos seleccionando un lugar
+    if (debouncedQuery.length >= minChars && showSuggestions && !isSelecting) {
+      return `/api/google-places/autocomplete?query=${encodeURIComponent(debouncedQuery)}&language=es&types=establishment`;
+    }
+    return null;
+  }, [debouncedQuery, showSuggestions, isSelecting]);
+
+  // SWR con configuración MÁXIMA optimización
   const { data: suggestions = [], error, isLoading } = useSWR(
-    debouncedQuery.length >= minChars ? `/api/google-places/autocomplete?query=${encodeURIComponent(debouncedQuery)}&language=es&types=establishment` : null,
+    swrKey,
     fetcher,
     {
-      revalidateOnFocus: false,        // No revalidar al hacer foco
-      revalidateIfStale: false,        // No revalidar si está obsoleto
-      revalidateOnReconnect: false,    // No revalidar al reconectar
-      dedupingInterval: 10000,         // Deduplicación ULTRA agresiva (10 segundos)
-      errorRetryCount: 0,              // No reintentar en caso de error
+      revalidateOnFocus: false,           // NUNCA revalidar al hacer foco
+      revalidateIfStale: false,           // NUNCA revalidar si está obsoleto
+      revalidateOnReconnect: false,       // NUNCA revalidar al reconectar
+      revalidateOnMount: false,           // NUNCA revalidar al montar
+      dedupingInterval: 60000,            // Deduplicación de 1 minuto
+      errorRetryCount: 0,                 // NUNCA reintentar errores
+      shouldRetryOnError: false,          // NUNCA reintentar en error
       suspense: false,
-      keepPreviousData: true,          // Mantener datos previos mientras carga
-      focusThrottleInterval: 30000,    // Throttle de 30 segundos para el foco
-      compare: (a, b) => JSON.stringify(a) === JSON.stringify(b) // Comparación profunda
+      keepPreviousData: true,             // Mantener datos previos
+      focusThrottleInterval: 60000,       // Throttle de 1 minuto para el foco
+      refreshInterval: 0,                 // NUNCA refrescar automáticamente
+      refreshWhenHidden: false,           // NUNCA refrescar cuando está oculto
+      refreshWhenOffline: false,          // NUNCA refrescar offline
+      compare: (a, b) => {
+        // Comparación profunda para evitar re-renders
+        return JSON.stringify(a) === JSON.stringify(b);
+      }
     }
   );
 
@@ -365,16 +409,51 @@ export function GooglePlacesUltraSeparated({
     }
   }, [suggestions, selectedIndex, handleSuggestionClick]);
 
-  // Manejar cambio de query
+  // Manejar cambio de query con validación estricta
   const handleQueryChange = useCallback((newQuery: string) => {
-    setQuery(newQuery);
-    setSelectedIndex(-1);
-    setShowSuggestions(newQuery.length >= 2); // Mostrar sugerencias cuando hay suficiente texto
-    if (newQuery.length === 0) {
-      setSelectedPlace(null);
-      setSelectedPhotoUrl(null);
-      setShowSuggestions(false);
+    // Solo actualizar si realmente cambió
+    if (newQuery !== query) {
+      setQuery(newQuery);
+      setSelectedIndex(-1);
+      
+      // Solo mostrar sugerencias si tiene al menos minChars caracteres
+      if (newQuery.length >= minChars) {
+        setShowSuggestions(true);
+      } else {
+        setShowSuggestions(false);
+      }
+      
+      if (newQuery.length === 0) {
+        setSelectedPlace(null);
+        setSelectedPhotoUrl(null);
+        setShowSuggestions(false);
+      }
     }
+  }, [query]);
+
+  // Cerrar sugerencias cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.google-places-container')) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  // Prevenir revalidación cuando el componente pierde/gana foco
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const handleMouseEnter = useCallback((index: number) => {
@@ -382,7 +461,7 @@ export function GooglePlacesUltraSeparated({
   }, []);
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative google-places-container ${className}`}>
       {/* Input completamente separado */}
       <InputBusqueda
         value={query}
@@ -407,7 +486,7 @@ export function GooglePlacesUltraSeparated({
         onSuggestionClick={handleSuggestionClick}
         selectedIndex={selectedIndex}
         onMouseEnter={handleMouseEnter}
-        showSuggestions={showSuggestions && debouncedQuery.length >= minChars}
+        showSuggestions={showSuggestions && debouncedQuery.length >= minChars && !isSelecting}
       />
 
       {/* Vista previa del lugar seleccionado */}
