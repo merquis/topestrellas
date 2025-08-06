@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Generar el código QR aún más grande para ocupar todo el área blanca
-    const qrSize = 460; // Máximo tamaño posible para el área blanca
+    // Generar el código QR al máximo tamaño para el área blanca
+    const qrSize = 500; // Tamaño máximo para llenar completamente el área blanca
     const qrBuffer = await QRCode.toBuffer(url, {
       width: qrSize,
       margin: 0, // Sin margen para aprovechar todo el espacio
@@ -88,9 +88,9 @@ export async function POST(request: NextRequest) {
     const templateHeight = templateMetadata.height || 1240;
     
     // Calcular la posición central para el QR
-    // Posicionado más arriba en el área blanca
+    // Bajado ligeramente para centrar perfectamente en el área blanca
     const qrX = Math.round((templateWidth - qrSize) / 2);
-    const qrY = Math.round((templateHeight - qrSize) / 2) - 90; // Movido más arriba para centrar en el área blanca
+    const qrY = Math.round((templateHeight - qrSize) / 2) - 75; // Bajado un poco desde -90 a -75
     
     // Componer la imagen: plantilla + QR
     const compositeImage = await sharp(templateBuffer)
