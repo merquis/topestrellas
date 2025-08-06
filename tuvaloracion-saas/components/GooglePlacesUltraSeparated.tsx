@@ -467,14 +467,14 @@ export function GooglePlacesUltraSeparated({
                 (() => {
                   const reviewData = calculateReviewsNeeded(selectedPlace.rating, selectedPlace.user_ratings_total);
                   return (
-                    <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-300 rounded-lg">
+                    <div className="mt-4 p-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg shadow-md">
                       <div className="flex items-start gap-3">
-                        <span className="text-orange-600 text-xl mt-0.5">🚀</span>
+                        <span className="text-white text-xl mt-0.5">🚀</span>
                         <div className="flex-1">
-                          <h5 className="font-bold text-orange-900 mb-2">
+                          <h5 className="font-bold text-white mb-2">
                             Tu próximo objetivo: {reviewData.target.toFixed(1)} estrellas
                           </h5>
-                          <p className="text-orange-800 text-sm leading-relaxed">
+                          <p className="text-white/95 text-sm leading-relaxed">
                             {reviewData.reviewsNeeded > 0 
                               ? `Consigue ${reviewData.reviewsNeeded} reseñas de 5 estrellas y verás cómo sube tu puntuación. ¡Vamos a por ello!`
                               : reviewData.message
