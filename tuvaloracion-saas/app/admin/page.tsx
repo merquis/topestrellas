@@ -223,8 +223,8 @@ export default function AdminDashboard() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl">
           <div className="text-center mb-6">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl text-white font-bold">TV</span>
@@ -309,14 +309,14 @@ export default function AdminDashboard() {
           
           {/* Register Form */}
           {activeTab === 'register' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Información Personal */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 flex items-center gap-2">
                   📋 Información Personal
                 </h3>
                 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Nombre completo
@@ -325,7 +325,7 @@ export default function AdminDashboard() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
                       placeholder="Juan Pérez"
                       required
                     />
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
                       placeholder="tu@email.com"
                       required
                     />
@@ -353,95 +353,128 @@ export default function AdminDashboard() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
                       placeholder="+34 900 000 000"
                       required
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Contraseña
-                      </label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="••••••••"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Confirmar
-                      </label>
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="••••••••"
-                        required
-                        minLength={6}
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo de negocio
+                    </label>
+                    <select
+                      value={businessType}
+                      onChange={(e) => setBusinessType(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    >
+                      <option value="restaurante">🍽️ Restaurante</option>
+                      <option value="cafeteria">☕ Cafetería</option>
+                      <option value="peluqueria">✂️ Peluquería</option>
+                      <option value="hotel">🏨 Hotel</option>
+                      <option value="tienda">🛍️ Tienda</option>
+                      <option value="otro">📦 Otro</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                      placeholder="••••••••"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Confirmar contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                      placeholder="••••••••"
+                      required
+                      minLength={6}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Búsqueda de Negocio */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 flex items-center gap-2">
                   🔍 Busca tu Negocio
                 </h3>
-                <p className="text-sm text-gray-600">
-                  Busca tu negocio en Google Places. Todos los datos se completarán automáticamente.
-                </p>
-                
-                <GooglePlacesUltraSeparated
-                  placeholder="Busca tu negocio (ej: Restaurante Euro, Las Galletas)"
-                  onPlaceSelected={handleBusinessSelected}
-                  onError={(error) => setLoginError(error)}
-                  showPhoto={true}
-                  photoSize={100}
-                  className="w-full"
-                />
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-700 mb-4 flex items-start gap-2">
+                    <span className="text-blue-500 mt-0.5">💡</span>
+                    <span>
+                      Busca tu negocio en Google Places. Todos los datos se completarán automáticamente: 
+                      dirección, teléfono, rating, reseñas y foto.
+                    </span>
+                  </p>
+                  
+                  <GooglePlacesUltraSeparated
+                    placeholder="Busca tu negocio (ej: Restaurante Euro, Las Galletas)"
+                    onPlaceSelected={handleBusinessSelected}
+                    onError={(error) => setLoginError(error)}
+                    showPhoto={true}
+                    photoSize={120}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               {loginError && (
-                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-                  {loginError}
+                <div className="bg-red-50 text-red-600 px-6 py-4 rounded-lg text-sm border border-red-200">
+                  <div className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5">❌</span>
+                    <span>{loginError}</span>
+                  </div>
                 </div>
               )}
               
-              <button
-                onClick={handleRegister}
-                disabled={isCreatingBusiness || !selectedBusiness}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-lg font-medium hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {isCreatingBusiness ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Creando tu cuenta...</span>
-                  </div>
-                ) : selectedBusiness ? (
-                  `✅ Crear cuenta para ${selectedBusiness.name}`
-                ) : (
-                  '🔍 Primero busca tu negocio'
-                )}
-              </button>
-              
-              <div className="text-center space-y-2">
-                <p className="text-xs text-gray-500">
-                  Al crear una cuenta, obtienes <strong>7 días de prueba gratis</strong>
-                </p>
-                <p className="text-xs text-gray-400">
-                  Sin tarjeta de crédito • Cancela cuando quieras
-                </p>
+              <div className="pt-4">
+                <button
+                  onClick={handleRegister}
+                  disabled={isCreatingBusiness || !selectedBusiness}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                >
+                  {isCreatingBusiness ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      <span>Creando tu cuenta...</span>
+                    </div>
+                  ) : selectedBusiness ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <span>✅</span>
+                      <span>Crear cuenta para {selectedBusiness.name}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <span>🔍</span>
+                      <span>Primero busca tu negocio</span>
+                    </div>
+                  )}
+                </button>
+                
+                <div className="text-center space-y-2 mt-6">
+                  <p className="text-sm text-gray-600">
+                    Al crear una cuenta, obtienes <strong className="text-green-600">7 días de prueba gratis</strong>
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Sin tarjeta de crédito • Cancela cuando quieras • Soporte incluido
+                  </p>
+                </div>
               </div>
             </div>
           )}

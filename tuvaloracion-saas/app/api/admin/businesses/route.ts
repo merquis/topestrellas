@@ -231,6 +231,13 @@ export async function POST(request: Request) {
     ];
     const translatedPrizes = await translatePrizesWithAI(prizesToTranslate);
 
+    // Generar URL de Google Reviews automáticamente si tenemos placeId
+    let googleReviewUrl = '';
+    if (data.placeId) {
+      googleReviewUrl = `https://search.google.com/local/writereview?placeid=${data.placeId}`;
+      console.log(`URL de Google Reviews generada: ${googleReviewUrl}`);
+    }
+
     // Estructura del nuevo negocio con datos de Google Places
     const newBusiness = {
       subdomain: uniqueSubdomain,
@@ -259,7 +266,7 @@ export async function POST(request: Request) {
       config: {
         languages: data.languages || ['es', 'en', 'de', 'fr'],
         defaultLanguage: 'es',
-        googleReviewUrl: data.googleReviewUrl || '',
+        googleReviewUrl: googleReviewUrl || data.googleReviewUrl || '',
         tripadvisorReviewUrl: data.tripadvisorReviewUrl || '',
         reviewPlatform: data.reviewPlatform || 'google',
         reviewClickCounter: 0,
@@ -274,6 +281,11 @@ export async function POST(request: Request) {
           requireGoogleReview: true,
           showGoogleRating: true,
           showBusinessPhoto: !!data.photoUrl
+        },
+        // Estadísticas de Google Places para compatibilidad con la página de edición
+        googleStats: {
+          currentRating: data.rating || 0,
+          totalReviews: data.totalReviews || 0
         }
       },
       
