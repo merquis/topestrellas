@@ -256,14 +256,14 @@ export function BusinessQRComplete({ subdomain, businessName }: BusinessQRComple
   }
 
   return (
-    <div className="flex flex-col items-center space-y-3 pt-1 px-3 pb-3 bg-gray-50 rounded-xl">
+    <div className="flex flex-col items-center space-y-3 pt-2 px-3 pb-3 bg-gray-50 rounded-xl">
       {/* QR Preview */}
       {qrResult && (
         <div className="bg-white p-3 rounded-lg shadow-sm">
           <img
             src={qrResult.dataURL}
             alt={`QR Code for ${businessName}`}
-            className="w-32 h-32"
+            className="w-44 h-44"
           />
         </div>
       )}
