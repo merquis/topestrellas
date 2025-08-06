@@ -234,20 +234,11 @@ export default function MyBusinessPage() {
                       </div>
 
                       {/* QR Code Section (30%) */}
-                      <div className="lg:w-[30%] flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 min-h-[160px] space-y-3">
+                      <div className="lg:w-[30%]">
                         <BusinessQR
                           subdomain={business.subdomain}
                           businessName={business.name}
-                          type="hd"
-                          showDownloadButton={true}
-                          className="w-full"
-                        />
-                        
-                        {/* Botón QR Irresistible */}
-                        <QuickQRDesigner
-                          subdomain={business.subdomain}
-                          businessName={business.name}
-                          className="w-full"
+                          variant="full"
                         />
                       </div>
                     </div>
