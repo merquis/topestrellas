@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { QRType } from '@/lib/qr-generator';
 
 interface QRDesignerProps {
   subdomain: string;
