@@ -20,7 +20,7 @@ export const QR_PRESETS = {
   // Para mostrar en pantalla (120x120px)
   display: {
     width: 120,
-    margin: 2,
+    margin: 0,
     color: {
       dark: '#000000',
       light: '#FFFFFF'
