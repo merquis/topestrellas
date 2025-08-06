@@ -370,20 +370,20 @@ export function GooglePlacesUltraSeparated({
 
               {/* Mensaje de aliento personalizado */}
               {selectedPlace.rating && (
-                <div className="mb-4 p-4 bg-white/70 rounded-lg border border-blue-200">
+                <div className="mb-4 p-4 bg-white/70 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">💪</span>
-                    <h5 className="font-semibold text-blue-800">¡Mensaje de motivación!</h5>
+                    <span className="text-2xl">💰</span>
+                    <h5 className="font-semibold text-green-800">¡Aumenta tus ventas!</h5>
                   </div>
-                  <p className="text-sm text-blue-700 leading-relaxed">
+                  <p className="text-sm text-green-700 leading-relaxed">
                     {selectedPlace.rating >= 4.5 
                       ? `¡Excelente! Con ${selectedPlace.rating} estrellas ya tienes una puntuación fantástica. Vamos a mantenerla y conseguir aún más reseñas positivas para consolidar tu reputación online.`
                       : selectedPlace.rating >= 4.0
-                      ? `¡Muy bien! Con ${selectedPlace.rating} estrellas tienes una buena base. Vamos a trabajar juntos para llegar a las 5 estrellas y destacar por encima de tu competencia.`
+                      ? `¡Muy bien! Con ${selectedPlace.rating} estrellas tienes una buena base. Vamos a trabajar juntos para mejorar tu puntuación y atraer más clientes que tu competencia.`
                       : selectedPlace.rating >= 3.5
                       ? `Con ${selectedPlace.rating} estrellas tienes potencial de mejora. ¡No te preocupes! Vamos a implementar estrategias efectivas para subir tu puntuación y atraer más clientes.`
                       : selectedPlace.rating >= 3.0
-                      ? `Tu puntuación actual de ${selectedPlace.rating} estrellas es un punto de partida. ¡Juntos vamos a transformar tu reputación online y conseguir que brillen esas 5 estrellas!`
+                      ? `Tu puntuación actual de ${selectedPlace.rating} estrellas es un punto de partida. ¡Juntos vamos a transformar tu reputación online y generar más ingresos!`
                       : `Con ${selectedPlace.rating} estrellas, tienes una gran oportunidad de mejora. ¡No te desanimes! Vamos a crear una estrategia sólida para recuperar la confianza de tus clientes.`
                     }
                   </p>
