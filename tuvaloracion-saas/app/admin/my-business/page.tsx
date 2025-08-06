@@ -121,8 +121,8 @@ export default function MyBusinessPage() {
                 <div className="flex flex-col lg:flex-row">
                   {/* Left Section - Image and Main Info */}
                   <div className="flex-1 flex flex-col md:flex-row">
-                    {/* Business Image - Más grande y cuadrada */}
-                    <div className="w-full md:w-64 h-48 md:h-auto relative flex-shrink-0 overflow-hidden">
+                    {/* Business Image - Más compacta */}
+                    <div className="w-full md:w-64 h-40 md:h-auto relative flex-shrink-0 overflow-hidden">
                       {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
                         <img
                           src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
@@ -143,7 +143,7 @@ export default function MyBusinessPage() {
                     </div>
 
                     {/* Business Info - Diseño mejorado */}
-                    <div className="flex-1 p-4 lg:p-5">
+                    <div className="flex-1 p-4 lg:p-5 flex flex-col justify-center">
                       {/* Header con título y URL */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-2">
@@ -262,7 +262,7 @@ export default function MyBusinessPage() {
                   </div>
 
                   {/* QR Code Section - NO MODIFICAR */}
-                  <div className="lg:w-80 p-4 lg:p-5 bg-gradient-to-br from-gray-50 to-white border-l border-gray-100">
+                  <div className="lg:w-80 p-4 lg:p-5 bg-gradient-to-br from-gray-50 to-white border-l border-gray-100 flex flex-col justify-center">
                     <BusinessQR
                       subdomain={business.subdomain}
                       businessName={business.name}

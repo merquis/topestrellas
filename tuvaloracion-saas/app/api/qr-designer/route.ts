@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       margin: 0,
       color: {
         dark: '#000000',
-        light: '#FFFFFF'
+        light: '#00000000' // Fondo transparente
       },
       errorCorrectionLevel: 'H',
       type: 'image/png'
@@ -123,9 +123,9 @@ export async function POST(request: NextRequest) {
     const templateHeight = templateMetadata.height || 1240;
     
     // Calcular la posición central para el QR usando las dimensiones reales del QR recortado
-    // Subido 1.5mm (18px a 300 DPI)
+    // Movido un poco hacia abajo
     const qrX = Math.round((templateWidth - actualQrWidth) / 2);
-    const qrY = Math.round((templateHeight - actualQrHeight) / 2) - 93; // Subido de -75 a -93 (18px hacia arriba)
+    const qrY = Math.round((templateHeight - actualQrHeight) / 2) - 60; // Movido hacia abajo (menos offset)
     
     // Componer la imagen: plantilla + QR
     const compositeImage = await sharp(templateBuffer)
