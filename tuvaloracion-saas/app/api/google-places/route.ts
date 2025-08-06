@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GooglePlacesService } from '@/lib/google-places';
-import { GooglePlacesApiResponse, GooglePlacesRequest, GOOGLE_PLACES_FIELDS } from '@/lib/types';
+import { GooglePlacesApiResponse, GooglePlacesRequest, GOOGLE_PLACES_FIELDS, AutocompleteApiResponse, PlacePhotoResponse } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {

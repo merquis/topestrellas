@@ -5,6 +5,8 @@ Módulo completo y reutilizable para integrar Google Places API en el proyecto T
 ## 🚀 Características
 
 - ✅ **Extracción automática** de Place ID desde URLs de Google Reviews y Google Maps
+- ✅ **Autocompletado inteligente** con búsqueda por nombre del negocio
+- ✅ **Vista previa con foto** del local para confirmación visual
 - ✅ **Datos básicos**: nombre, rating, número de reseñas
 - ✅ **Reseñas completas**: texto, autor, fecha, rating individual
 - ✅ **Información adicional**: dirección, teléfono, sitio web, horarios

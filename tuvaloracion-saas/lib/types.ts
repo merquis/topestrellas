@@ -228,6 +228,35 @@ export interface GooglePlacesRequest {
   language?: string;
 }
 
+// Google Places Autocomplete types
+export interface AutocompleteResult {
+  place_id: string;
+  description: string;
+  structured_formatting: {
+    main_text: string;
+    secondary_text: string;
+  };
+  types: string[];
+}
+
+export interface AutocompleteApiResponse {
+  success: boolean;
+  predictions?: AutocompleteResult[];
+  error?: string;
+}
+
+export interface PlacePhotoRequest {
+  photo_reference: string;
+  maxwidth?: number;
+  maxheight?: number;
+}
+
+export interface PlacePhotoResponse {
+  success: boolean;
+  photo_url?: string;
+  error?: string;
+}
+
 // Available Google Places API fields
 export const GOOGLE_PLACES_FIELDS = {
   BASIC: ['name', 'rating', 'user_ratings_total'],

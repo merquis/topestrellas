@@ -1,8 +1,10 @@
-import { GooglePlaceData, GoogleReview, GOOGLE_PLACES_FIELDS } from './types';
+import { GooglePlaceData, GoogleReview, GOOGLE_PLACES_FIELDS, AutocompleteResult } from './types';
 
 export class GooglePlacesService {
   private static readonly API_KEY = process.env.GOOGLE_PLACES_API_KEY;
   private static readonly BASE_URL = 'https://maps.googleapis.com/maps/api/place/details/json';
+  private static readonly AUTOCOMPLETE_URL = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
+  private static readonly PHOTO_URL = 'https://maps.googleapis.com/maps/api/place/photo';
 
   /**
    * Extrae el Place ID de una URL de Google Reviews o Google Maps
@@ -259,5 +261,149 @@ export class GooglePlacesService {
       totalReviews: data.user_ratings_total || 0,
       reviewsAvailable: data.reviews?.length || 0
     };
+  }
+
+  /**
+   * Busca lugares usando Google Places Autocomplete API
+   */
+  static async searchPlaces(
+    query: string,
+    language: string = 'es',
+    types: string = 'establishment'
+  ): Promise<AutocompleteResult[]> {
+    if (!this.API_KEY) {
+      throw new Error('Google Places API key no configurada en las variables de entorno');
+    }
+
+    if (!query || query.trim().length < 2) {
+      return [];
+    }
+
+    const params = new URLSearchParams({
+      input: query.trim(),
+      types: types,
+      language: language,
+      key: this.API_KEY
+    });
+
+    try {
+      const response = await fetch(`${this.AUTOCOMPLETE_URL}?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status !== 'OK') {
+        switch (data.status) {
+          case 'ZERO_RESULTS':
+            return [];
+          case 'OVER_QUERY_LIMIT':
+            throw new Error('Se ha excedido el límite de consultas de la API de Autocomplete');
+          case 'REQUEST_DENIED':
+            throw new Error('Solicitud denegada. Verifica la API key y las restricciones');
+          case 'INVALID_REQUEST':
+            throw new Error('Solicitud inválida para Autocomplete');
+          default:
+            throw new Error(data.error_message || `Error de Autocomplete API: ${data.status}`);
+        }
+      }
+
+      return data.predictions || [];
+
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Error desconocido al buscar lugares');
+    }
+  }
+
+  /**
+   * Obtiene la URL de una foto de un lugar
+   */
+  static async getPlacePhotoUrl(
+    photoReference: string,
+    maxwidth: number = 400,
+    maxheight?: number
+  ): Promise<string> {
+    if (!this.API_KEY) {
+      throw new Error('Google Places API key no configurada en las variables de entorno');
+    }
+
+    if (!photoReference) {
+      throw new Error('Photo reference requerido');
+    }
+
+    const params = new URLSearchParams({
+      photo_reference: photoReference,
+      maxwidth: maxwidth.toString(),
+      key: this.API_KEY
+    });
+
+    if (maxheight) {
+      params.append('maxheight', maxheight.toString());
+    }
+
+    // La API de Photos devuelve directamente la imagen, no JSON
+    // Por lo que devolvemos la URL construida
+    return `${this.PHOTO_URL}?${params}`;
+  }
+
+  /**
+   * Busca un lugar y obtiene sus datos completos incluyendo foto
+   */
+  static async searchAndGetPlaceWithPhoto(
+    query: string,
+    language: string = 'es'
+  ): Promise<{
+    place: GooglePlaceData;
+    photoUrl?: string;
+    placeId: string;
+  } | null> {
+    try {
+      // Buscar lugares
+      const results = await this.searchPlaces(query, language);
+      
+      if (results.length === 0) {
+        return null;
+      }
+
+      // Tomar el primer resultado
+      const firstResult = results[0];
+      
+      // Obtener datos completos incluyendo fotos
+      const placeData = await this.getPlaceDetails(
+        firstResult.place_id,
+        [...GOOGLE_PLACES_FIELDS.BASIC, ...GOOGLE_PLACES_FIELDS.CONTACT, ...GOOGLE_PLACES_FIELDS.PHOTOS],
+        language
+      );
+
+      // Obtener URL de la primera foto si existe
+      let photoUrl: string | undefined;
+      if (placeData.photos && placeData.photos.length > 0) {
+        photoUrl = await this.getPlacePhotoUrl(placeData.photos[0].photo_reference);
+      }
+
+      return {
+        place: placeData,
+        photoUrl,
+        placeId: firstResult.place_id
+      };
+
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Error al buscar y obtener datos del lugar');
+    }
+  }
+
+  /**
+   * Valida si un query de búsqueda es válido
+   */
+  static validateSearchQuery(query: string): boolean {
+    return query && query.trim().length >= 2 && query.trim().length <= 100;
   }
 }
