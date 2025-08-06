@@ -119,7 +119,7 @@ export default function MyBusinessPage() {
               <div key={business._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="flex flex-col md:flex-row">
                   {/* Business Image */}
-                  <div className="w-full md:w-50 aspect-square flex-shrink-0 overflow-hidden">
+                  <div className="h-full aspect-square flex-shrink-0 overflow-hidden">
                     {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
                       <img
                         src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
