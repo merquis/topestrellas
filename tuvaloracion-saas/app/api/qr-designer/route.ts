@@ -69,7 +69,7 @@ async function createIrresistibleDesign(config: QRDesignConfig): Promise<Buffer>
   
   const texts = QR_TEXTS[config.language];
   
-  // Fondo con gradiente azul-púrpura
+  // Fondo con gradiente azul-púrpura (igual que la imagen de ejemplo)
   const gradient = ctx.createLinearGradient(0, 0, config.width, config.height);
   gradient.addColorStop(0, '#667eea');
   gradient.addColorStop(1, '#764ba2');
@@ -81,36 +81,48 @@ async function createIrresistibleDesign(config: QRDesignConfig): Promise<Buffer>
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
-  // Título principal - "PARTICIPA Y DEJA"
-  ctx.font = 'bold 32px Arial';
-  ctx.fillStyle = '#FFD700'; // Dorado
+  // Título principal - "PARTICIPA Y DEJA" (más grande y prominente)
+  const fontSize1 = Math.round(config.width * 0.055); // Más grande
+  ctx.font = `bold ${fontSize1}px Arial`;
+  ctx.fillStyle = '#FFD700'; // Dorado brillante
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.fillText(texts.participate, config.width / 2, 60);
-  ctx.strokeText(texts.participate, config.width / 2, 60);
+  ctx.lineWidth = 3;
+  ctx.fillText(texts.participate, config.width / 2, config.height * 0.12);
+  ctx.strokeText(texts.participate, config.width / 2, config.height * 0.12);
   
-  // Título secundario - "TU OPINIÓN!"
-  ctx.font = 'bold 28px Arial';
-  ctx.fillText(texts.opinion, config.width / 2, 100);
-  ctx.strokeText(texts.opinion, config.width / 2, 100);
+  // Título secundario - "TU OPINIÓN!" (más grande)
+  const fontSize2 = Math.round(config.width * 0.048);
+  ctx.font = `bold ${fontSize2}px Arial`;
+  ctx.fillStyle = '#FFD700';
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 3;
+  ctx.fillText(texts.opinion, config.width / 2, config.height * 0.19);
+  ctx.strokeText(texts.opinion, config.width / 2, config.height * 0.19);
   
-  // Marco para el QR con sombra
-  const qrSize = Math.round(config.width * 0.4);
-  const qrX = config.width / 2 - (qrSize + 20) / 2;
-  const qrY = config.height / 2 - 20 - (qrSize + 20) / 2;
+  // Subtítulo en inglés (más pequeño y blanco)
+  if (config.language === 'es') {
+    const fontSize3 = Math.round(config.width * 0.025);
+    ctx.font = `${fontSize3}px Arial`;
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'transparent';
+    ctx.fillText('PARTICIPATE AND LEAVE YOUR REVIEW!', config.width / 2, config.height * 0.24);
+  }
   
-  // Sombra del marco
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.fillRect(qrX + 5, qrY + 5, qrSize + 20, qrSize + 20);
+  // Marco para el QR con bordes redondeados (más grande)
+  const qrSize = Math.round(config.width * 0.45); // Más grande
+  const qrX = config.width / 2 - (qrSize + 30) / 2;
+  const qrY = config.height / 2 - 30 - (qrSize + 30) / 2;
   
-  // Marco blanco
+  // Marco blanco con bordes redondeados
   ctx.fillStyle = 'white';
-  ctx.fillRect(qrX, qrY, qrSize + 20, qrSize + 20);
+  ctx.beginPath();
+  ctx.roundRect(qrX, qrY, qrSize + 30, qrSize + 30, 15);
+  ctx.fill();
   
   // Generar código QR
   const qrDataURL = await QRCode.toDataURL(config.url, {
     width: qrSize,
-    margin: 2,
+    margin: 1,
     color: {
       dark: '#000000',
       light: '#FFFFFF'
@@ -120,38 +132,56 @@ async function createIrresistibleDesign(config: QRDesignConfig): Promise<Buffer>
   
   // Cargar y dibujar QR
   const qrImage = await loadImage(qrDataURL);
-  ctx.drawImage(qrImage, qrX + 10, qrY + 10, qrSize, qrSize);
+  ctx.drawImage(qrImage, qrX + 15, qrY + 15, qrSize, qrSize);
   
-  // Emoji llamativo
-  ctx.font = '40px Arial';
-  ctx.fillStyle = '#FFD700';
-  ctx.fillText('🎁', 50, config.height / 2 + 80);
+  // URL debajo del QR
+  const fontSize4 = Math.round(config.width * 0.018);
+  ctx.font = `${fontSize4}px Arial`;
+  ctx.fillStyle = 'white';
+  ctx.fillText(config.url.replace('https://', ''), config.width / 2, config.height * 0.72);
   
-  // Texto "ESCANEA EL CÓDIGO!"
-  ctx.font = 'bold 20px Arial';
+  // Emoji grande y llamativo
+  const emojiSize = Math.round(config.width * 0.08);
+  ctx.font = `${emojiSize}px Arial`;
+  ctx.fillText('😊', config.width * 0.15, config.height * 0.78);
+  
+  // Texto "ESCANEA EL CÓDIGO!" (más grande y prominente)
+  const fontSize5 = Math.round(config.width * 0.032);
+  ctx.font = `bold ${fontSize5}px Arial`;
+  ctx.fillStyle = 'white';
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 2;
+  ctx.fillText(texts.scan, config.width / 2, config.height * 0.78);
+  ctx.strokeText(texts.scan, config.width / 2, config.height * 0.78);
+  
+  // Subtítulo en inglés para scan
+  if (config.language === 'es') {
+    const fontSize6 = Math.round(config.width * 0.025);
+    ctx.font = `bold ${fontSize6}px Arial`;
+    ctx.fillStyle = '#FFD700';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.fillText('SCAN THE CODE!', config.width / 2, config.height * 0.83);
+    ctx.strokeText('SCAN THE CODE!', config.width / 2, config.height * 0.83);
+  }
+  
+  // "PREMIO GARANTIZADO!" (más grande y prominente)
+  const fontSize7 = Math.round(config.width * 0.042);
+  ctx.font = `bold ${fontSize7}px Arial`;
   ctx.fillStyle = '#FFD700';
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 1;
-  ctx.fillText(texts.scan, config.width / 2, config.height / 2 + 60);
-  ctx.strokeText(texts.scan, config.width / 2, config.height / 2 + 60);
+  ctx.lineWidth = 3;
+  ctx.fillText(texts.guaranteed, config.width / 2, config.height * 0.90);
+  ctx.strokeText(texts.guaranteed, config.width / 2, config.height * 0.90);
   
-  // "PREMIO GARANTIZADO!" - El gancho principal
-  ctx.font = 'bold 24px Arial';
-  ctx.fillStyle = '#00FF88'; // Verde neón
-  ctx.lineWidth = 2;
-  ctx.fillText(texts.guaranteed, config.width / 2, config.height / 2 + 90);
-  ctx.strokeText(texts.guaranteed, config.width / 2, config.height / 2 + 90);
-  
-  // Nombre del negocio
-  ctx.font = 'bold 16px Arial';
-  ctx.fillStyle = 'white';
-  ctx.strokeStyle = 'transparent';
-  ctx.fillText(config.businessName, config.width / 2, config.height - 80);
-  
-  // URL pequeña en la parte inferior
-  ctx.font = '10px Arial';
-  ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.fillText(config.url.replace('https://', ''), config.width / 2, config.height - 40);
+  // Subtítulo en inglés para premio
+  if (config.language === 'es') {
+    const fontSize8 = Math.round(config.width * 0.028);
+    ctx.font = `bold ${fontSize8}px Arial`;
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'transparent';
+    ctx.fillText('GUARANTEED PRIZE!', config.width / 2, config.height * 0.95);
+  }
   
   // Convertir canvas a buffer
   return canvas.toBuffer('image/png');
