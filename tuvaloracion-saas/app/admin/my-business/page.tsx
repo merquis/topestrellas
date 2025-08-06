@@ -143,7 +143,7 @@ export default function MyBusinessPage() {
                     </div>
 
                     {/* Business Info - Diseño mejorado */}
-                    <div className="flex-1 p-6 lg:p-8">
+                    <div className="flex-1 p-5 lg:p-6">
                       {/* Header con título y URL */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
@@ -262,7 +262,7 @@ export default function MyBusinessPage() {
                   </div>
 
                   {/* QR Code Section - NO MODIFICAR */}
-                  <div className="lg:w-80 p-6 lg:p-8 bg-gradient-to-br from-gray-50 to-white border-l border-gray-100">
+                  <div className="lg:w-80 p-5 lg:p-6 bg-gradient-to-br from-gray-50 to-white border-l border-gray-100">
                     <BusinessQR
                       subdomain={business.subdomain}
                       businessName={business.name}
