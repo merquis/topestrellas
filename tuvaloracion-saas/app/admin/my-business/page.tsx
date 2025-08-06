@@ -115,133 +115,159 @@ export default function MyBusinessPage() {
 
         {/* Business Cards */}
         {filteredBusinesses.length > 0 ? (
-          <div className="space-y-4">
+          <div className="grid gap-6">
             {filteredBusinesses.map((business: any) => (
-              <div key={business._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="flex flex-col md:flex-row">
-                  {/* Business Image */}
-                  <div className="w-32 overflow-hidden rounded-l-xl relative flex-shrink-0" style={{ aspectRatio: '1 / 1' }}>
-                    {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
-                      <img
-                        src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
-                        alt={business.name}
-                        className="w-full h-full object-cover object-center block"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=4F46E5&color=fff&size=160`;
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span className="text-white text-3xl font-bold">
-                          {business.name.charAt(0).toUpperCase()}
+              <div key={business._id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="flex flex-col lg:flex-row">
+                  {/* Left Section - Image and Main Info */}
+                  <div className="flex-1 flex flex-col md:flex-row">
+                    {/* Business Image - Más grande y cuadrada */}
+                    <div className="w-full md:w-48 h-48 md:h-auto relative flex-shrink-0 overflow-hidden">
+                      {business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl ? (
+                        <img
+                          src={business.googlePlaces?.photoUrl || business.config?.theme?.logoUrl}
+                          alt={business.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=6366F1&color=fff&size=400&bold=true`;
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                          <span className="text-white text-5xl font-bold drop-shadow-lg">
+                            {business.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      {/* Badge de estado superpuesto */}
+                      <div className="absolute top-3 right-3">
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm ${
+                          business.active 
+                            ? 'bg-green-500/90 text-white' 
+                            : 'bg-red-500/90 text-white'
+                        }`}>
+                          {business.active ? '● Activo' : '● Inactivo'}
                         </span>
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Business Info + QR Layout */}
-                  <div className="flex-1 p-6">
-                    <div className="flex flex-col lg:flex-row gap-6">
-                      {/* Main Info (70%) */}
-                      <div className="flex-1 lg:w-[70%]">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-800 mb-1">{business.name}</h3>
-                            <a 
-                              href={`https://${business.subdomain}.tuvaloracion.com`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                            >
-                              {business.subdomain}.tuvaloracion.com
-                              <span className="text-xs">↗</span>
-                            </a>
+                    {/* Business Info - Diseño mejorado */}
+                    <div className="flex-1 p-6 lg:p-8">
+                      {/* Header con título y URL */}
+                      <div className="mb-4">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{business.name}</h3>
+                        <a 
+                          href={`https://${business.subdomain}.tuvaloracion.com`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors group"
+                        >
+                          <span className="text-sm font-medium">{business.subdomain}.tuvaloracion.com</span>
+                          <svg className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                      </div>
+
+                      {/* Stats Cards - Diseño más visual */}
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
+                        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-gray-600 font-medium">Rating</p>
+                              <p className="text-xl font-bold text-gray-900 mt-0.5">
+                                {business.googlePlaces?.rating || business.stats?.avgRating || '—'}
+                              </p>
+                            </div>
+                            <div className="text-2xl">⭐</div>
                           </div>
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            business.active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full mr-1 ${
-                              business.active ? 'bg-green-500' : 'bg-red-500'
-                            }`}></span>
-                            {business.active ? 'Activo' : 'Inactivo'}
-                          </span>
+                        </div>
+                        
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-gray-600 font-medium">Opiniones</p>
+                              <p className="text-xl font-bold text-gray-900 mt-0.5">
+                                {business.googlePlaces?.totalReviews || business.stats?.googleReviews || 0}
+                              </p>
+                            </div>
+                            <div className="text-2xl">💬</div>
+                          </div>
                         </div>
 
-                        {/* Stats Row */}
-                        <div className="flex flex-wrap items-center gap-4 mb-3">
-                          <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-lg">
-                            <span className="text-yellow-500">★</span>
-                            <span className="font-bold text-gray-800">
-                              {business.googlePlaces?.rating || business.stats?.avgRating || 'N/A'}
-                            </span>
-                            <span className="text-xs text-gray-600">Rating</span>
+                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-gray-600 font-medium">Plan</p>
+                              <p className="text-lg font-bold text-gray-900 mt-0.5 capitalize">
+                                {business.subscription?.plan || 'Trial'}
+                              </p>
+                            </div>
+                            <div className="text-2xl">
+                              {business.subscription?.plan === 'premium' ? '👑' : 
+                               business.subscription?.plan === 'basic' ? '🎯' : '🎁'}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-lg">
-                            <span className="text-blue-500">📊</span>
-                            <span className="font-bold text-gray-800">
-                              {business.googlePlaces?.totalReviews || business.stats?.googleReviews || 0}
-                            </span>
-                            <span className="text-xs text-gray-600">Opiniones</span>
-                          </div>
-                          {/* Plan */}
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            business.subscription?.plan === 'premium' 
-                              ? 'bg-purple-100 text-purple-800'
-                              : business.subscription?.plan === 'basic'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            Plan {business.subscription?.plan || 'Trial'}
-                          </span>
                         </div>
+                      </div>
 
-                        {/* Contact Info */}
-                        {(business.contact?.email || business.contact?.phone) && (
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                      {/* Contact Info - Diseño más limpio */}
+                      {(business.contact?.email || business.contact?.phone) && (
+                        <div className="bg-gray-50 rounded-xl p-3 mb-5">
+                          <div className="flex flex-wrap items-center gap-4 text-sm">
                             {business.contact?.email && (
-                              <span className="flex items-center gap-1">
-                                <span>📧</span>
-                                {business.contact.email}
-                              </span>
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                  <span className="text-base">✉️</span>
+                                </div>
+                                <span className="font-medium">{business.contact.email}</span>
+                              </div>
                             )}
                             {business.contact?.phone && (
-                              <span className="flex items-center gap-1">
-                                <span>📞</span>
-                                {business.contact.phone}
-                              </span>
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                  <span className="text-base">📱</span>
+                                </div>
+                                <span className="font-medium">{business.contact.phone}</span>
+                              </div>
                             )}
                           </div>
-                        )}
-
-                        {/* Actions */}
-                        <div className="flex gap-2 mt-4">
-                          <button
-                            onClick={() => router.push(`/admin/edit-business/${business._id}`)}
-                            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            onClick={() => window.open(`https://${business.subdomain}.tuvaloracion.com`, '_blank')}
-                            className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                          >
-                            👁️ Ver Sitio
-                          </button>
                         </div>
-                      </div>
+                      )}
 
-                      {/* QR Code Section (30%) */}
-                      <div className="lg:w-[30%]">
-                        <BusinessQR
-                          subdomain={business.subdomain}
-                          businessName={business.name}
-                          variant="full"
-                        />
+                      {/* Action Buttons - Diseño más moderno */}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => router.push(`/admin/edit-business/${business._id}`)}
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <span>Editar</span>
+                        </button>
+                        <button
+                          onClick={() => window.open(`https://${business.subdomain}.tuvaloracion.com`, '_blank')}
+                          className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span>Ver Sitio</span>
+                        </button>
                       </div>
                     </div>
+                  </div>
+
+                  {/* QR Code Section - NO MODIFICAR */}
+                  <div className="lg:w-80 p-6 lg:p-8 bg-gradient-to-br from-gray-50 to-white border-l border-gray-100">
+                    <BusinessQR
+                      subdomain={business.subdomain}
+                      businessName={business.name}
+                      variant="full"
+                    />
                   </div>
                 </div>
               </div>
