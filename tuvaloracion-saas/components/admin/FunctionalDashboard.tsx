@@ -44,6 +44,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
   const [hasPrizesIssue, setHasPrizesIssue] = useState(false);
   const [showQRSpotlight, setShowQRSpotlight] = useState(false);
   const [hasQRIssue, setHasQRIssue] = useState(false);
+  const [showHelpSpotlight, setShowHelpSpotlight] = useState(false);
   const [userTriedToNavigate, setUserTriedToNavigate] = useState(false);
   const recentActivityRef = useRef<HTMLDivElement>(null);
 
@@ -106,32 +107,30 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     loadRecentActivities();
   }, [user]);
 
-  // Listener global para detectar clics en cualquier parte cuando hay problemas de premios o QR
+  // Listener global para detectar clics en cualquier parte cuando hay problemas de premios, QR o ayuda
   useEffect(() => {
-    if (!hasPrizesIssue && !hasQRIssue) return;
+    if (!hasPrizesIssue && !hasQRIssue && !showHelpSpotlight) return;
 
     const handleGlobalClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-      // Verificar si el clic fue en el botón "Configurar Premios" o "Descargar QR Irresistible"
       const isConfigurePrizesButton = target.closest('a[href*="edit-business"][href*="#premios"]');
-      const isDownloadQRButton = target.closest('button') && target.closest('button')?.textContent?.includes('Descargar QR Irresistible');
-      
-      if (!isConfigurePrizesButton && !isDownloadQRButton) {
-        // Si no es ninguno de los botones permitidos, activar el overlay
+      const isDownloadQRButton = target.closest('button')?.textContent?.includes('Descargar QR Irresistible');
+      const isHelpButton = target.closest('button')?.textContent?.includes('Ver Centro de Ayuda');
+
+      if (!isConfigurePrizesButton && !isDownloadQRButton && !isHelpButton) {
         event.preventDefault();
         event.stopPropagation();
         setUserTriedToNavigate(true);
       }
     };
 
-    // Añadir el listener con capture para interceptar antes que otros handlers
     document.addEventListener('click', handleGlobalClick, true);
 
     return () => {
       document.removeEventListener('click', handleGlobalClick, true);
     };
-  }, [hasPrizesIssue, hasQRIssue]);
+  }, [hasPrizesIssue, hasQRIssue, showHelpSpotlight]);
 
   // Verificar si hay actividades de premios no configurados o QR no descargado
   useEffect(() => {
@@ -140,11 +139,15 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       activity.priority === 'high'
     );
     
-    const qrActivity = recentActivities.find(activity => 
-      activity.type === 'qr_download_needed' && 
+    const qrActivity = recentActivities.find(activity =>
+      activity.type === 'qr_download_needed' &&
       activity.priority === 'high'
     );
-    
+
+    const helpActivity = recentActivities.find(activity =>
+      activity.type === 'exploration_suggestion'
+    );
+
     if (prizesActivity && user.role === 'admin') {
       setHasPrizesIssue(true);
       setHasQRIssue(false);
@@ -157,11 +160,19 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       // Solo mostrar spotlight si el usuario ya intentó navegar
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(userTriedToNavigate);
+      setShowHelpSpotlight(false);
+    } else if (helpActivity) {
+      setHasPrizesIssue(false);
+      setHasQRIssue(false);
+      setShowPrizesSpotlight(false);
+      setShowQRSpotlight(false);
+      setShowHelpSpotlight(true); // Activar siempre el spotlight de ayuda
     } else {
       setHasPrizesIssue(false);
       setHasQRIssue(false);
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(false);
+      setShowHelpSpotlight(false);
       setUserTriedToNavigate(false);
     }
   }, [recentActivities, user.role, userTriedToNavigate]);
@@ -263,21 +274,20 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     setIsDropdownOpen(false);
   };
 
-  // Función para interceptar navegación cuando hay problemas de premios o QR
+  // Función para interceptar navegación cuando hay problemas
   const handleNavigationAttempt = (callback: () => void) => {
-    if (hasPrizesIssue || hasQRIssue) {
+    if (hasPrizesIssue || hasQRIssue || showHelpSpotlight) {
       setUserTriedToNavigate(true);
-      return; // No ejecutar la navegación
+      return;
     }
-    callback(); // Ejecutar navegación normal
+    callback();
   };
 
   return (
     <>
-      {/* Overlay global que bloquea toda interacción excepto configurar premios o descargar QR */}
-      {(showPrizesSpotlight || showQRSpotlight) && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-80 pointer-events-auto">
-        </div>
+      {/* Overlay global que bloquea toda interacción */}
+      {(showPrizesSpotlight || showQRSpotlight || showHelpSpotlight) && (
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-80 pointer-events-auto"></div>
       )}
 
       {/* Stats Grid */}
@@ -346,15 +356,16 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       {/* Recent Activity & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Recent Activity */}
-        <div 
+        <div
           ref={recentActivityRef}
           className={`lg:col-span-2 bg-white rounded-xl shadow-lg p-6 ${
-            showPrizesSpotlight ? 'relative z-50 ring-4 ring-orange-500 ring-opacity-75 shadow-2xl' : 
-            showQRSpotlight ? 'relative z-50 ring-4 ring-blue-500 ring-opacity-75 shadow-2xl' : ''
+            showPrizesSpotlight ? 'relative z-50 ring-4 ring-orange-500 ring-opacity-75 shadow-2xl' :
+            showQRSpotlight ? 'relative z-50 ring-4 ring-blue-500 ring-opacity-75 shadow-2xl' :
+            showHelpSpotlight ? 'relative z-50 ring-4 ring-indigo-500 ring-opacity-75 shadow-2xl' : ''
           }`}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Actividad Reciente</h2>
+            <h2 className="text-xl font-bold text-gray-800">Actividades Recientes</h2>
             {recentActivities.length > 8 && (
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                 {recentActivities.length} actividades
@@ -445,16 +456,27 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                     {/* Mensaje de sugerencia de exploración */}
                     {activity.type === 'exploration_suggestion' && (
                       <div className="mt-4">
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => router.push('/admin/help')}
-                            className="relative z-[9999] flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
-                            style={{ pointerEvents: 'auto' }}
-                          >
-                            <span className="text-lg">🎯</span>
-                            <span>Ver Centro de Ayuda</span>
-                          </button>
-                        </div>
+                        <button
+                          onClick={async () => {
+                            // Marcar como visto y luego navegar
+                            try {
+                              await fetch('/api/admin/mark-exploration-suggestion-shown', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userEmail: user.email })
+                              });
+                            } catch (error) {
+                              console.error('Error marking suggestion shown:', error);
+                            }
+                            router.push('/admin/help');
+                          }}
+                          className="relative z-[9999] w-full inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-lg font-bold rounded-2xl hover:from-indigo-700 hover:to-purple-800 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-indigo-500/50 border-2 border-indigo-400"
+                          style={{ pointerEvents: 'auto' }}
+                        >
+                          <span className="text-2xl">🚀</span>
+                          <span>Ver Centro de Ayuda</span>
+                          <span className="text-xl">→</span>
+                        </button>
                       </div>
                     )}
                   </div>
