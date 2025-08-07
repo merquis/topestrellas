@@ -368,7 +368,7 @@ export default function UsersPage() {
                             {userData.businesses.map((business, index) => (
                               <a
                                 key={business.id}
-                                href={`https://admin.tuvaloracion.com/admin/edit-business/${business.id}`}
+                                href={`/admin/edit-business/${business.id}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900 transition-colors cursor-pointer"
