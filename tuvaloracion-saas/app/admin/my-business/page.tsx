@@ -198,13 +198,23 @@ export default function MyBusinessPage() {
 
                         <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-3">
                           <div className="flex items-center justify-between">
-                            <div>
+                            <div className="flex-1">
                               <p className="text-xs text-gray-600 font-medium">Plan</p>
                               <p className="text-lg font-bold text-gray-900 mt-0.5 capitalize">
                                 {business.subscription?.plan || 'Trial'}
                               </p>
+                              {/* Botón Cambiar Plan - Sutil pero visible */}
+                              <button
+                                onClick={() => router.push(`/admin/edit-business/${business._id}#mis-suscripciones`)}
+                                className="mt-2 text-xs font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-100 px-2 py-1 rounded-md transition-all duration-200 inline-flex items-center gap-1"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Cambiar Plan</span>
+                              </button>
                             </div>
-                            <div className="text-2xl">
+                            <div className="text-2xl ml-2">
                               {business.subscription?.plan === 'premium' ? '👑' : 
                                business.subscription?.plan === 'basic' ? '🎯' : '🎁'}
                             </div>
