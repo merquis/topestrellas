@@ -38,6 +38,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
   });
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [showPrizesSpotlight, setShowPrizesSpotlight] = useState(false);
+  const [hasPrizesIssue, setHasPrizesIssue] = useState(false);
+  const [userTriedToNavigate, setUserTriedToNavigate] = useState(false);
   const recentActivityRef = useRef<HTMLDivElement>(null);
 
   // Cargar estadísticas cuando cambia el negocio seleccionado o el usuario
@@ -99,7 +101,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     loadRecentActivities();
   }, [user]);
 
-  // Verificar si hay actividades de premios no configurados y activar spotlight
+  // Verificar si hay actividades de premios no configurados
   useEffect(() => {
     const prizesActivity = recentActivities.find(activity => 
       activity.type === 'prizes_not_configured' && 
@@ -107,11 +109,15 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     );
     
     if (prizesActivity && user.role === 'admin') {
-      setShowPrizesSpotlight(true);
+      setHasPrizesIssue(true);
+      // Solo mostrar spotlight si el usuario ya intentó navegar
+      setShowPrizesSpotlight(userTriedToNavigate);
     } else {
+      setHasPrizesIssue(false);
       setShowPrizesSpotlight(false);
+      setUserTriedToNavigate(false);
     }
-  }, [recentActivities, user.role]);
+  }, [recentActivities, user.role, userTriedToNavigate]);
 
   const loadBusinesses = async () => {
     setLoading(true);
@@ -208,11 +214,20 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     setIsDropdownOpen(false);
   };
 
+  // Función para interceptar navegación cuando hay problemas de premios
+  const handleNavigationAttempt = (callback: () => void) => {
+    if (hasPrizesIssue) {
+      setUserTriedToNavigate(true);
+      return; // No ejecutar la navegación
+    }
+    callback(); // Ejecutar navegación normal
+  };
+
   return (
     <>
       {/* Overlay global que bloquea toda interacción excepto configurar premios */}
       {showPrizesSpotlight && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-60 pointer-events-auto">
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-80 pointer-events-auto">
         </div>
       )}
 
@@ -313,7 +328,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                       <div className="mt-4">
                         <a
                           href={`/admin/edit-business/${activity.businessId}#premios`}
-                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-lg font-bold rounded-2xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50 animate-pulse border-2 border-orange-400"
+                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-lg font-bold rounded-2xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50 border-2 border-orange-400"
                           style={{ pointerEvents: 'auto' }}
                         >
                           <span className="text-2xl">🎁</span>
@@ -350,26 +365,26 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
           <div className="space-y-3">
             {user.role === 'super_admin' && (
               <button
-                onClick={() => router.push('/admin/new-business')}
+                onClick={() => handleNavigationAttempt(() => router.push('/admin/new-business'))}
                 className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
               >
                 <span>➕</span> Añadir Negocio
               </button>
             )}
             <button
-              onClick={() => router.push('/admin/opinions')}
+              onClick={() => handleNavigationAttempt(() => router.push('/admin/opinions'))}
               className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2"
             >
               <span>📝</span> Ver Opiniones
             </button>
             <button
-              onClick={() => router.push('/admin/analytics')}
+              onClick={() => handleNavigationAttempt(() => router.push('/admin/analytics'))}
               className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
             >
               <span>📊</span> Estadísticas
             </button>
             <button
-              onClick={() => router.push('/admin/settings')}
+              onClick={() => handleNavigationAttempt(() => router.push('/admin/settings'))}
               className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-4 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all flex items-center justify-center gap-2"
             >
               <span>⚙️</span> Configuración
