@@ -260,26 +260,49 @@ export async function GET(request: NextRequest) {
         const business = businessObj as any;
         const prizes = business.config?.prizes || [];
         
-        // Verificar si los premios están configurados (al menos los primeros 3)
-        const configuredPrizes = prizes.filter((prize: any) => 
-          prize && 
-          prize.translations && 
-          prize.translations.es && 
-          prize.translations.es.name && 
-          prize.translations.es.name.trim() !== ''
-        );
+        // Verificar si los premios están configurados correctamente
+        // Necesitamos al menos 3 premios con nombre válido (los primeros 3 son especiales)
+        const validPrizes = prizes.filter((prize: any, index: number) => {
+          if (!prize || !prize.translations || !prize.translations.es) {
+            return false;
+          }
+          
+          const name = prize.translations.es.name;
+          if (!name || name.trim() === '' || name.trim() === `Premio ${index + 1}`) {
+            return false; // Rechazar nombres vacíos o por defecto
+          }
+          
+          return true;
+        });
 
-        if (configuredPrizes.length < 3) {
+        // También verificar que los primeros 3 premios estén configurados específicamente
+        const firstThreePrizes = prizes.slice(0, 3);
+        const configuredFirstThree = firstThreePrizes.filter((prize: any, index: number) => {
+          if (!prize || !prize.translations || !prize.translations.es) {
+            return false;
+          }
+          
+          const name = prize.translations.es.name;
+          return name && name.trim() !== '' && name.trim() !== `Premio ${index + 1}`;
+        });
+
+        // Mostrar mensaje si no tiene al menos 3 premios válidos O si los primeros 3 no están configurados
+        const needsConfiguration = validPrizes.length < 3 || configuredFirstThree.length < 3;
+        
+        if (needsConfiguration) {
           const businessName = business.name || 'tu negocio';
+          const missingCount = 3 - Math.max(validPrizes.length, configuredFirstThree.length);
+          
           activities.unshift({ // Añadir al principio para que sea lo primero que vea
             icon: '⚠️',
-            message: `¡IMPORTANTE! Debes configurar los premios de la ruleta en ${businessName} para empezar a recibir reseñas`,
+            message: `¡IMPORTANTE! Debes configurar los premios de la ruleta en ${businessName}. Faltan ${missingCount > 0 ? missingCount : 'algunos'} premios por configurar para empezar a recibir reseñas`,
             time: 'Acción requerida',
             type: 'prizes_not_configured',
             priority: 'high',
             createdAt: new Date(),
             businessId: business._id.toString(),
-            businessName: businessName
+            businessName: businessName,
+            missingPrizes: missingCount
           });
         }
       }
