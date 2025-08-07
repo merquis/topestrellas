@@ -212,30 +212,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     <>
       {/* Overlay global que bloquea toda interacción excepto configurar premios */}
       {showPrizesSpotlight && (
-        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-60">
-          {/* Mensaje flotante indicando la acción requerida */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="bg-orange-600 text-white px-8 py-6 rounded-xl shadow-2xl max-w-lg text-center animate-pulse">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <span className="text-3xl">⚠️</span>
-                <span className="font-bold text-xl">¡Configuración Obligatoria!</span>
-                <span className="text-3xl">⚠️</span>
-              </div>
-              <p className="text-base mb-4 leading-relaxed">
-                Debes configurar <strong>TODOS los premios de la ruleta</strong> antes de poder usar cualquier función del panel administrativo.
-              </p>
-              <div className="bg-orange-700 rounded-lg p-3 mb-4">
-                <p className="text-sm font-medium">
-                  🚫 Navegación bloqueada hasta completar esta acción
-                </p>
-              </div>
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <span>👇</span>
-                <span>Busca el botón "Configurar Premios" en la actividad reciente</span>
-                <span>👇</span>
-              </div>
-            </div>
-          </div>
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-60 pointer-events-auto">
         </div>
       )}
 
@@ -333,14 +310,15 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                     
                     {/* Enlace especial para configurar premios */}
                     {activity.type === 'prizes_not_configured' && activity.businessId && (
-                      <div className="mt-2">
+                      <div className="mt-4">
                         <a
                           href={`/admin/edit-business/${activity.businessId}#premios`}
-                          className="inline-flex items-center gap-2 px-3 py-1 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors"
+                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-lg font-bold rounded-2xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50 animate-pulse border-2 border-orange-400"
+                          style={{ pointerEvents: 'auto' }}
                         >
-                          <span>🎁</span>
+                          <span className="text-2xl">🎁</span>
                           <span>Configurar Premios</span>
-                          <span>→</span>
+                          <span className="text-xl">→</span>
                         </a>
                       </div>
                     )}
