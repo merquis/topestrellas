@@ -397,6 +397,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
           className={`lg:col-span-2 bg-white rounded-xl shadow-lg p-6 ${
             showPrizesSpotlight ? 'relative z-50 ring-4 ring-orange-500 ring-opacity-75 shadow-2xl' :
             showQRSpotlight ? 'relative z-50 ring-4 ring-blue-500 ring-opacity-75 shadow-2xl' :
+            showPrintInstructionsSpotlight ? 'relative z-50 ring-4 ring-green-500 ring-opacity-75 shadow-2xl' :
             showHelpSpotlight ? 'relative z-50 ring-4 ring-indigo-500 ring-opacity-75 shadow-2xl' : ''
           }`}
         >
