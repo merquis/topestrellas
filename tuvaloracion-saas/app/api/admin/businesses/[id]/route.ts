@@ -95,10 +95,10 @@ export async function PUT(
       }).filter(Boolean);
       
       // Verificar si es la primera vez configurando premios
-      const validCurrentPrizes = currentPrizeNames.filter(name => 
+      const validCurrentPrizes = currentPrizeNames.filter((name: string) => 
         name && name.trim() !== '' && !name.includes('Premio ')
       );
-      const validNewPrizes = newPrizeNames.filter(name => 
+      const validNewPrizes = newPrizeNames.filter((name: string) => 
         name && name.trim() !== '' && !name.includes('Premio ')
       );
       
