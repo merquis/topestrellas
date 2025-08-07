@@ -102,8 +102,11 @@ export async function PUT(
         name && name.trim() !== '' && !name.includes('Premio ')
       );
       
-      // Es primera vez si antes no tenía premios válidos y ahora sí
-      isFirstTimeConfiguringPrizes = validCurrentPrizes.length === 0 && validNewPrizes.length >= 8;
+      // Verificar también que todos los costes reales estén configurados
+      const validNewCosts = data.prizes.filter((p: any) => p.realCost && p.realCost > 0);
+      
+      // Es primera vez si antes no tenía premios válidos y ahora sí (nombres + costes)
+      isFirstTimeConfiguringPrizes = validCurrentPrizes.length === 0 && validNewPrizes.length >= 8 && validNewCosts.length >= 8;
       
       // Solo ejecutar IA si los premios han cambiado
       const prizesChanged = JSON.stringify(newPrizeNames) !== JSON.stringify(currentPrizeNames);

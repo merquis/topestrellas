@@ -399,9 +399,17 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
                               // Descargar QR Irresistible directamente
                               const businessName = activity.businessName;
-                              const subdomain = selectedBusiness?.subdomain || businesses.find((b: any) => b._id === activity.businessId)?.subdomain;
+                              let subdomain = '';
                               
-                              if (subdomain) {
+                              // Buscar el subdominio del negocio
+                              if (selectedBusiness && selectedBusiness._id === activity.businessId) {
+                                subdomain = selectedBusiness.subdomain;
+                              } else {
+                                const business = businesses.find((b: any) => b._id === activity.businessId);
+                                subdomain = business?.subdomain || '';
+                              }
+                              
+                              if (subdomain && businessName) {
                                 const url = `https://${subdomain}.tuvaloracion.com`;
                                 
                                 const response = await fetch('/api/qr-designer', {
@@ -433,11 +441,17 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                                   // Recargar actividades para ocultar este mensaje
                                   loadRecentActivities();
                                 } else {
-                                  console.error('Error downloading QR');
+                                  const errorText = await response.text();
+                                  console.error('Error downloading QR:', response.status, errorText);
+                                  alert('Error al descargar el QR. Por favor, inténtalo de nuevo.');
                                 }
+                              } else {
+                                console.error('Missing data:', { subdomain, businessName });
+                                alert('Error: No se pudo obtener la información del negocio.');
                               }
                             } catch (error) {
                               console.error('Error:', error);
+                              alert('Error al descargar el QR. Por favor, inténtalo de nuevo.');
                             }
                           }}
                           className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-lg font-bold rounded-2xl hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50 border-2 border-orange-400"
@@ -463,7 +477,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                                 body: JSON.stringify({ userEmail: user.email })
                               });
                               
-                              // Recargar actividades para ocultar este mensaje
+                              // Recargar actividades para mostrar la nueva sugerencia de exploración
                               loadRecentActivities();
                             } catch (error) {
                               console.error('Error:', error);
@@ -474,6 +488,63 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                         >
                           <span className="text-2xl">✅</span>
                           <span>¡Entendido!</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Mensaje de sugerencia de exploración */}
+                    {activity.type === 'exploration_suggestion' && (
+                      <div className="mt-4 space-y-3">
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            onClick={() => router.push('/admin/help')}
+                            className="relative z-[9999] inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
+                            style={{ pointerEvents: 'auto' }}
+                          >
+                            <span className="text-lg">🎯</span>
+                            <span>Centro de Ayuda</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => router.push('/admin/contact')}
+                            className="relative z-[9999] inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
+                            style={{ pointerEvents: 'auto' }}
+                          >
+                            <span className="text-lg">💬</span>
+                            <span>Contacto</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => router.push('/admin/analytics')}
+                            className="relative z-[9999] inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-orange-500/50"
+                            style={{ pointerEvents: 'auto' }}
+                          >
+                            <span className="text-lg">📊</span>
+                            <span>Estadísticas</span>
+                          </button>
+                        </div>
+                        
+                        <button
+                          onClick={async () => {
+                            try {
+                              // Marcar como visto
+                              await fetch('/api/admin/mark-exploration-suggestion-shown', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userEmail: user.email })
+                              });
+                              
+                              // Recargar actividades para ocultar este mensaje
+                              loadRecentActivities();
+                            } catch (error) {
+                              console.error('Error:', error);
+                            }
+                          }}
+                          className="relative z-[9999] w-full inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg font-bold rounded-2xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-green-500/50 border-2 border-green-400"
+                          style={{ pointerEvents: 'auto' }}
+                        >
+                          <span className="text-2xl">🚀</span>
+                          <span>¡Perfecto! Empezaré a explorar</span>
                         </button>
                       </div>
                     )}

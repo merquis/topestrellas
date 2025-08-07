@@ -553,6 +553,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                             className="w-24 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             pattern="[0-9]+([,][0-9]{1,2})?"
                             title="Formato: 0,50 (usar coma para decimales)"
+                            required
                           />
                           <span className="text-sm text-gray-600">€</span>
                         </div>

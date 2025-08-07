@@ -263,7 +263,7 @@ export async function GET(request: NextRequest) {
         const business = businessObj as any;
         const prizes = business.config?.prizes || [];
         
-        // REQUERIMIENTO ESTRICTO: Todos los 8 premios deben estar configurados
+        // REQUERIMIENTO ESTRICTO: Todos los 8 premios deben estar configurados (nombres + costes)
         const validPrizes = prizes.filter((prize: any, index: number) => {
           if (!prize || !prize.translations || !prize.translations.es) {
             return false;
@@ -274,10 +274,15 @@ export async function GET(request: NextRequest) {
             return false; // Rechazar nombres vacíos o por defecto
           }
           
+          // También verificar que tenga coste real configurado
+          if (!prize.realCost || prize.realCost <= 0) {
+            return false; // Rechazar premios sin coste real
+          }
+          
           return true;
         });
 
-        // Verificar que TODOS los 8 premios estén configurados
+        // Verificar que TODOS los 8 premios estén configurados (nombres + costes)
         const needsConfiguration = validPrizes.length < 8;
         
         if (needsConfiguration) {
@@ -321,6 +326,20 @@ export async function GET(request: NextRequest) {
             time: 'Completar configuración',
             type: 'qr_print_instructions',
             priority: 'medium',
+            createdAt: new Date(),
+            businessId: business._id.toString(),
+            businessName: businessName
+          });
+        } else if (user && user.firstPrizesConfigured && user.qrDownloadPrompted && user.qrPrintInstructionsShown && !user.explorationSuggestionShown) {
+          // 8. NUEVA FUNCIONALIDAD: Sugerencia de exploración después de completar configuración
+          const businessName = business.name || 'tu negocio';
+          
+          activities.unshift({ // Añadir al principio para que sea lo primero que vea
+            icon: '🚀',
+            message: `¡Felicidades! Has completado la configuración de ${businessName}. <strong>¿Sabías que también puedes aumentar tus reseñas de TripAdvisor?</strong><br><br>🎯 <strong>Explora tu panel:</strong> Estadísticas en tiempo real, análisis de opiniones, sugerencias personalizadas y mucho más.<br><br>💬 <strong>¿Necesitas ayuda?</strong> Visita nuestro <strong>Centro de Ayuda</strong> o contacta con nuestro equipo de soporte técnico. ¡Estamos aquí para ayudarte a sacar el máximo provecho!<br><br>✨ <strong>Consejo:</strong> Consulta este panel diariamente - siempre aparecen nuevas sugerencias personalizadas para tu negocio.`,
+            time: 'Descubre más',
+            type: 'exploration_suggestion',
+            priority: 'normal',
             createdAt: new Date(),
             businessId: business._id.toString(),
             businessName: businessName
