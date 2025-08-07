@@ -195,40 +195,29 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
   // Función mejorada para manejar el input de coste con formato español
   const handleCostInput = (index: number, inputValue: string) => {
-    // Permitir solo números, punto y coma
-    const sanitizedValue = inputValue.replace(/[^0-9.,]/g, '');
-    
     // Si está vacío, establecer a 0 (se mostrará como placeholder)
-    if (sanitizedValue === '') {
+    if (inputValue === '') {
       handlePrizeChange(index, 'realCost', 0);
       return;
     }
     
-    // Permitir valores que empiecen con 0 (como 0,80)
-    // No usar parseFloat directamente porque elimina los ceros iniciales
-    let cleanValue = sanitizedValue;
+    // NO sanitizar el input aquí, trabajar con el valor original
+    // para permitir que el usuario escriba libremente
     
     // Reemplazar coma por punto para el cálculo interno
-    const normalizedValue = cleanValue.replace(',', '.');
+    const normalizedValue = inputValue.replace(',', '.');
     
-    // Validar que sea un número válido
-    if (!/^\d*\.?\d*$/.test(normalizedValue)) {
-      return; // No actualizar si no es un formato válido
-    }
+    // Permitir cualquier número válido con hasta 2 decimales
+    // Esto permite: "0", "0.", "0.8", "0.80", "10", "10.5", etc.
+    const regex = /^\d*\.?\d{0,2}$/;
     
-    // Convertir a número para validaciones
-    const numericValue = parseFloat(normalizedValue);
-    
-    // Si es NaN o negativo, no actualizar
-    if (isNaN(numericValue) || numericValue < 0) {
+    // Si no cumple el formato, no actualizar
+    if (!regex.test(normalizedValue)) {
       return;
     }
     
-    // Limitar a 2 decimales máximo
-    const decimalParts = normalizedValue.split('.');
-    if (decimalParts[1] && decimalParts[1].length > 2) {
-      return; // No permitir más de 2 decimales
-    }
+    // Convertir a número
+    const numericValue = parseFloat(normalizedValue) || 0;
     
     // Guardar el valor numérico
     handlePrizeChange(index, 'realCost', numericValue);
