@@ -180,11 +180,15 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
   // Función para formatear el valor mostrado con coma decimal
   const formatCostValue = (value: number) => {
+    // Si el valor es 0, mostrar cadena vacía para que se vea el placeholder
+    if (value === 0) {
+      return '';
+    }
     // Si es un número entero, mostrarlo sin decimales
     if (value % 1 === 0) {
       return value.toString();
     }
-    // Si tiene decimales, mostrar con 2 decimales y coma
+    // Si tiene decimales, mostrar SIEMPRE con 2 decimales y coma
     const formatted = value.toFixed(2).replace('.', ',');
     return formatted;
   };
@@ -194,7 +198,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     // Permitir solo números, punto y coma
     const sanitizedValue = inputValue.replace(/[^0-9.,]/g, '');
     
-    // Si está vacío, establecer a 0
+    // Si está vacío, establecer a 0 (se mostrará como placeholder)
     if (sanitizedValue === '') {
       handlePrizeChange(index, 'realCost', 0);
       return;
@@ -445,13 +449,20 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
             {/* Prizes Tab */}
             {activeTab === 'prizes' && (
               <div className="space-y-6">
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="font-medium text-amber-900 mb-2">⚠️ Configuración de Premios</h3>
-                  <p className="text-sm text-amber-800">
-                    Los primeros 3 premios tienen <strong>0.01% de probabilidad</strong> cada uno (premios grandes).
-                    Los premios 4-8 tienen <strong>19.994% de probabilidad</strong> cada uno.
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h3 className="font-medium text-green-900 mb-2">⚠️ Configuración de Premios</h3>
+                  <p className="text-sm text-green-800 mb-2">
+                    💰 <strong>IMPORTANTE</strong>: Los primeros 3 premios deben ser los MÁS CAROS porque tienen menor probabilidad de salir (0.01% cada uno). Son premios especiales y exclusivos.
                   </p>
-                  <p className="text-sm text-amber-800 mt-2">
+                  <p className="text-sm text-green-800 mb-2">
+                    Los premios 4-8 tienen mayor probabilidad (19.994% cada uno), por lo que deben ser premios de menor coste.
+                  </p>
+                  <p className="text-sm text-green-800 mb-2">
+                    <strong>Estrategia recomendada:</strong><br/>
+                    • Premios 1-3: Productos/servicios de alto valor (cenas completas, tratamientos premium, etc.)<br/>
+                    • Premios 4-8: Productos/servicios de menor coste (bebidas, descuentos, aperitivos, etc.)
+                  </p>
+                  <p className="text-sm text-green-800">
                     Los premios se traducirán automáticamente a inglés, alemán y francés con IA.
                   </p>
                 </div>
