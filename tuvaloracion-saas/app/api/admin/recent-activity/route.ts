@@ -254,6 +254,37 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 5. VERIFICAR CONFIGURACIÓN DE PREMIOS (solo para admins normales)
+    if (userRole === 'admin') {
+      for (const businessObj of businesses) {
+        const business = businessObj as any;
+        const prizes = business.config?.prizes || [];
+        
+        // Verificar si los premios están configurados (al menos los primeros 3)
+        const configuredPrizes = prizes.filter((prize: any) => 
+          prize && 
+          prize.translations && 
+          prize.translations.es && 
+          prize.translations.es.name && 
+          prize.translations.es.name.trim() !== ''
+        );
+
+        if (configuredPrizes.length < 3) {
+          const businessName = business.name || 'tu negocio';
+          activities.unshift({ // Añadir al principio para que sea lo primero que vea
+            icon: '⚠️',
+            message: `¡IMPORTANTE! Debes configurar los premios de la ruleta en ${businessName} para empezar a recibir reseñas`,
+            time: 'Acción requerida',
+            type: 'prizes_not_configured',
+            priority: 'high',
+            createdAt: new Date(),
+            businessId: business._id.toString(),
+            businessName: businessName
+          });
+        }
+      }
+    }
+
     // Ordenar por fecha y prioridad, limitar a 12 actividades
     const sortedActivities = activities
       .sort((a, b) => {

@@ -50,6 +50,22 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     loadBusiness();
   }, [params.id]);
 
+  // Detectar hash en la URL para navegar a la pestaña correcta
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash === '#premios') {
+        setActiveTab('prizes');
+      } else if (hash === '#resenas') {
+        setActiveTab('reviews');
+      } else if (hash === '#configuracion') {
+        setActiveTab('settings');
+      } else if (hash === '#basico') {
+        setActiveTab('basic');
+      }
+    }
+  }, []);
+
   const loadBusiness = async () => {
     try {
       const response = await fetch(`/api/admin/businesses/${params.id}`);

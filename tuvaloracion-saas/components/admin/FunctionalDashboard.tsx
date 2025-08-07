@@ -280,6 +280,20 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                       {activity.message}
                     </p>
                     <p className="text-sm text-gray-500">{activity.time}</p>
+                    
+                    {/* Enlace especial para configurar premios */}
+                    {activity.type === 'prizes_not_configured' && activity.businessId && (
+                      <div className="mt-2">
+                        <a
+                          href={`/admin/edit-business/${activity.businessId}#premios`}
+                          className="inline-flex items-center gap-2 px-3 py-1 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors"
+                        >
+                          <span>🎁</span>
+                          <span>Configurar Premios</span>
+                          <span>→</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
