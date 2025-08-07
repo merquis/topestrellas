@@ -210,6 +210,35 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
   return (
     <>
+      {/* Overlay global que bloquea toda interacción excepto configurar premios */}
+      {showPrizesSpotlight && (
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-60">
+          {/* Mensaje flotante indicando la acción requerida */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="bg-orange-600 text-white px-8 py-6 rounded-xl shadow-2xl max-w-lg text-center animate-pulse">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <span className="text-3xl">⚠️</span>
+                <span className="font-bold text-xl">¡Configuración Obligatoria!</span>
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <p className="text-base mb-4 leading-relaxed">
+                Debes configurar <strong>TODOS los premios de la ruleta</strong> antes de poder usar cualquier función del panel administrativo.
+              </p>
+              <div className="bg-orange-700 rounded-lg p-3 mb-4">
+                <p className="text-sm font-medium">
+                  🚫 Navegación bloqueada hasta completar esta acción
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span>👇</span>
+                <span>Busca el botón "Configurar Premios" en la actividad reciente</span>
+                <span>👇</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         {user.role === 'super_admin' && (
@@ -370,33 +399,6 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
           </div>
         </div>
       </div>
-
-      {/* Spotlight Overlay para forzar configuración de premios */}
-      {showPrizesSpotlight && (
-        <div className="fixed inset-0 z-40 pointer-events-none">
-          {/* Overlay oscuro que cubre todo */}
-          <div className="absolute inset-0 bg-black bg-opacity-60 transition-opacity duration-500"></div>
-          
-          {/* Mensaje flotante indicando la acción requerida */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div className="bg-orange-600 text-white px-6 py-4 rounded-xl shadow-2xl max-w-md text-center animate-pulse">
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <span className="text-2xl">⚠️</span>
-                <span className="font-bold text-lg">¡Acción Requerida!</span>
-                <span className="text-2xl">⚠️</span>
-              </div>
-              <p className="text-sm mb-3">
-                Debes configurar TODOS los premios de la ruleta para poder usar el panel completo.
-              </p>
-              <div className="flex items-center justify-center gap-2 text-xs">
-                <span>👇</span>
-                <span>Haz clic en "Configurar Premios" abajo</span>
-                <span>👇</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
     </>
   );
