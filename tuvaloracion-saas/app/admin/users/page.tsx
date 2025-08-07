@@ -366,12 +366,16 @@ export default function UsersPage() {
                         {userData.businesses && userData.businesses.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {userData.businesses.map((business, index) => (
-                              <span
+                              <a
                                 key={business.id}
-                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                                href={`https://admin.tuvaloracion.com/admin/edit-business/${business.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900 transition-colors cursor-pointer"
+                                title={`Editar negocio: ${business.name}`}
                               >
                                 {business.name}
-                              </span>
+                              </a>
                             ))}
                           </div>
                         ) : (
