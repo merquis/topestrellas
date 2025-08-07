@@ -417,10 +417,13 @@ export async function DELETE(request: Request) {
       );
     }
     
-    // También eliminar las opiniones asociadas
-    await db.collection('opinions').deleteMany({ 
-      businessId: id 
+    // También eliminar las opiniones asociadas (usando ObjectId)
+    const opinionsResult = await db.collection('opinions').deleteMany({ 
+      businessId: objectId 
     });
+    
+    console.log(`✅ Negocio eliminado: ${id}`);
+    console.log(`✅ Opiniones eliminadas en cascada: ${opinionsResult.deletedCount}`);
     
     return NextResponse.json({
       success: true,
