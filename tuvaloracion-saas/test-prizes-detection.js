@@ -106,7 +106,7 @@ const testCases = [
 function testPrizeDetection(business) {
   const prizes = business.config?.prizes || [];
   
-  // Lógica mejorada de detección (copiada de la API)
+  // NUEVA LÓGICA ESTRICTA: Todos los 8 premios deben estar configurados
   const validPrizes = prizes.filter((prize, index) => {
     if (!prize || !prize.translations || !prize.translations.es) {
       return false;
@@ -120,26 +120,15 @@ function testPrizeDetection(business) {
     return true;
   });
 
-  // También verificar que los primeros 3 premios estén configurados específicamente
-  const firstThreePrizes = prizes.slice(0, 3);
-  const configuredFirstThree = firstThreePrizes.filter((prize, index) => {
-    if (!prize || !prize.translations || !prize.translations.es) {
-      return false;
-    }
-    
-    const name = prize.translations.es.name;
-    return name && name.trim() !== '' && name.trim() !== `Premio ${index + 1}`;
-  });
-
-  // Mostrar mensaje si no tiene al menos 3 premios válidos O si los primeros 3 no están configurados
-  const needsConfiguration = validPrizes.length < 3 || configuredFirstThree.length < 3;
+  // Verificar que TODOS los 8 premios estén configurados
+  const needsConfiguration = validPrizes.length < 8;
   
   return {
     totalPrizes: prizes.length,
     validPrizes: validPrizes.length,
-    configuredFirstThree: configuredFirstThree.length,
     needsConfiguration,
-    missingCount: 3 - Math.max(validPrizes.length, configuredFirstThree.length)
+    missingCount: 8 - validPrizes.length,
+    totalRequired: 8
   };
 }
 
@@ -155,22 +144,24 @@ testCases.forEach((testCase, index) => {
   console.log('Negocio:', testCase.business.name);
   console.log('Premios totales:', result.totalPrizes);
   console.log('Premios válidos:', result.validPrizes);
-  console.log('Primeros 3 configurados:', result.configuredFirstThree);
+  console.log('Requeridos:', result.totalRequired);
+  console.log('Faltan:', result.missingCount);
   console.log('¿Necesita configuración?', result.needsConfiguration ? 'SÍ' : 'NO');
   
   if (result.needsConfiguration) {
     console.log('✅ Se mostrará la nota importante');
-    console.log(`📝 Mensaje: "¡IMPORTANTE! Debes configurar los premios de la ruleta en ${testCase.business.name}. Faltan ${result.missingCount > 0 ? result.missingCount : 'algunos'} premios por configurar"`);
+    console.log(`📝 Mensaje: "¡IMPORTANTE! Debes configurar TODOS los premios de la ruleta en ${testCase.business.name}. Faltan ${result.missingCount} premios por configurar"`);
     console.log(`🔗 URL: /admin/edit-business/${testCase.business._id}#premios`);
   } else {
-    console.log('❌ No se mostrará la nota (premios correctamente configurados)');
+    console.log('❌ No se mostrará la nota (todos los 8 premios configurados)');
   }
 });
 
-console.log('\n🎯 RESUMEN:');
-console.log('===========');
-console.log('La nueva lógica detecta:');
-console.log('• Premios vacíos o sin configurar');
-console.log('• Premios con nombres por defecto ("Premio 1", "Premio 2", etc.)');
-console.log('• Verifica específicamente que los primeros 3 premios estén configurados');
-console.log('• Persiste hasta que el usuario configure correctamente los premios');
+console.log('\n🎯 RESUMEN - ESTRATEGIA ESTRICTA:');
+console.log('=================================');
+console.log('La nueva lógica ESTRICTA requiere:');
+console.log('• TODOS los 8 premios deben estar configurados');
+console.log('• Rechaza premios vacíos o sin configurar');
+console.log('• Rechaza premios con nombres por defecto ("Premio 1", "Premio 2", etc.)');
+console.log('• El mensaje persiste hasta configurar los 8 premios completos');
+console.log('• Solo desaparece cuando validPrizes.length === 8');

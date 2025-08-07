@@ -260,8 +260,7 @@ export async function GET(request: NextRequest) {
         const business = businessObj as any;
         const prizes = business.config?.prizes || [];
         
-        // Verificar si los premios están configurados correctamente
-        // Necesitamos al menos 3 premios con nombre válido (los primeros 3 son especiales)
+        // REQUERIMIENTO ESTRICTO: Todos los 8 premios deben estar configurados
         const validPrizes = prizes.filter((prize: any, index: number) => {
           if (!prize || !prize.translations || !prize.translations.es) {
             return false;
@@ -275,34 +274,24 @@ export async function GET(request: NextRequest) {
           return true;
         });
 
-        // También verificar que los primeros 3 premios estén configurados específicamente
-        const firstThreePrizes = prizes.slice(0, 3);
-        const configuredFirstThree = firstThreePrizes.filter((prize: any, index: number) => {
-          if (!prize || !prize.translations || !prize.translations.es) {
-            return false;
-          }
-          
-          const name = prize.translations.es.name;
-          return name && name.trim() !== '' && name.trim() !== `Premio ${index + 1}`;
-        });
-
-        // Mostrar mensaje si no tiene al menos 3 premios válidos O si los primeros 3 no están configurados
-        const needsConfiguration = validPrizes.length < 3 || configuredFirstThree.length < 3;
+        // Verificar que TODOS los 8 premios estén configurados
+        const needsConfiguration = validPrizes.length < 8;
         
         if (needsConfiguration) {
           const businessName = business.name || 'tu negocio';
-          const missingCount = 3 - Math.max(validPrizes.length, configuredFirstThree.length);
+          const missingCount = 8 - validPrizes.length;
           
           activities.unshift({ // Añadir al principio para que sea lo primero que vea
             icon: '⚠️',
-            message: `¡IMPORTANTE! Debes configurar los premios de la ruleta en ${businessName}. Faltan ${missingCount > 0 ? missingCount : 'algunos'} premios por configurar para empezar a recibir reseñas`,
+            message: `¡IMPORTANTE! Debes configurar TODOS los premios de la ruleta en ${businessName}. Faltan ${missingCount} premios por configurar para empezar a recibir reseñas`,
             time: 'Acción requerida',
             type: 'prizes_not_configured',
             priority: 'high',
             createdAt: new Date(),
             businessId: business._id.toString(),
             businessName: businessName,
-            missingPrizes: missingCount
+            missingPrizes: missingCount,
+            totalRequired: 8
           });
         }
       }
