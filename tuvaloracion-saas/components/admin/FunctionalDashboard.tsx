@@ -30,6 +30,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     totalOpinions: 0,
     totalPrizes: 0,
     avgRating: 0,
+    googleRating: 0,
+    googleReviews: 0,
     monthlyGrowth: 0,
     opinionsGrowth: 0,
     inactiveGrowth: 0,
@@ -216,6 +218,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
           totalOpinions: statsData.totalOpinions,
           totalPrizes: statsData.totalPrizes,
           avgRating: statsData.avgRating,
+          googleRating: statsData.googleRating,
+          googleReviews: statsData.googleReviews,
           monthlyGrowth: statsData.monthlyGrowth,
           opinionsGrowth: statsData.opinionsGrowth,
           inactiveGrowth: statsData.inactiveGrowth,
@@ -308,9 +312,23 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
           />
         )}
         <StatsCard
+          title="Nota Google"
+          value={stats.googleRating > 0 ? stats.googleRating.toFixed(1) : (stats.avgRating > 0 ? stats.avgRating.toFixed(1) : '—')}
+          icon="⭐"
+          bgColor="bg-gradient-to-br from-amber-50 to-orange-100"
+          iconBgColor="bg-amber-500"
+        />
+        <StatsCard
+          title="Reseñas Google"
+          value={stats.googleReviews > 0 ? stats.googleReviews.toLocaleString() : stats.totalOpinions.toLocaleString()}
+          icon="📝"
+          bgColor="bg-gradient-to-br from-blue-50 to-indigo-100"
+          iconBgColor="bg-blue-500"
+        />
+        <StatsCard
           title="Opiniones Totales"
           value={stats.totalOpinions.toLocaleString()}
-          icon="⭐"
+          icon="💬"
           trend={{ value: stats.opinionsGrowth, isPositive: stats.opinionsGrowth >= 0 }}
           bgColor="bg-gradient-to-br from-yellow-50 to-yellow-100"
           iconBgColor="bg-yellow-500"
