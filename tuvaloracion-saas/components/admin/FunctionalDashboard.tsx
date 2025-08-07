@@ -360,12 +360,13 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                 >
                   <span className="text-2xl">{activity.icon}</span>
                   <div className="flex-1">
-                    <p className={`${
-                      activity.priority === 'high' ? 'text-red-800 font-semibold' : 
-                      activity.priority === 'medium' ? 'text-yellow-800' : 'text-gray-800'
-                    }`}>
-                      {activity.message}
-                    </p>
+                    <p 
+                      className={`${
+                        activity.priority === 'high' ? 'text-red-800 font-semibold' : 
+                        activity.priority === 'medium' ? 'text-yellow-800' : 'text-gray-800'
+                      }`}
+                      dangerouslySetInnerHTML={{ __html: activity.message }}
+                    />
                     <p className="text-sm text-gray-500">{activity.time}</p>
                     
                     {/* Enlace especial para configurar premios */}
