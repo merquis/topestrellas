@@ -94,15 +94,17 @@ export default function QRIrresistibleButton({
           await fetch('/api/admin/mark-qr-prompted', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ businessId: businessToUse._id })
+              body: JSON.stringify({ userEmail: user.email })
           });
           console.log('✅ QR download marked in database');
         } catch (markError) {
           console.warn('⚠️ Failed to mark QR as downloaded:', markError);
         }
 
-        // Refrescar actividades
-        onDownloadComplete();
+        // Refrescar actividades después de un pequeño retraso
+        setTimeout(() => {
+          onDownloadComplete();
+        }, 1000);
 
       } else {
         console.error('❌ QR generation failed with status:', response.status);

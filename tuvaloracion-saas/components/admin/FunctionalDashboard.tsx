@@ -149,15 +149,30 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       activity.type === 'exploration_suggestion'
     );
 
+    // Si no hay actividades críticas, limpiar todos los estados
+    if (!prizesActivity && !qrActivity && !helpActivity) {
+      setHasPrizesIssue(false);
+      setHasQRIssue(false);
+      setHasHelpIssue(false);
+      setShowPrizesSpotlight(false);
+      setShowQRSpotlight(false);
+      setShowHelpSpotlight(false);
+      setUserTriedToNavigate(false);
+      return;
+    }
+
     if (prizesActivity && user.role === 'admin') {
       setHasPrizesIssue(true);
       setHasQRIssue(false);
+      setHasHelpIssue(false);
       // Solo mostrar spotlight si el usuario ya intentó navegar
       setShowPrizesSpotlight(userTriedToNavigate);
       setShowQRSpotlight(false);
+      setShowHelpSpotlight(false);
     } else if (qrActivity && user.role === 'admin') {
       setHasPrizesIssue(false);
       setHasQRIssue(true);
+      setHasHelpIssue(false);
       // Solo mostrar spotlight si el usuario ya intentó navegar
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(userTriedToNavigate);
@@ -169,14 +184,6 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(false);
       setShowHelpSpotlight(userTriedToNavigate);
-    } else {
-      setHasPrizesIssue(false);
-      setHasQRIssue(false);
-      setHasHelpIssue(false);
-      setShowPrizesSpotlight(false);
-      setShowQRSpotlight(false);
-      setShowHelpSpotlight(false);
-      setUserTriedToNavigate(false);
     }
   }, [recentActivities, user.role, userTriedToNavigate]);
 
