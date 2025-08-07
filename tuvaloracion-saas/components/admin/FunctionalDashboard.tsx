@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import StatsCard from '@/components/admin/StatsCard';
+import QRIrresistibleButton from './QRIrresistibleButton';
 import { AuthUser } from '@/lib/auth';
 
 interface Business {
@@ -368,11 +369,11 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
             }}
           >
             {recentActivities.length > 0 ? (
-              recentActivities.map((activity, index) => (
-                <div 
-                  key={index} 
+              recentActivities.map((activity: any, index: number) => (
+                <div
+                  key={index}
                   className={`flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors ${
-                    activity.priority === 'high' ? 'border-l-4 border-red-500 bg-red-50' : 
+                    activity.priority === 'high' ? 'border-l-4 border-red-500 bg-red-50' :
                     activity.priority === 'medium' ? 'border-l-4 border-yellow-500 bg-yellow-50' : ''
                   }`}
                 >
@@ -404,82 +405,13 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
                     {/* Botón especial para descargar código QR Irresistible directamente */}
                     {activity.type === 'qr_download_needed' && activity.businessName && (
-                      <div className="mt-4">
-                        <button
-                          onClick={async () => {
-                            try {
-                              // Marcar como visitado
-                              await fetch('/api/admin/mark-qr-prompted', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userEmail: user.email })
-                              });
-
-                              // Descargar QR Irresistible directamente
-                              const businessName = activity.businessName;
-                              let subdomain = '';
-                              
-                              // Buscar el subdominio del negocio
-                              if (selectedBusiness && selectedBusiness._id === activity.businessId) {
-                                subdomain = selectedBusiness.subdomain;
-                              } else {
-                                const business = businesses.find((b: any) => b._id === activity.businessId);
-                                subdomain = business?.subdomain || '';
-                              }
-                              
-                              if (subdomain && businessName) {
-                                const url = `https://${subdomain}.tuvaloracion.com`;
-                                
-                                const response = await fetch('/api/qr-designer', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({
-                                    businessName,
-                                    url,
-                                    template: 'restaurantes-01',
-                                    dpi: 300
-                                  }),
-                                });
-
-                                if (response.ok) {
-                                  const blob = await response.blob();
-                                  const downloadUrl = URL.createObjectURL(blob);
-                                  
-                                  const link = document.createElement('a');
-                                  link.href = downloadUrl;
-                                  link.download = `QR-${businessName}-irresistible.png`;
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                  
-                                  URL.revokeObjectURL(downloadUrl);
-                                  
-                                  // Recargar actividades para ocultar este mensaje
-                                  loadRecentActivities();
-                                } else {
-                                  const errorText = await response.text();
-                                  console.error('Error downloading QR:', response.status, errorText);
-                                  alert('Error al descargar el QR. Por favor, inténtalo de nuevo.');
-                                }
-                              } else {
-                                console.error('Missing data:', { subdomain, businessName });
-                                alert('Error: No se pudo obtener la información del negocio.');
-                              }
-                            } catch (error) {
-                              console.error('Error:', error);
-                              alert('Error al descargar el QR. Por favor, inténtalo de nuevo.');
-                            }
-                          }}
-                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-lg font-bold rounded-2xl hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50 border-2 border-orange-400"
-                          style={{ pointerEvents: 'auto' }}
-                        >
-                          <span className="text-2xl">🎨</span>
-                          <span>Descargar QR Irresistible</span>
-                          <span className="text-xl">↓</span>
-                        </button>
-                      </div>
+                      <QRIrresistibleButton 
+                        activity={activity}
+                        user={user}
+                        selectedBusiness={selectedBusiness}
+                        businesses={businesses}
+                        onDownloadComplete={loadRecentActivities}
+                      />
                     )}
 
                     {/* Mensaje de instrucciones de impresión */}
@@ -520,30 +452,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                             style={{ pointerEvents: 'auto' }}
                           >
                             <span className="text-lg">🎯</span>
-                            <span>Centro de Ayuda</span>
-                          </button>
-                          
-                          <button
-                            onClick={async () => {
-                              try {
-                                // Marcar como visto
-                                await fetch('/api/admin/mark-exploration-suggestion-shown', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ userEmail: user.email })
-                                });
-                                
-                                // Recargar actividades para ocultar este mensaje
-                                loadRecentActivities();
-                              } catch (error) {
-                                console.error('Error:', error);
-                              }
-                            }}
-                            className="relative z-[9999] flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50"
-                            style={{ pointerEvents: 'auto' }}
-                          >
-                            <span className="text-lg">🚀</span>
-                            <span>¡Perfecto! Empezaré a explorar</span>
+                            <span>Ver Centro de Ayuda</span>
                           </button>
                         </div>
                       </div>
