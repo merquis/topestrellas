@@ -494,11 +494,11 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
                     {/* Mensaje de sugerencia de exploración */}
                     {activity.type === 'exploration_suggestion' && (
-                      <div className="mt-4 space-y-3">
-                        <div className="flex flex-wrap gap-3">
+                      <div className="mt-4">
+                        <div className="flex gap-3">
                           <button
                             onClick={() => router.push('/admin/help')}
-                            className="relative z-[9999] inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
+                            className="relative z-[9999] flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
                             style={{ pointerEvents: 'auto' }}
                           >
                             <span className="text-lg">🎯</span>
@@ -506,46 +506,28 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                           </button>
                           
                           <button
-                            onClick={() => router.push('/admin/contact')}
-                            className="relative z-[9999] inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
+                            onClick={async () => {
+                              try {
+                                // Marcar como visto
+                                await fetch('/api/admin/mark-exploration-suggestion-shown', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ userEmail: user.email })
+                                });
+                                
+                                // Recargar actividades para ocultar este mensaje
+                                loadRecentActivities();
+                              } catch (error) {
+                                console.error('Error:', error);
+                              }
+                            }}
+                            className="relative z-[9999] flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/50"
                             style={{ pointerEvents: 'auto' }}
                           >
-                            <span className="text-lg">💬</span>
-                            <span>Contacto</span>
-                          </button>
-                          
-                          <button
-                            onClick={() => router.push('/admin/analytics')}
-                            className="relative z-[9999] inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-orange-500/50"
-                            style={{ pointerEvents: 'auto' }}
-                          >
-                            <span className="text-lg">📊</span>
-                            <span>Estadísticas</span>
+                            <span className="text-lg">🚀</span>
+                            <span>¡Perfecto! Empezaré a explorar</span>
                           </button>
                         </div>
-                        
-                        <button
-                          onClick={async () => {
-                            try {
-                              // Marcar como visto
-                              await fetch('/api/admin/mark-exploration-suggestion-shown', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userEmail: user.email })
-                              });
-                              
-                              // Recargar actividades para ocultar este mensaje
-                              loadRecentActivities();
-                            } catch (error) {
-                              console.error('Error:', error);
-                            }
-                          }}
-                          className="relative z-[9999] w-full inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg font-bold rounded-2xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-green-500/50 border-2 border-green-400"
-                          style={{ pointerEvents: 'auto' }}
-                        >
-                          <span className="text-2xl">🚀</span>
-                          <span>¡Perfecto! Empezaré a explorar</span>
-                        </button>
                       </div>
                     )}
                   </div>

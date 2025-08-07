@@ -336,7 +336,7 @@ export async function GET(request: NextRequest) {
           
           activities.unshift({ // Añadir al principio para que sea lo primero que vea
             icon: '🚀',
-            message: `¡Felicidades! Has completado la configuración de ${businessName}. <strong>¿Sabías que también puedes aumentar tus reseñas de TripAdvisor?</strong><br><br>🎯 <strong>Explora tu panel:</strong> Estadísticas en tiempo real, análisis de opiniones, sugerencias personalizadas y mucho más.<br><br>💬 <strong>¿Necesitas ayuda?</strong> Visita nuestro <strong>Centro de Ayuda</strong> o contacta con nuestro equipo de soporte técnico. ¡Estamos aquí para ayudarte a sacar el máximo provecho!<br><br>✨ <strong>Consejo:</strong> Consulta este panel diariamente - siempre aparecen nuevas sugerencias personalizadas para tu negocio.`,
+            message: `¡Felicidades! Has completado la configuración de ${businessName}. <strong>¿Sabías que también puedes aumentar tus reseñas de TripAdvisor?</strong><br><br>🎯 <strong>Explora tu panel:</strong> Estadísticas en tiempo real, análisis de opiniones, sugerencias personalizadas y mucho más.<br><br>💬 <strong>¿Necesitas ayuda?</strong> Visita nuestro <strong>Centro de Ayuda</strong> donde encontrarás preguntas frecuentes y un video explicativo completo sobre todo lo que puedes hacer y cómo sacar el máximo provecho. También puedes contactar con nuestro equipo de soporte técnico.<br><br>✨ <strong>Consejo:</strong> Consulta este panel diariamente - siempre aparecen nuevas sugerencias personalizadas para tu negocio.`,
             time: 'Descubre más',
             type: 'exploration_suggestion',
             priority: 'normal',
