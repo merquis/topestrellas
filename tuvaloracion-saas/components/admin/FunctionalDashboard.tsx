@@ -110,7 +110,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
   // Listener global para detectar clics en cualquier parte cuando hay problemas de premios, QR o ayuda
   useEffect(() => {
-    if (!hasPrizesIssue && !hasQRIssue && !showHelpSpotlight) return;
+    if (!hasPrizesIssue && !hasQRIssue && !hasHelpIssue) return;
 
     const handleGlobalClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -131,7 +131,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     return () => {
       document.removeEventListener('click', handleGlobalClick, true);
     };
-  }, [hasPrizesIssue, hasQRIssue, showHelpSpotlight]);
+  }, [hasPrizesIssue, hasQRIssue, hasHelpIssue]);
 
   // Verificar si hay actividades de premios no configurados o QR no descargado
   useEffect(() => {
