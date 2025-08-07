@@ -422,6 +422,9 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                   className={`flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors ${
                     activity.priority === 'high' ? 'border-l-4 border-red-500 bg-red-50' :
                     activity.priority === 'medium' ? 'border-l-4 border-yellow-500 bg-yellow-50' : ''
+                  } ${
+                    activity.type === 'qr_print_instructions' && showPrintInstructionsSpotlight ? 
+                    'relative z-50 ring-4 ring-green-500 ring-opacity-75 shadow-2xl bg-green-50' : ''
                   }`}
                 >
                   <span className="text-2xl">{activity.icon}</span>
