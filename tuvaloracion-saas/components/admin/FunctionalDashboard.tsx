@@ -45,6 +45,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
   const [showQRSpotlight, setShowQRSpotlight] = useState(false);
   const [hasQRIssue, setHasQRIssue] = useState(false);
   const [showHelpSpotlight, setShowHelpSpotlight] = useState(false);
+  const [hasHelpIssue, setHasHelpIssue] = useState(false);
   const [userTriedToNavigate, setUserTriedToNavigate] = useState(false);
   const recentActivityRef = useRef<HTMLDivElement>(null);
 
@@ -164,12 +165,14 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     } else if (helpActivity) {
       setHasPrizesIssue(false);
       setHasQRIssue(false);
+      setHasHelpIssue(true);
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(false);
-      setShowHelpSpotlight(true); // Activar siempre el spotlight de ayuda
+      setShowHelpSpotlight(userTriedToNavigate);
     } else {
       setHasPrizesIssue(false);
       setHasQRIssue(false);
+      setHasHelpIssue(false);
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(false);
       setShowHelpSpotlight(false);
@@ -276,7 +279,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
   // Función para interceptar navegación cuando hay problemas
   const handleNavigationAttempt = (callback: () => void) => {
-    if (hasPrizesIssue || hasQRIssue || showHelpSpotlight) {
+    if (hasPrizesIssue || hasQRIssue || hasHelpIssue) {
       setUserTriedToNavigate(true);
       return;
     }
