@@ -911,34 +911,14 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
             )}
 
             {/* Actions */}
-            <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between">
+            <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end">
               <button
-                type="button"
-                onClick={() => {
-                  const redirectPath = user?.role === 'super_admin' ? '/admin/businesses' : '/admin/my-business';
-                  router.push(redirectPath);
-                }}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                type="submit"
+                disabled={saving}
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50"
               >
-                Cancelar
+                {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
-              <div className="flex gap-3">
-                <a
-                  href={`https://${formData.subdomain}.tuvaloracion.com`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-6 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2"
-                >
-                  Ver Sitio <span className="text-sm">↗</span>
-                </a>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50"
-                >
-                  {saving ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
-              </div>
             </div>
           </form>
         </div>
