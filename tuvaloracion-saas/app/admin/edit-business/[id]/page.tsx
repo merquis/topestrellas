@@ -189,12 +189,25 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     return formatted;
   };
 
-  // Función para manejar el input de coste con formato español
+  // Función mejorada para manejar el input de coste con formato español
   const handleCostInput = (index: number, inputValue: string) => {
+    // Permitir solo números, punto y coma
+    const sanitizedValue = inputValue.replace(/[^0-9.,]/g, '');
+    
+    // Si está vacío, establecer a 0
+    if (sanitizedValue === '') {
+      handlePrizeChange(index, 'realCost', 0);
+      return;
+    }
+    
     // Permitir escribir tanto punto como coma, pero convertir internamente
-    const cleanValue = inputValue.replace(',', '.');
+    const cleanValue = sanitizedValue.replace(',', '.');
     const numericValue = parseFloat(cleanValue) || 0;
-    handlePrizeChange(index, 'realCost', numericValue);
+    
+    // Limitar a 2 decimales
+    const roundedValue = Math.round(numericValue * 100) / 100;
+    
+    handlePrizeChange(index, 'realCost', roundedValue);
   };
 
   // Handler para cuando se selecciona un lugar con autocompletado
