@@ -95,6 +95,57 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     
     if (data.active !== undefined) {
       updateData.active = data.active;
+      
+      // Si se está suspendiendo el usuario, suspender también todos sus negocios
+      if (data.active === false) {
+        const userBusinessIds = existingUser.businessIds || (existingUser.businessId ? [existingUser.businessId] : []);
+        
+        if (userBusinessIds.length > 0) {
+          const businessObjectIds = userBusinessIds.map((id: string) => new ObjectId(id));
+          
+          // Suspender todos los negocios del usuario
+          const businessUpdateResult = await db.collection('businesses').updateMany(
+            { _id: { $in: businessObjectIds } },
+            { 
+              $set: { 
+                active: false,
+                'subscription.status': 'suspended',
+                updatedAt: new Date(),
+                suspendedReason: 'user_suspended'
+              } 
+            }
+          );
+          
+          console.log(`✅ Usuario suspendido: ${userId}`);
+          console.log(`✅ Negocios suspendidos en cascada: ${businessUpdateResult.modifiedCount}`);
+        }
+      }
+      // Si se está reactivando el usuario, reactivar también todos sus negocios
+      else if (data.active === true) {
+        const userBusinessIds = existingUser.businessIds || (existingUser.businessId ? [existingUser.businessId] : []);
+        
+        if (userBusinessIds.length > 0) {
+          const businessObjectIds = userBusinessIds.map((id: string) => new ObjectId(id));
+          
+          // Reactivar todos los negocios del usuario
+          const businessUpdateResult = await db.collection('businesses').updateMany(
+            { _id: { $in: businessObjectIds } },
+            { 
+              $set: { 
+                active: true,
+                'subscription.status': 'active',
+                updatedAt: new Date()
+              },
+              $unset: {
+                suspendedReason: ""
+              }
+            }
+          );
+          
+          console.log(`✅ Usuario reactivado: ${userId}`);
+          console.log(`✅ Negocios reactivados en cascada: ${businessUpdateResult.modifiedCount}`);
+        }
+      }
     }
     
     if (data.password) {

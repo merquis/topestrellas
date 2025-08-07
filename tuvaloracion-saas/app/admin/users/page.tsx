@@ -163,6 +163,23 @@ export default function UsersPage() {
   };
 
   const handleToggleActive = async (userId: string, active: boolean) => {
+    const action = active ? 'suspender' : 'reactivar';
+    const actionPast = active ? 'suspendido' : 'reactivado';
+    const businessAction = active ? 'suspenderán' : 'reactivarán';
+    
+    // Obtener información del usuario para mostrar cuántos negocios tiene
+    const userData = users.find(u => u.id === userId);
+    const businessCount = userData?.businesses?.length || 0;
+    
+    let confirmMessage = `¿Estás seguro de ${action} este usuario?`;
+    if (businessCount > 0) {
+      confirmMessage += `\n\nEsto también ${businessAction} automáticamente ${businessCount} negocio${businessCount > 1 ? 's' : ''} asociado${businessCount > 1 ? 's' : ''}.`;
+    }
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
@@ -175,7 +192,11 @@ export default function UsersPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setToast({ message: `Usuario ${!active ? 'activado' : 'desactivado'} exitosamente`, type: 'success' });
+        let successMessage = `Usuario ${actionPast} exitosamente`;
+        if (businessCount > 0) {
+          successMessage += ` junto con ${businessCount} negocio${businessCount > 1 ? 's' : ''}`;
+        }
+        setToast({ message: successMessage, type: 'success' });
         loadUsers();
       } else {
         setToast({ message: data.error || 'Error al cambiar estado', type: 'error' });
@@ -416,8 +437,9 @@ export default function UsersPage() {
                               ? 'text-red-600 hover:text-red-700' 
                               : 'text-green-600 hover:text-green-700'
                           }`}
+                          title={userData.active ? 'Suspender usuario y todos sus negocios' : 'Reactivar usuario y todos sus negocios'}
                         >
-                          {userData.active ? '🚫 Desactivar' : '✅ Activar'}
+                          {userData.active ? '⏸️ Suspender' : '▶️ Reactivar'}
                         </button>
                         {userData.role !== 'super_admin' && (
                           <button
