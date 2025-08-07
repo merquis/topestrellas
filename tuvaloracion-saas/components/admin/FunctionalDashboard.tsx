@@ -39,6 +39,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [showPrizesSpotlight, setShowPrizesSpotlight] = useState(false);
   const [hasPrizesIssue, setHasPrizesIssue] = useState(false);
+  const [showQRSpotlight, setShowQRSpotlight] = useState(false);
+  const [hasQRIssue, setHasQRIssue] = useState(false);
   const [userTriedToNavigate, setUserTriedToNavigate] = useState(false);
   const recentActivityRef = useRef<HTMLDivElement>(null);
 
@@ -101,18 +103,19 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     loadRecentActivities();
   }, [user]);
 
-  // Listener global para detectar clics en cualquier parte cuando hay problemas de premios
+  // Listener global para detectar clics en cualquier parte cuando hay problemas de premios o QR
   useEffect(() => {
-    if (!hasPrizesIssue) return;
+    if (!hasPrizesIssue && !hasQRIssue) return;
 
     const handleGlobalClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-      // Verificar si el clic fue en el botón "Configurar Premios" o sus elementos hijos
+      // Verificar si el clic fue en el botón "Configurar Premios" o "Descargar QR"
       const isConfigurePrizesButton = target.closest('a[href*="edit-business"][href*="#premios"]');
+      const isDownloadQRButton = target.closest('a[href*="my-business"]');
       
-      if (!isConfigurePrizesButton) {
-        // Si no es el botón de configurar premios, activar el overlay
+      if (!isConfigurePrizesButton && !isDownloadQRButton) {
+        // Si no es ninguno de los botones permitidos, activar el overlay
         event.preventDefault();
         event.stopPropagation();
         setUserTriedToNavigate(true);
@@ -125,22 +128,37 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     return () => {
       document.removeEventListener('click', handleGlobalClick, true);
     };
-  }, [hasPrizesIssue]);
+  }, [hasPrizesIssue, hasQRIssue]);
 
-  // Verificar si hay actividades de premios no configurados
+  // Verificar si hay actividades de premios no configurados o QR no descargado
   useEffect(() => {
     const prizesActivity = recentActivities.find(activity => 
       activity.type === 'prizes_not_configured' && 
       activity.priority === 'high'
     );
     
+    const qrActivity = recentActivities.find(activity => 
+      activity.type === 'qr_download_needed' && 
+      activity.priority === 'high'
+    );
+    
     if (prizesActivity && user.role === 'admin') {
       setHasPrizesIssue(true);
+      setHasQRIssue(false);
       // Solo mostrar spotlight si el usuario ya intentó navegar
       setShowPrizesSpotlight(userTriedToNavigate);
+      setShowQRSpotlight(false);
+    } else if (qrActivity && user.role === 'admin') {
+      setHasPrizesIssue(false);
+      setHasQRIssue(true);
+      // Solo mostrar spotlight si el usuario ya intentó navegar
+      setShowPrizesSpotlight(false);
+      setShowQRSpotlight(userTriedToNavigate);
     } else {
       setHasPrizesIssue(false);
+      setHasQRIssue(false);
       setShowPrizesSpotlight(false);
+      setShowQRSpotlight(false);
       setUserTriedToNavigate(false);
     }
   }, [recentActivities, user.role, userTriedToNavigate]);
@@ -240,9 +258,9 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     setIsDropdownOpen(false);
   };
 
-  // Función para interceptar navegación cuando hay problemas de premios
+  // Función para interceptar navegación cuando hay problemas de premios o QR
   const handleNavigationAttempt = (callback: () => void) => {
-    if (hasPrizesIssue) {
+    if (hasPrizesIssue || hasQRIssue) {
       setUserTriedToNavigate(true);
       return; // No ejecutar la navegación
     }
@@ -251,8 +269,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
   return (
     <>
-      {/* Overlay global que bloquea toda interacción excepto configurar premios */}
-      {showPrizesSpotlight && (
+      {/* Overlay global que bloquea toda interacción excepto configurar premios o descargar QR */}
+      {(showPrizesSpotlight || showQRSpotlight) && (
         <div className="fixed inset-0 z-40 bg-black bg-opacity-80 pointer-events-auto">
         </div>
       )}
@@ -312,7 +330,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
         <div 
           ref={recentActivityRef}
           className={`lg:col-span-2 bg-white rounded-xl shadow-lg p-6 ${
-            showPrizesSpotlight ? 'relative z-50 ring-4 ring-orange-500 ring-opacity-75 shadow-2xl' : ''
+            showPrizesSpotlight ? 'relative z-50 ring-4 ring-orange-500 ring-opacity-75 shadow-2xl' : 
+            showQRSpotlight ? 'relative z-50 ring-4 ring-blue-500 ring-opacity-75 shadow-2xl' : ''
           }`}
         >
           <div className="flex items-center justify-between mb-4">
@@ -359,6 +378,29 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                         >
                           <span className="text-2xl">🎁</span>
                           <span>Configurar Premios</span>
+                          <span className="text-xl">→</span>
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Enlace especial para descargar código QR */}
+                    {activity.type === 'qr_download_needed' && activity.actionUrl && (
+                      <div className="mt-4">
+                        <a
+                          href={activity.actionUrl}
+                          onClick={() => {
+                            // Marcar como visitado cuando hace clic
+                            fetch('/api/admin/mark-qr-prompted', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ userEmail: user.email })
+                            });
+                          }}
+                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-lg font-bold rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/50 border-2 border-blue-400"
+                          style={{ pointerEvents: 'auto' }}
+                        >
+                          <span className="text-2xl">📱</span>
+                          <span>Descargar Código QR</span>
                           <span className="text-xl">→</span>
                         </a>
                       </div>

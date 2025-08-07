@@ -132,13 +132,26 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
         },
         body: JSON.stringify({
           ...formData,
-          userRole: user?.role // Enviar el rol del usuario para validación de permisos
+          userRole: user?.role, // Enviar el rol del usuario para validación de permisos
+          userEmail: user?.email // Enviar el email del usuario para detectar primera configuración
         }),
       });
 
       if (response.ok) {
-        setToast({ message: 'Negocio actualizado exitosamente', type: 'success' });
-        // No redirigir automáticamente, permanecer en la misma página
+        const data = await response.json();
+        
+        // Verificar si es la primera vez configurando premios
+        if (data.firstTimeSetup && data.redirectUrl) {
+          setToast({ message: '¡Premios configurados! Redirigiendo al panel principal...', type: 'success' });
+          
+          // Esperar un momento para que el usuario vea el mensaje
+          setTimeout(() => {
+            window.location.href = data.redirectUrl;
+          }, 2000);
+        } else {
+          setToast({ message: 'Negocio actualizado exitosamente', type: 'success' });
+          // No redirigir automáticamente, permanecer en la misma página
+        }
       } else {
         const data = await response.json();
         setToast({ message: `Error: ${data.error}`, type: 'error' });
@@ -205,33 +218,36 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
 
   // Función mejorada para manejar el input de coste con formato español
   const handleCostInput = (index: number, inputValue: string) => {
-    // Actualizar el valor del input inmediatamente
-    const newCostInputValues = [...costInputValues];
-    newCostInputValues[index] = inputValue;
-    setCostInputValues(newCostInputValues);
-    
     // Si está vacío, establecer a 0
     if (inputValue === '') {
+      const newCostInputValues = [...costInputValues];
+      newCostInputValues[index] = '';
+      setCostInputValues(newCostInputValues);
       handlePrizeChange(index, 'realCost', 0);
       return;
     }
     
+    // Convertir automáticamente punto a coma para formato español
+    const spanishFormattedValue = inputValue.replace('.', ',');
+    
     // Reemplazar coma por punto para el cálculo interno
-    const normalizedValue = inputValue.replace(',', '.');
+    const normalizedValue = spanishFormattedValue.replace(',', '.');
     
     // Permitir cualquier número válido con hasta 2 decimales
     // Esto permite: "0", "0.", "0.8", "0.80", "10", "10.5", etc.
     const regex = /^\d*\.?\d{0,2}$/;
     
-    // Si no cumple el formato, revertir el cambio
+    // Si no cumple el formato, no actualizar
     if (!regex.test(normalizedValue)) {
-      // Revertir al valor anterior
-      newCostInputValues[index] = costInputValues[index];
-      setCostInputValues(newCostInputValues);
       return;
     }
     
-    // Convertir a número
+    // Actualizar el valor del input con formato español (coma)
+    const newCostInputValues = [...costInputValues];
+    newCostInputValues[index] = spanishFormattedValue;
+    setCostInputValues(newCostInputValues);
+    
+    // Convertir a número para guardar
     const numericValue = parseFloat(normalizedValue) || 0;
     
     // Guardar el valor numérico

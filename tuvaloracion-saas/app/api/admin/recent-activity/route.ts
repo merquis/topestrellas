@@ -256,6 +256,9 @@ export async function GET(request: NextRequest) {
 
     // 5. VERIFICAR CONFIGURACIÓN DE PREMIOS (solo para admins normales)
     if (userRole === 'admin') {
+      // Obtener información del usuario para verificar estados
+      const user = await db.collection('users').findOne({ email: userEmail });
+      
       for (const businessObj of businesses) {
         const business = businessObj as any;
         const prizes = business.config?.prizes || [];
@@ -292,6 +295,21 @@ export async function GET(request: NextRequest) {
             businessName: businessName,
             missingPrizes: missingCount,
             totalRequired: 8
+          });
+        } else if (user && user.firstPrizesConfigured && !user.qrDownloadPrompted) {
+          // 6. NUEVA FUNCIONALIDAD: Guiar al usuario a descargar código QR después de configurar premios
+          const businessName = business.name || 'tu negocio';
+          
+          activities.unshift({ // Añadir al principio para que sea lo primero que vea
+            icon: '📱',
+            message: `¡Excelente! Ya tienes configurados los premios en ${businessName}. Ahora descarga el código QR para que tus clientes puedan dejar reseñas y ganar premios`,
+            time: 'Siguiente paso',
+            type: 'qr_download_needed',
+            priority: 'high',
+            createdAt: new Date(),
+            businessId: business._id.toString(),
+            businessName: businessName,
+            actionUrl: '/admin/my-business'
           });
         }
       }

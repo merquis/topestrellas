@@ -84,6 +84,8 @@ export async function PUT(
 
     // Procesar premios con IA SOLO si han cambiado
     let translatedPrizes = currentBusiness.config?.prizes || [];
+    let isFirstTimeConfiguringPrizes = false;
+    
     if (data.prizes && Array.isArray(data.prizes)) {
       const newPrizeNames = data.prizes.map((p: any) => p.name).filter(Boolean);
       
@@ -91,6 +93,17 @@ export async function PUT(
       const currentPrizeNames = (currentBusiness.config?.prizes || []).map((p: any) => {
         return p.translations?.es?.name || '';
       }).filter(Boolean);
+      
+      // Verificar si es la primera vez configurando premios
+      const validCurrentPrizes = currentPrizeNames.filter(name => 
+        name && name.trim() !== '' && !name.includes('Premio ')
+      );
+      const validNewPrizes = newPrizeNames.filter(name => 
+        name && name.trim() !== '' && !name.includes('Premio ')
+      );
+      
+      // Es primera vez si antes no tenía premios válidos y ahora sí
+      isFirstTimeConfiguringPrizes = validCurrentPrizes.length === 0 && validNewPrizes.length >= 8;
       
       // Solo ejecutar IA si los premios han cambiado
       const prizesChanged = JSON.stringify(newPrizeNames) !== JSON.stringify(currentPrizeNames);
@@ -174,6 +187,33 @@ export async function PUT(
         { error: 'Negocio no encontrado' },
         { status: 404 }
       );
+    }
+
+    // Si es la primera vez configurando premios, actualizar el usuario y enviar señal especial
+    if (isFirstTimeConfiguringPrizes && data.userEmail) {
+      console.log('🎉 Primera configuración de premios detectada para:', data.userEmail);
+      
+      try {
+        await db.collection('users').updateOne(
+          { email: data.userEmail },
+          { 
+            $set: { 
+              firstPrizesConfigured: true,
+              updatedAt: new Date()
+            } 
+          }
+        );
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Negocio actualizado exitosamente',
+          firstTimeSetup: true, // Señal especial para el frontend
+          redirectUrl: 'https://admin.topestrellas.com/admin'
+        });
+      } catch (error) {
+        console.error('Error actualizando usuario:', error);
+        // Continuar con respuesta normal si falla la actualización del usuario
+      }
     }
     
     return NextResponse.json({
