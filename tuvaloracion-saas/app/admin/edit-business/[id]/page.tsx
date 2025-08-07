@@ -58,9 +58,9 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
         setActiveTab('prizes');
       } else if (hash === '#resenas') {
         setActiveTab('reviews');
-      } else if (hash === '#configuracion') {
+      } else if (hash === '#configuracion' || hash === '#mis-suscripciones') {
         setActiveTab('settings');
-      } else if (hash === '#basico') {
+      } else if (hash === '#informacion-basica' || hash === '#basico') {
         setActiveTab('basic');
       }
     }
@@ -325,7 +325,10 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           <div className="border-b border-gray-200">
             <nav className="flex -mb-px">
               <button
-                onClick={() => setActiveTab('basic')}
+                onClick={() => {
+                  setActiveTab('basic');
+                  window.history.pushState(null, '', `#informacion-basica`);
+                }}
                 className={`px-6 py-3 text-sm font-medium ${
                   activeTab === 'basic'
                     ? 'border-b-2 border-blue-500 text-blue-600'
@@ -335,7 +338,10 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                 Información Básica
               </button>
               <button
-                onClick={() => setActiveTab('prizes')}
+                onClick={() => {
+                  setActiveTab('prizes');
+                  window.history.pushState(null, '', `#premios`);
+                }}
                 className={`px-6 py-3 text-sm font-medium ${
                   activeTab === 'prizes'
                     ? 'border-b-2 border-blue-500 text-blue-600'
@@ -345,7 +351,10 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                 Premios
               </button>
               <button
-                onClick={() => setActiveTab('reviews')}
+                onClick={() => {
+                  setActiveTab('reviews');
+                  window.history.pushState(null, '', `#resenas`);
+                }}
                 className={`px-6 py-3 text-sm font-medium ${
                   activeTab === 'reviews'
                     ? 'border-b-2 border-blue-500 text-blue-600'
@@ -355,14 +364,17 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                 Reseñas
               </button>
               <button
-                onClick={() => setActiveTab('settings')}
+                onClick={() => {
+                  setActiveTab('settings');
+                  window.history.pushState(null, '', `#mis-suscripciones`);
+                }}
                 className={`px-6 py-3 text-sm font-medium ${
                   activeTab === 'settings'
                     ? 'border-b-2 border-blue-500 text-blue-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Configuración
+                Mis Suscripciones
               </button>
             </nav>
           </div>
