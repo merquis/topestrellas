@@ -317,7 +317,7 @@ export async function GET(request: NextRequest) {
           
           activities.unshift({ // Añadir al principio para que sea lo primero que vea
             icon: '🎉',
-            message: `¡Genial! Ya estás listo para recibir tus primeras reseñas en ${businessName}. <strong>Imprime el código QR en tamaño 9cm de ancho x 13cm de alto</strong> y colócalo en un lugar visible.\n\n💡 CONSEJO PRO: Dile a tus empleados que informen a cada cliente que al escanear el código QR obtendrá un <strong>regalo garantizado</strong>. Los clientes por sí solos no toman acción, pero cuando se les dice que hay un regalo, esto aumenta las reseñas un <strong>75% más</strong>.`,
+            message: `¡Genial! Ya estás listo para recibir tus primeras reseñas en ${businessName}. <strong>Imprime el código QR en tamaño 9cm de ancho x 13cm de alto</strong> y colócalo en cada mesa o donde estime conveniente.<br><br>💡 CONSEJO PRO: Dile a tus empleados que informen a cada cliente que al escanear el código QR obtendrá un <strong>regalo garantizado</strong>. Los clientes por sí solos no toman acción, pero cuando se les dice que hay un regalo, esto aumenta las reseñas un <strong>75% más</strong>.`,
             time: 'Completar configuración',
             type: 'qr_print_instructions',
             priority: 'medium',
