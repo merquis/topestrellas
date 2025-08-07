@@ -491,20 +491,23 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                       </div>
                       <div className="mt-3 ml-14">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          💰 Coste real del premio
+                          💰 Tu coste real (no precio de venta)
                         </label>
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
                             value={formatCostValue(prize.realCost)}
                             onChange={(e) => handleCostInput(index, e.target.value)}
-                            placeholder="0,00"
+                            placeholder="0,50"
                             className="w-24 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             pattern="[0-9]+([,][0-9]{1,2})?"
-                            title="Formato: 0,00 (usar coma para decimales)"
+                            title="Formato: 0,50 (usar coma para decimales)"
                           />
                           <span className="text-sm text-gray-600">€</span>
                         </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Ej: Mojito vale 8€ → tu coste: 0,50€
+                        </p>
                       </div>
                       {index < 3 && (
                         <p className="text-xs text-orange-700 mt-2 ml-14">
