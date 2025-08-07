@@ -101,6 +101,32 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     loadRecentActivities();
   }, [user]);
 
+  // Listener global para detectar clics en cualquier parte cuando hay problemas de premios
+  useEffect(() => {
+    if (!hasPrizesIssue) return;
+
+    const handleGlobalClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Verificar si el clic fue en el botón "Configurar Premios" o sus elementos hijos
+      const isConfigurePrizesButton = target.closest('a[href*="edit-business"][href*="#premios"]');
+      
+      if (!isConfigurePrizesButton) {
+        // Si no es el botón de configurar premios, activar el overlay
+        event.preventDefault();
+        event.stopPropagation();
+        setUserTriedToNavigate(true);
+      }
+    };
+
+    // Añadir el listener con capture para interceptar antes que otros handlers
+    document.addEventListener('click', handleGlobalClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleGlobalClick, true);
+    };
+  }, [hasPrizesIssue]);
+
   // Verificar si hay actividades de premios no configurados
   useEffect(() => {
     const prizesActivity = recentActivities.find(activity => 
