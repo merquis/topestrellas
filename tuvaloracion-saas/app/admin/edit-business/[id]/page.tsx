@@ -84,6 +84,14 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           return { name: '', realCost: 0 };
         });
 
+        // Inicializar los valores de input de coste
+        const initialCostValues = prizes.map(prize => {
+          if (prize.realCost === 0) return '';
+          if (prize.realCost % 1 === 0) return prize.realCost.toString();
+          return prize.realCost.toFixed(2).replace('.', ',');
+        });
+        setCostInputValues(initialCostValues);
+
         setFormData({
           subdomain: business.subdomain,
           name: business.name,
@@ -523,7 +531,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
-                            value={formatCostValue(prize.realCost)}
+                            value={costInputValues[index] || ''}
                             onChange={(e) => handleCostInput(index, e.target.value)}
                             placeholder="0,50"
                             className="w-24 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
