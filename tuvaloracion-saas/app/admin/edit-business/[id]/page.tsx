@@ -204,14 +204,34 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
       return;
     }
     
-    // Permitir escribir tanto punto como coma, pero convertir internamente
-    const cleanValue = sanitizedValue.replace(',', '.');
-    const numericValue = parseFloat(cleanValue) || 0;
+    // Permitir valores que empiecen con 0 (como 0,80)
+    // No usar parseFloat directamente porque elimina los ceros iniciales
+    let cleanValue = sanitizedValue;
     
-    // Limitar a 2 decimales
-    const roundedValue = Math.round(numericValue * 100) / 100;
+    // Reemplazar coma por punto para el cálculo interno
+    const normalizedValue = cleanValue.replace(',', '.');
     
-    handlePrizeChange(index, 'realCost', roundedValue);
+    // Validar que sea un número válido
+    if (!/^\d*\.?\d*$/.test(normalizedValue)) {
+      return; // No actualizar si no es un formato válido
+    }
+    
+    // Convertir a número para validaciones
+    const numericValue = parseFloat(normalizedValue);
+    
+    // Si es NaN o negativo, no actualizar
+    if (isNaN(numericValue) || numericValue < 0) {
+      return;
+    }
+    
+    // Limitar a 2 decimales máximo
+    const decimalParts = normalizedValue.split('.');
+    if (decimalParts[1] && decimalParts[1].length > 2) {
+      return; // No permitir más de 2 decimales
+    }
+    
+    // Guardar el valor numérico
+    handlePrizeChange(index, 'realCost', numericValue);
   };
 
   // Handler para cuando se selecciona un lugar con autocompletado
