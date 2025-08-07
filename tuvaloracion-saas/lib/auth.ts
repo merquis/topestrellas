@@ -33,7 +33,7 @@ export const authenticateUser = async (email: string, password: string): Promise
 export const checkAuth = (): AuthUser | null => {
   if (typeof window === 'undefined') return null;
   
-  const authData = sessionStorage.getItem('authUser');
+  const authData = localStorage.getItem('authUser');
   if (!authData) return null;
   
   try {
@@ -45,12 +45,12 @@ export const checkAuth = (): AuthUser | null => {
 
 export const saveAuth = (user: AuthUser) => {
   if (typeof window !== 'undefined') {
-    sessionStorage.setItem('authUser', JSON.stringify(user));
+    localStorage.setItem('authUser', JSON.stringify(user));
   }
 };
 
 export const clearAuth = () => {
   if (typeof window !== 'undefined') {
-    sessionStorage.removeItem('authUser');
+    localStorage.removeItem('authUser');
   }
 };
