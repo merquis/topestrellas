@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import StatsCard from '@/components/admin/StatsCard';
 import { AuthUser } from '@/lib/auth';
@@ -37,6 +37,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     inactivePercentage: 0
   });
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [showPrizesSpotlight, setShowPrizesSpotlight] = useState(false);
+  const recentActivityRef = useRef<HTMLDivElement>(null);
 
   // Cargar estadísticas cuando cambia el negocio seleccionado o el usuario
   useEffect(() => {
@@ -96,6 +98,20 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
   useEffect(() => {
     loadRecentActivities();
   }, [user]);
+
+  // Verificar si hay actividades de premios no configurados y activar spotlight
+  useEffect(() => {
+    const prizesActivity = recentActivities.find(activity => 
+      activity.type === 'prizes_not_configured' && 
+      activity.priority === 'high'
+    );
+    
+    if (prizesActivity && user.role === 'admin') {
+      setShowPrizesSpotlight(true);
+    } else {
+      setShowPrizesSpotlight(false);
+    }
+  }, [recentActivities, user.role]);
 
   const loadBusinesses = async () => {
     setLoading(true);
@@ -246,7 +262,12 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       {/* Recent Activity & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Recent Activity */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+        <div 
+          ref={recentActivityRef}
+          className={`lg:col-span-2 bg-white rounded-xl shadow-lg p-6 ${
+            showPrizesSpotlight ? 'relative z-50 ring-4 ring-orange-500 ring-opacity-75 shadow-2xl' : ''
+          }`}
+        >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-800">Actividad Reciente</h2>
             {recentActivities.length > 8 && (
@@ -349,6 +370,33 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
           </div>
         </div>
       </div>
+
+      {/* Spotlight Overlay para forzar configuración de premios */}
+      {showPrizesSpotlight && (
+        <div className="fixed inset-0 z-40 pointer-events-none">
+          {/* Overlay oscuro que cubre todo */}
+          <div className="absolute inset-0 bg-black bg-opacity-60 transition-opacity duration-500"></div>
+          
+          {/* Mensaje flotante indicando la acción requerida */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+            <div className="bg-orange-600 text-white px-6 py-4 rounded-xl shadow-2xl max-w-md text-center animate-pulse">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <span className="text-2xl">⚠️</span>
+                <span className="font-bold text-lg">¡Acción Requerida!</span>
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <p className="text-sm mb-3">
+                Debes configurar TODOS los premios de la ruleta para poder usar el panel completo.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs">
+                <span>👇</span>
+                <span>Haz clic en "Configurar Premios" abajo</span>
+                <span>👇</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </>
   );
