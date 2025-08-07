@@ -178,31 +178,35 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     setFormData({ ...formData, prizes: newPrizes });
   };
 
+  // Estado para manejar los valores de input de coste como strings
+  const [costInputValues, setCostInputValues] = useState<string[]>(Array(8).fill(''));
+
   // Función para formatear el valor mostrado con coma decimal
   const formatCostValue = (value: number) => {
-    // Si el valor es 0, mostrar cadena vacía para que se vea el placeholder
-    if (value === 0) {
-      return '';
-    }
     // Si es un número entero, mostrarlo sin decimales
-    if (value % 1 === 0) {
+    if (value % 1 === 0 && value !== 0) {
       return value.toString();
     }
-    // Si tiene decimales, mostrar SIEMPRE con 2 decimales y coma
-    const formatted = value.toFixed(2).replace('.', ',');
-    return formatted;
+    // Si tiene decimales, mostrar con 2 decimales y coma
+    if (value > 0) {
+      const formatted = value.toFixed(2).replace('.', ',');
+      return formatted;
+    }
+    return '';
   };
 
   // Función mejorada para manejar el input de coste con formato español
   const handleCostInput = (index: number, inputValue: string) => {
-    // Si está vacío, establecer a 0 (se mostrará como placeholder)
+    // Actualizar el valor del input inmediatamente
+    const newCostInputValues = [...costInputValues];
+    newCostInputValues[index] = inputValue;
+    setCostInputValues(newCostInputValues);
+    
+    // Si está vacío, establecer a 0
     if (inputValue === '') {
       handlePrizeChange(index, 'realCost', 0);
       return;
     }
-    
-    // NO sanitizar el input aquí, trabajar con el valor original
-    // para permitir que el usuario escriba libremente
     
     // Reemplazar coma por punto para el cálculo interno
     const normalizedValue = inputValue.replace(',', '.');
@@ -211,8 +215,11 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     // Esto permite: "0", "0.", "0.8", "0.80", "10", "10.5", etc.
     const regex = /^\d*\.?\d{0,2}$/;
     
-    // Si no cumple el formato, no actualizar
+    // Si no cumple el formato, revertir el cambio
     if (!regex.test(normalizedValue)) {
+      // Revertir al valor anterior
+      newCostInputValues[index] = costInputValues[index];
+      setCostInputValues(newCostInputValues);
       return;
     }
     
