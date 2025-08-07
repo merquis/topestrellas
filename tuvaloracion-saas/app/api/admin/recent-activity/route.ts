@@ -317,7 +317,7 @@ export async function GET(request: NextRequest) {
           
           activities.unshift({ // Añadir al principio para que sea lo primero que vea
             icon: '🎉',
-            message: `¡Genial! Ya estás listo para recibir tus primeras reseñas en ${businessName}. Imprime el código QR en tamaño 9cm de ancho x 13cm de alto y colócalo en un lugar visible. 💡 CONSEJO PRO: Informa a tus empleados sobre el QR y los premios - esto aumenta las reseñas un 340% más rápido`,
+            message: `¡Genial! Ya estás listo para recibir tus primeras reseñas en ${businessName}. Imprime el código QR en tamaño 9cm de ancho x 13cm de alto y colócalo en un lugar visible. 💡 CONSEJO PRO: Informa a tus empleados sobre el QR y los premios - esto aumenta las reseñas un 75% más`,
             time: '¡Último paso!',
             type: 'qr_print_instructions',
             priority: 'medium',
