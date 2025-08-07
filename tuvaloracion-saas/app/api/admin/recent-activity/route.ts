@@ -311,6 +311,20 @@ export async function GET(request: NextRequest) {
             businessName: businessName,
             actionUrl: '/admin/my-business'
           });
+        } else if (user && user.firstPrizesConfigured && user.qrDownloadPrompted && !user.qrPrintInstructionsShown) {
+          // 7. NUEVA FUNCIONALIDAD: Mostrar instrucciones de impresión después de descargar el QR
+          const businessName = business.name || 'tu negocio';
+          
+          activities.unshift({ // Añadir al principio para que sea lo primero que vea
+            icon: '🎉',
+            message: `¡Genial! Ya estás listo para recibir tus primeras reseñas en ${businessName}. Imprime el código QR en tamaño 9cm de ancho x 13cm de alto y colócalo en un lugar visible. 💡 CONSEJO PRO: Informa a tus empleados sobre el QR y los premios - esto aumenta las reseñas un 340% más rápido`,
+            time: '¡Último paso!',
+            type: 'qr_print_instructions',
+            priority: 'medium',
+            createdAt: new Date(),
+            businessId: business._id.toString(),
+            businessName: businessName
+          });
         }
       }
     }

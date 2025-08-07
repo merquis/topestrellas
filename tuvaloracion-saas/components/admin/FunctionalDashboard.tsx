@@ -110,9 +110,9 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     const handleGlobalClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-      // Verificar si el clic fue en el botón "Configurar Premios" o "Descargar QR"
+      // Verificar si el clic fue en el botón "Configurar Premios" o "Descargar QR Irresistible"
       const isConfigurePrizesButton = target.closest('a[href*="edit-business"][href*="#premios"]');
-      const isDownloadQRButton = target.closest('a[href*="my-business"]');
+      const isDownloadQRButton = target.closest('button') && target.closest('button')?.textContent?.includes('Descargar QR Irresistible');
       
       if (!isConfigurePrizesButton && !isDownloadQRButton) {
         // Si no es ninguno de los botones permitidos, activar el overlay
@@ -383,26 +383,97 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
                       </div>
                     )}
 
-                    {/* Enlace especial para descargar código QR */}
-                    {activity.type === 'qr_download_needed' && activity.actionUrl && (
+                    {/* Botón especial para descargar código QR Irresistible directamente */}
+                    {activity.type === 'qr_download_needed' && activity.businessName && (
                       <div className="mt-4">
-                        <a
-                          href={activity.actionUrl}
-                          onClick={() => {
-                            // Marcar como visitado cuando hace clic
-                            fetch('/api/admin/mark-qr-prompted', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ userEmail: user.email })
-                            });
+                        <button
+                          onClick={async () => {
+                            try {
+                              // Marcar como visitado
+                              await fetch('/api/admin/mark-qr-prompted', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userEmail: user.email })
+                              });
+
+                              // Descargar QR Irresistible directamente
+                              const businessName = activity.businessName;
+                              const subdomain = selectedBusiness?.subdomain || businesses.find((b: any) => b._id === activity.businessId)?.subdomain;
+                              
+                              if (subdomain) {
+                                const url = `https://${subdomain}.tuvaloracion.com`;
+                                
+                                const response = await fetch('/api/qr-designer', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({
+                                    businessName,
+                                    url,
+                                    template: 'restaurantes-01',
+                                    dpi: 300
+                                  }),
+                                });
+
+                                if (response.ok) {
+                                  const blob = await response.blob();
+                                  const downloadUrl = URL.createObjectURL(blob);
+                                  
+                                  const link = document.createElement('a');
+                                  link.href = downloadUrl;
+                                  link.download = `QR-${businessName}-irresistible.png`;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                  
+                                  URL.revokeObjectURL(downloadUrl);
+                                  
+                                  // Recargar actividades para ocultar este mensaje
+                                  loadRecentActivities();
+                                } else {
+                                  console.error('Error downloading QR');
+                                }
+                              }
+                            } catch (error) {
+                              console.error('Error:', error);
+                            }
                           }}
-                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-lg font-bold rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/50 border-2 border-blue-400"
+                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-lg font-bold rounded-2xl hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50 border-2 border-orange-400"
                           style={{ pointerEvents: 'auto' }}
                         >
-                          <span className="text-2xl">📱</span>
-                          <span>Descargar Código QR</span>
-                          <span className="text-xl">→</span>
-                        </a>
+                          <span className="text-2xl">🎨</span>
+                          <span>Descargar QR Irresistible</span>
+                          <span className="text-xl">↓</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Mensaje de instrucciones de impresión */}
+                    {activity.type === 'qr_print_instructions' && (
+                      <div className="mt-4">
+                        <button
+                          onClick={async () => {
+                            try {
+                              // Marcar como visto
+                              await fetch('/api/admin/mark-qr-instructions-shown', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userEmail: user.email })
+                              });
+                              
+                              // Recargar actividades para ocultar este mensaje
+                              loadRecentActivities();
+                            } catch (error) {
+                              console.error('Error:', error);
+                            }
+                          }}
+                          className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg font-bold rounded-2xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-green-500/50 border-2 border-green-400"
+                          style={{ pointerEvents: 'auto' }}
+                        >
+                          <span className="text-2xl">✅</span>
+                          <span>¡Entendido!</span>
+                        </button>
                       </div>
                     )}
                   </div>
