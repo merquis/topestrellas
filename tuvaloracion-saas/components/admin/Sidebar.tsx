@@ -40,6 +40,12 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       show: user.role === 'admin'
     },
     {
+      title: 'Mis Suscripciones',
+      icon: '💳',
+      href: '/admin/subscriptions',
+      show: user.role === 'admin' || user.role === 'super_admin'
+    },
+    {
       title: 'Opiniones',
       icon: '⭐',
       href: '/admin/opinions',
