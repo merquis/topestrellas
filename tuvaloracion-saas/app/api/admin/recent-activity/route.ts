@@ -307,7 +307,7 @@ export async function GET(request: NextRequest) {
           
           activities.unshift({ // Añadir al principio para que sea lo primero que vea
             icon: '📱',
-            message: `¡Excelente! Ya tienes configurados los premios en ${businessName}. Ahora descarga el código QR para que tus clientes puedan dejar reseñas y ganar premios`,
+            message: `¡Excelente! Ya tienes configurados los premios en ${businessName}. Ahora <strong>descarga el código QR</strong> para que tus clientes puedan dejar reseñas y ganar premios`,
             time: 'Siguiente paso',
             type: 'qr_download_needed',
             priority: 'high',

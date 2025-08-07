@@ -46,6 +46,8 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
   const [hasQRIssue, setHasQRIssue] = useState(false);
   const [showHelpSpotlight, setShowHelpSpotlight] = useState(false);
   const [hasHelpIssue, setHasHelpIssue] = useState(false);
+  const [showPrintInstructionsSpotlight, setShowPrintInstructionsSpotlight] = useState(false);
+  const [hasPrintInstructionsIssue, setHasPrintInstructionsIssue] = useState(false);
   const [userTriedToNavigate, setUserTriedToNavigate] = useState(false);
   const recentActivityRef = useRef<HTMLDivElement>(null);
 
@@ -108,18 +110,19 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     loadRecentActivities();
   }, [user]);
 
-  // Listener global para detectar clics en cualquier parte cuando hay problemas de premios, QR o ayuda
+  // Listener global para detectar clics en cualquier parte cuando hay problemas de premios, QR, instrucciones o ayuda
   useEffect(() => {
-    if (!hasPrizesIssue && !hasQRIssue && !hasHelpIssue) return;
+    if (!hasPrizesIssue && !hasQRIssue && !hasPrintInstructionsIssue && !hasHelpIssue) return;
 
     const handleGlobalClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
       const isConfigurePrizesButton = target.closest('a[href*="edit-business"][href*="#premios"]');
       const isDownloadQRButton = target.closest('button')?.textContent?.includes('Descargar QR Irresistible');
+      const isUnderstoodButton = target.closest('button')?.textContent?.includes('¡Entendido!');
       const isHelpButton = target.closest('button')?.textContent?.includes('Ver Centro de Ayuda');
 
-      if (!isConfigurePrizesButton && !isDownloadQRButton && !isHelpButton) {
+      if (!isConfigurePrizesButton && !isDownloadQRButton && !isUnderstoodButton && !isHelpButton) {
         event.preventDefault();
         event.stopPropagation();
         setUserTriedToNavigate(true);
@@ -131,9 +134,9 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     return () => {
       document.removeEventListener('click', handleGlobalClick, true);
     };
-  }, [hasPrizesIssue, hasQRIssue, hasHelpIssue]);
+  }, [hasPrizesIssue, hasQRIssue, hasPrintInstructionsIssue, hasHelpIssue]);
 
-  // Verificar si hay actividades de premios no configurados o QR no descargado
+  // Verificar si hay actividades de premios no configurados, QR no descargado, instrucciones de impresión o ayuda
   useEffect(() => {
     const prizesActivity = recentActivities.find(activity => 
       activity.type === 'prizes_not_configured' && 
@@ -145,17 +148,24 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       activity.priority === 'high'
     );
 
+    const printInstructionsActivity = recentActivities.find(activity =>
+      activity.type === 'qr_print_instructions' &&
+      activity.priority === 'medium'
+    );
+
     const helpActivity = recentActivities.find(activity =>
       activity.type === 'exploration_suggestion'
     );
 
     // Si no hay actividades críticas, limpiar todos los estados
-    if (!prizesActivity && !qrActivity && !helpActivity) {
+    if (!prizesActivity && !qrActivity && !printInstructionsActivity && !helpActivity) {
       setHasPrizesIssue(false);
       setHasQRIssue(false);
+      setHasPrintInstructionsIssue(false);
       setHasHelpIssue(false);
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(false);
+      setShowPrintInstructionsSpotlight(false);
       setShowHelpSpotlight(false);
       setUserTriedToNavigate(false);
       return;
@@ -164,25 +174,41 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     if (prizesActivity && user.role === 'admin') {
       setHasPrizesIssue(true);
       setHasQRIssue(false);
+      setHasPrintInstructionsIssue(false);
       setHasHelpIssue(false);
       // Solo mostrar spotlight si el usuario ya intentó navegar
       setShowPrizesSpotlight(userTriedToNavigate);
       setShowQRSpotlight(false);
+      setShowPrintInstructionsSpotlight(false);
       setShowHelpSpotlight(false);
     } else if (qrActivity && user.role === 'admin') {
       setHasPrizesIssue(false);
       setHasQRIssue(true);
+      setHasPrintInstructionsIssue(false);
       setHasHelpIssue(false);
       // Solo mostrar spotlight si el usuario ya intentó navegar
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(userTriedToNavigate);
+      setShowPrintInstructionsSpotlight(false);
+      setShowHelpSpotlight(false);
+    } else if (printInstructionsActivity && user.role === 'admin') {
+      setHasPrizesIssue(false);
+      setHasQRIssue(false);
+      setHasPrintInstructionsIssue(true);
+      setHasHelpIssue(false);
+      // Solo mostrar spotlight si el usuario ya intentó navegar
+      setShowPrizesSpotlight(false);
+      setShowQRSpotlight(false);
+      setShowPrintInstructionsSpotlight(userTriedToNavigate);
       setShowHelpSpotlight(false);
     } else if (helpActivity) {
       setHasPrizesIssue(false);
       setHasQRIssue(false);
+      setHasPrintInstructionsIssue(false);
       setHasHelpIssue(true);
       setShowPrizesSpotlight(false);
       setShowQRSpotlight(false);
+      setShowPrintInstructionsSpotlight(false);
       setShowHelpSpotlight(userTriedToNavigate);
     }
   }, [recentActivities, user.role, userTriedToNavigate]);
@@ -286,7 +312,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
 
   // Función para interceptar navegación cuando hay problemas
   const handleNavigationAttempt = (callback: () => void) => {
-    if (hasPrizesIssue || hasQRIssue || hasHelpIssue) {
+    if (hasPrizesIssue || hasQRIssue || hasPrintInstructionsIssue || hasHelpIssue) {
       setUserTriedToNavigate(true);
       return;
     }
@@ -296,7 +322,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
   return (
     <>
       {/* Overlay global que bloquea toda interacción */}
-      {(showPrizesSpotlight || showQRSpotlight || showHelpSpotlight) && (
+      {(showPrizesSpotlight || showQRSpotlight || showPrintInstructionsSpotlight || showHelpSpotlight) && (
         <div className="fixed inset-0 z-40 bg-black bg-opacity-80 pointer-events-auto"></div>
       )}
 
