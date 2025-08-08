@@ -90,7 +90,9 @@ export default function SubscriptionsPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'stripe' | null>(null);
+  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [creatingPayment, setCreatingPayment] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const router = useRouter();
 
@@ -190,41 +192,45 @@ export default function SubscriptionsPage() {
     }
   };
 
-  const processPayment = async () => {
-    if (!selectedSubscription || !selectedPlan || !paymentMethod) return;
+  const handleStripePayment = async () => {
+    if (!selectedSubscription || !selectedPlan) return;
 
-    setProcessingPayment(true);
+    setCreatingPayment(true);
+    setToast(null);
+
     try {
-      const response = await fetch('/api/admin/subscriptions/upgrade', {
+      const authData = localStorage.getItem('authUser');
+      const token = authData ? JSON.parse(authData).token : null;
+
+      const response = await fetch('/api/admin/subscriptions/create-payment-intent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           businessId: selectedSubscription.businessId,
           plan: selectedPlan,
-          paymentMethod
-        })
+        }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Redirigir a la pasarela de pago correspondiente
-        if (paymentMethod === 'paypal' && data.paypalUrl) {
-          window.location.href = data.paypalUrl;
-        } else if (paymentMethod === 'stripe' && data.stripeUrl) {
-          window.location.href = data.stripeUrl;
-        } else {
-          setToast({ message: 'Suscripción actualizada correctamente', type: 'success' });
-          setShowPaymentModal(false);
-          loadSubscriptions();
-        }
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al preparar el pago con Stripe');
+      }
+
+      if (data.clientSecret) {
+        setStripeClientSecret(data.clientSecret);
+        setPaymentMethod('stripe'); // Mostrar el formulario de Stripe
       } else {
-        throw new Error('Error al procesar el pago');
+        throw new Error('No se pudo obtener el client secret de Stripe.');
       }
     } catch (error) {
-      setToast({ message: 'Error al procesar el pago', type: 'error' });
+      const errorMessage = error instanceof Error ? error.message : 'Un error desconocido ocurrió';
+      setToast({ message: errorMessage, type: 'error' });
     } finally {
-      setProcessingPayment(false);
+      setCreatingPayment(false);
     }
   };
 
@@ -580,22 +586,25 @@ export default function SubscriptionsPage() {
       )}
 
       {/* Payment Modal - Stripe Elements Integration */}
-      {showPaymentModal && selectedSubscription && selectedPlan && paymentMethod === 'stripe' && (
+      {showPaymentModal && selectedSubscription && selectedPlan && paymentMethod === 'stripe' && stripeClientSecret && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="my-8">
             <StripePaymentForm
               businessId={selectedSubscription.businessId}
               businessName={selectedSubscription.businessName}
               plan={selectedPlan}
+              clientSecret={stripeClientSecret}
               onSuccess={() => {
                 setShowPaymentModal(false);
                 setPaymentMethod(null);
+                setStripeClientSecret(null);
                 setToast({ message: '¡Pago procesado con éxito!', type: 'success' });
                 loadSubscriptions();
               }}
               onCancel={() => {
                 setShowPaymentModal(false);
                 setPaymentMethod(null);
+                setStripeClientSecret(null);
               }}
             />
           </div>
@@ -626,21 +635,19 @@ export default function SubscriptionsPage() {
             </div>
 
             <div className="space-y-3 mb-6">
+              {/* Botón de PayPal (funcionalidad futura) */}
               <button
-                onClick={() => {
-                  setPaymentMethod('paypal');
-                  processPayment();
-                }}
-                className="w-full p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all"
+                disabled={true} // Deshabilitado por ahora
+                className="w-full p-4 rounded-xl border-2 border-gray-200 transition-all cursor-not-allowed opacity-50"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
                       <span className="text-2xl">💳</span>
                     </div>
                     <div className="text-left">
                       <p className="font-bold text-gray-900">PayPal</p>
-                      <p className="text-xs text-gray-500">Pago seguro con PayPal</p>
+                      <p className="text-xs text-gray-500">Próximamente</p>
                     </div>
                   </div>
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -650,8 +657,9 @@ export default function SubscriptionsPage() {
               </button>
 
               <button
-                onClick={() => setPaymentMethod('stripe')}
-                className="w-full p-4 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all"
+                onClick={handleStripePayment}
+                disabled={creatingPayment}
+                className="w-full p-4 rounded-xl border-2 border-purple-500 bg-purple-50 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -663,9 +671,13 @@ export default function SubscriptionsPage() {
                       <p className="text-xs text-gray-500">Pago seguro con Stripe</p>
                     </div>
                   </div>
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  {creatingPayment ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-700"></div>
+                  ) : (
+                    <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
                 </div>
               </button>
             </div>

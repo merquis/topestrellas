@@ -19,54 +19,21 @@ interface PaymentFormProps {
   businessId: string;
   businessName: string;
   plan: 'basic' | 'premium';
+  clientSecret: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-function CheckoutForm({ businessId, businessName, plan, onSuccess, onCancel }: PaymentFormProps) {
+function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess, onCancel }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [clientSecret, setClientSecret] = useState('');
 
   const PLAN_PRICES = {
     basic: { name: 'Plan Básico', price: 29 },
     premium: { name: 'Plan Premium', price: 59 }
   };
-
-  useEffect(() => {
-    // Crear el Payment Intent en el backend
-    console.log('Creando Payment Intent para:', { businessId, plan });
-    
-    fetch('/api/admin/subscriptions/create-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        businessId,
-        plan,
-      }),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        console.log('Respuesta del servidor:', data);
-        
-        if (!res.ok) {
-          throw new Error(data.error || 'Error al crear el pago');
-        }
-        
-        if (data.clientSecret) {
-          setClientSecret(data.clientSecret);
-        } else {
-          setMessage('Error: No se recibió el client secret');
-          console.error('No client secret in response:', data);
-        }
-      })
-      .catch((error) => {
-        console.error('Error al crear Payment Intent:', error);
-        setMessage(error.message || 'Error de conexión');
-      });
-  }, [businessId, plan]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,7 +166,7 @@ function CheckoutForm({ businessId, businessName, plan, onSuccess, onCancel }: P
   );
 }
 
-export default function StripePaymentForm(props: PaymentFormProps) {
+export default function StripePaymentForm({ clientSecret, ...props }: PaymentFormProps) {
   const appearance = {
     theme: 'stripe' as const,
     variables: {
@@ -213,9 +180,24 @@ export default function StripePaymentForm(props: PaymentFormProps) {
     },
   };
 
+  const options = {
+    clientSecret,
+    appearance,
+  };
+
+  if (!clientSecret || !stripePromise) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="bg-white p-8 rounded-2xl shadow-xl flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Elements stripe={stripePromise} options={{ appearance }}>
-      <CheckoutForm {...props} />
+    <Elements stripe={stripePromise} options={options}>
+      <CheckoutForm {...props} clientSecret={clientSecret} />
     </Elements>
   );
 }
