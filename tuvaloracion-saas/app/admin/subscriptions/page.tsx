@@ -1324,7 +1324,7 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
 
       {/* Upgrade Plan Modal */}
       {showUpgradeModal && selectedSubscription && (
-<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-5xl w-full p-6 my-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
               Elige tu nuevo plan
@@ -1527,7 +1527,7 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
 
       {/* Edit Plan Modal */}
       {showEditPlanModal && editingPlan && (
-<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Editar Plan</h3>
             <p className="text-sm text-gray-600 mb-4">Funcionalidad de edición próximamente.</p>
