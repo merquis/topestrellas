@@ -61,11 +61,11 @@ export async function GET(request: NextRequest) {
         businessId: business._id.toString(),
         businessName: business.name,
         subdomain: business.subdomain,
-        plan: business.plan || 'trial',
+        plan: business.subscription?.plan || 'trial',
         status: status,
         startDate: business.subscription?.startDate || createdAt,
         endDate: endDate,
-        trialEndsAt: business.plan === 'trial' ? trialEndsAt : undefined,
+        trialEndsAt: business.subscription?.plan === 'trial' ? trialEndsAt : undefined,
         autoRenew: business.subscription?.autoRenew || false,
         paymentMethod: business.subscription?.paymentMethod || null,
         lastPayment: business.subscription?.lastPayment || null
