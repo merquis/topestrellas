@@ -7,6 +7,7 @@ import FunctionalDashboard from '@/components/admin/FunctionalDashboard';
 import { AuthUser, authenticateUser, checkAuth, saveAuth } from '@/lib/auth';
 import { GooglePlacesUltraSeparated } from '@/components/GooglePlacesUltraSeparated';
 import { GooglePlaceData } from '@/lib/types';
+import PlanCard from '@/components/PlanCard';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -668,134 +669,72 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {subscriptionPlans.map((plan) => {
-                      const isSelected = selectedPlan === plan.key;
-                      return (
-                        <div
-                          key={plan.key}
-                          className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                            isSelected
-                              ? 'border-green-500 bg-green-50 shadow-lg'
-                              : 'border-gray-200 hover:border-green-300'
-                          }`}
-                          onClick={() => setSelectedPlan(plan.key)}
-                        >
-                          {isSelected && (
-                            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                                Seleccionado
-                              </span>
+                    {subscriptionPlans.length > 0 ? (
+                      subscriptionPlans.map((plan) => {
+                        const isSelected = selectedPlan === plan.key;
+                        const isGreen = plan.color === 'green';
+                        const isBlue = plan.color === 'blue';
+                        const isPurple = plan.color === 'purple';
+                        
+                        return (
+                          <div
+                            key={plan.key}
+                            className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                              isSelected
+                                ? isGreen 
+                                  ? 'border-green-500 bg-green-50 shadow-lg'
+                                  : isBlue
+                                  ? 'border-blue-500 bg-blue-50 shadow-lg'
+                                  : 'border-purple-500 bg-purple-50 shadow-lg'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => setSelectedPlan(plan.key)}
+                          >
+                            {isSelected && (
+                              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                                <span className={`text-white px-3 py-1 rounded-full text-sm font-medium ${
+                                  isGreen ? 'bg-green-500' : isBlue ? 'bg-blue-500' : 'bg-purple-500'
+                                }`}>
+                                  Seleccionado
+                                </span>
+                              </div>
+                            )}
+                            {plan.popular && (
+                              <div className="absolute -top-3 right-4">
+                                <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                  MÁS POPULAR
+                                </span>
+                              </div>
+                            )}
+                            <div className="text-center">
+                              <div className="text-4xl mb-4">{plan.icon || '📦'}</div>
+                              <h4 className="text-lg font-bold text-gray-900 mb-2">{plan.name}</h4>
+                              <div className={`text-3xl font-bold mb-2 ${
+                                isGreen ? 'text-green-600' : isBlue ? 'text-blue-600' : 'text-purple-600'
+                              }`}>
+                                {plan.recurringPrice > 0 ? `€${plan.recurringPrice / 100}` : 'GRATIS'}
+                              </div>
+                              <p className="text-sm text-gray-500 mb-4">
+                                {plan.recurringPrice > 0 ? `por ${plan.interval === 'month' ? 'mes' : 'año'}` : `${plan.trialDays} días de prueba`}
+                              </p>
+                              <ul className="text-sm text-gray-600 space-y-2 text-left">
+                                {plan.features?.map((feature: string, index: number) => (
+                                  <li key={index} className="flex items-center gap-2">
+                                    <span className={isGreen ? 'text-green-500' : isBlue ? 'text-blue-500' : 'text-purple-500'}>✓</span>
+                                    <span>{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                          )}
-                          <div className="text-center">
-                            <div className="text-4xl mb-4">{plan.icon || '📦'}</div>
-                            <h4 className="text-lg font-bold text-gray-900 mb-2">{plan.name}</h4>
-                            <div className="text-3xl font-bold text-green-600 mb-2">
-                              {plan.recurringPrice > 0 ? `€${plan.recurringPrice / 100}` : 'GRATIS'}
-                            </div>
-                            <p className="text-sm text-gray-500 mb-4">
-                              {plan.recurringPrice > 0 ? `por ${plan.interval}` : `${plan.trialDays} días de prueba`}
-                            </p>
-                            <ul className="text-sm text-gray-600 space-y-2 text-left">
-                              {plan.features?.map((feature: string, index: number) => (
-                                <li key={index} className="flex items-center gap-2">
-                                  <span className="text-green-500">✓</span>
-                                  <span>{feature}</span>
-                                </li>
-                              ))}
-                            </ul>
                           </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Plan Básico */}
-                    <div 
-                      className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                        selectedPlan === 'basic' 
-                          ? 'border-blue-500 bg-blue-50 shadow-lg' 
-                          : 'border-gray-200 hover:border-blue-300'
-                      }`}
-                      onClick={() => setSelectedPlan('basic')}
-                    >
-                      {selectedPlan === 'basic' && (
-                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                            Seleccionado
-                          </span>
-                        </div>
-                      )}
-                      
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">🚀</div>
-                        <h4 className="text-lg font-bold text-gray-900 mb-2">Plan Básico</h4>
-                        <div className="text-3xl font-bold text-blue-600 mb-2">€29</div>
-                        <p className="text-sm text-gray-500 mb-4">por mes</p>
-                        
-                        <ul className="text-sm text-gray-600 space-y-2 text-left">
-                          <li className="flex items-center gap-2">
-                            <span className="text-blue-500">✓</span>
-                            <span>Hasta 500 reseñas</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-blue-500">✓</span>
-                            <span>Sistema de premios completo</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-blue-500">✓</span>
-                            <span>Estadísticas avanzadas</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-blue-500">✓</span>
-                            <span>Soporte prioritario</span>
-                          </li>
-                        </ul>
+                        );
+                      })
+                    ) : (
+                      <div className="col-span-3 text-center py-8">
+                        <div className="text-4xl mb-4">⏳</div>
+                        <p className="text-gray-600">Cargando planes disponibles...</p>
                       </div>
-                    </div>
-
-                    {/* Plan Premium */}
-                    <div 
-                      className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                        selectedPlan === 'premium' 
-                          ? 'border-purple-500 bg-purple-50 shadow-lg' 
-                          : 'border-gray-200 hover:border-purple-300'
-                      }`}
-                      onClick={() => setSelectedPlan('premium')}
-                    >
-                      {selectedPlan === 'premium' && (
-                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                          <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                            Seleccionado
-                          </span>
-                        </div>
-                      )}
-                      
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">⭐</div>
-                        <h4 className="text-lg font-bold text-gray-900 mb-2">Plan Premium</h4>
-                        <div className="text-3xl font-bold text-purple-600 mb-2">€59</div>
-                        <p className="text-sm text-gray-500 mb-4">por mes</p>
-                        
-                        <ul className="text-sm text-gray-600 space-y-2 text-left">
-                          <li className="flex items-center gap-2">
-                            <span className="text-purple-500">✓</span>
-                            <span>Reseñas ilimitadas</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-purple-500">✓</span>
-                            <span>Múltiples ubicaciones</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-purple-500">✓</span>
-                            <span>API personalizada</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-purple-500">✓</span>
-                            <span>Soporte 24/7</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
+                    )}
                   </div>
 
                   {registerError && (

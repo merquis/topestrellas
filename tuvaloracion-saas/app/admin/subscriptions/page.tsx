@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import { checkAuth } from '@/lib/auth';
+import PlanCard from '@/components/PlanCard';
 
 // Cargar el componente de Stripe dinámicamente para evitar errores de SSR
 const StripePaymentForm = dynamic(
@@ -691,87 +692,61 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
           {/* Planes de Suscripción */}
           {subscriptionPlans.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-6">
-              {subscriptionPlans.map((plan) => (
-                <div key={plan._id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-                  {/* Header con color del plan */}
-                  <div className={`h-2 bg-gradient-to-r ${
-                    plan.color === 'green' ? 'from-green-400 to-emerald-500' :
-                    plan.color === 'blue' ? 'from-blue-400 to-indigo-500' :
-                    'from-purple-400 to-pink-500'
-                  }`}></div>
-                  
-                  <div className="p-6">
-                    {/* Plan Info */}
-                    <div className="text-center mb-4">
-                      <span className="text-4xl">{plan.icon}</span>
-                      <h3 className="text-2xl font-bold text-gray-900 mt-2">{plan.name}</h3>
-                      <p className="text-gray-600 mt-1">{plan.description}</p>
-                    </div>
-
-                    {/* Precio */}
-                    <div className="text-center mb-6">
-                      <span className="text-4xl font-bold text-gray-900">
-                        €{plan.recurringPrice / 100}
-                      </span>
-                      <span className="text-gray-500">/{plan.interval}</span>
-                    </div>
-
-                    {/* Features */}
-                    <div className="space-y-3 mb-6">
-                      {plan.features.map((feature: string, index: number) => (
-                        <div key={index} className="flex items-start gap-2">
-                          <svg className="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          <span className="text-sm text-gray-600">{feature}</span>
+              {subscriptionPlans.map((plan) => {
+                const planWithDefaults = {
+                  ...plan,
+                  icon: plan.icon || '📦',
+                  color: plan.color || 'blue',
+                  interval: plan.interval || 'month'
+                };
+                
+                return (
+                  <div key={plan._id} className="relative">
+                    <PlanCard
+                      plan={planWithDefaults}
+                      showPrice={true}
+                      actionButton={
+                        <div className="space-y-3">
+                          {/* Metadata */}
+                          <div className="border-t pt-4 space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-500">Estado:</span>
+                              <span className={`font-semibold ${plan.active ? 'text-green-600' : 'text-red-600'}`}>
+                                {plan.active ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </div>
+                            {plan.trialDays > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Periodo de prueba:</span>
+                                <span className="font-semibold">{plan.trialDays} días</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setEditingPlan(plan);
+                                setShowEditPlanModal(true);
+                              }}
+                              className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button
+                              onClick={() => handleDeletePlan(plan._id)}
+                              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="border-t pt-4 space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Estado:</span>
-                        <span className={`font-semibold ${plan.active ? 'text-green-600' : 'text-red-600'}`}>
-                          {plan.active ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </div>
-                      {plan.trialDays > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Periodo de prueba:</span>
-                          <span className="font-semibold">{plan.trialDays} días</span>
-                        </div>
-                      )}
-                      {plan.popular && (
-                        <div className="text-center mt-2">
-                          <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                            MÁS POPULAR
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 mt-6">
-                      <button
-                        onClick={() => {
-                          setEditingPlan(plan);
-                          setShowEditPlanModal(true);
-                        }}
-                        className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button
-                        onClick={() => handleDeletePlan(plan._id)}
-                        className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
-                      >
-                        🗑️ Eliminar
-                      </button>
-                    </div>
+                      }
+                    />
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-lg p-12 text-center">
@@ -1077,78 +1052,69 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
 
       {/* Upgrade Plan Modal */}
       {showUpgradeModal && selectedSubscription && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-5xl w-full p-6 my-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
               Elige tu nuevo plan
             </h3>
-            <div className="grid md:grid-cols-3 gap-6 mt-6">
-              {Object.entries(PLANS).map(([key, plan]: [string, any]) => {
-                const isCurrentPlan = selectedSubscription.plan === key;
-                return (
-                  <div key={key} className={`relative rounded-2xl border-2 ${isCurrentPlan ? 'border-green-500' : (plan.popular ? 'border-purple-500' : 'border-gray-200')} p-6 flex flex-col`}>
-                    {isCurrentPlan && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="bg-green-500 text-white px-4 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                          TU PLAN ACTUAL
-                        </span>
-                      </div>
-                    )}
-                    {plan.popular && !isCurrentPlan && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                          MÁS POPULAR
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex-grow">
-                      <div className="text-center mb-4">
-                        <span className="text-4xl">{plan.icon}</span>
-                        <h3 className="text-xl font-bold text-gray-900 mt-2">{plan.name}</h3>
-                        <div className="mt-4">
-                          <span className="text-4xl font-bold text-gray-900">€{plan.price}</span>
-                          {plan.price > 0 && <span className="text-gray-500">/{plan.duration}</span>}
-                        </div>
-                      </div>
-                      <ul className="space-y-3 mb-6">
-                        {plan.features.map((feature: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <svg className="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            <span className="text-sm text-gray-600">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="mt-auto">
-                      {isCurrentPlan ? (
-                        <button
-                          disabled
-                          className="w-full px-4 py-3 rounded-xl font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
-                        >
-                          Plan Actual
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            setShowUpgradeModal(false);
-                            handleUpgrade(selectedSubscription, key as 'basic' | 'premium');
-                          }}
-                          className={`w-full px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
-                            key === 'basic' 
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
-                              : 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700'
-                          }`}
-                        >
-                          Elegir {plan.name}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            <p className="text-gray-600 text-center mb-6">
+              Selecciona el plan que mejor se adapte a tu negocio
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              {subscriptionPlans.length > 0 ? (
+                subscriptionPlans.map((plan) => {
+                  const isCurrentPlan = selectedSubscription.plan === plan.key;
+                  const planWithDefaults = {
+                    ...plan,
+                    icon: plan.icon || '📦',
+                    color: plan.color || 'blue',
+                    interval: plan.interval || 'month'
+                  };
+                  
+                  return (
+                    <PlanCard
+                      key={plan.key}
+                      plan={planWithDefaults}
+                      isCurrentPlan={isCurrentPlan}
+                      actionButton={
+                        isCurrentPlan ? (
+                          <button
+                            disabled
+                            className="w-full px-4 py-3 rounded-xl font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
+                          >
+                            Plan Actual
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setShowUpgradeModal(false);
+                              setSelectedPlan(plan.key);
+                              setShowPaymentModal(true);
+                            }}
+                            className={`w-full px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                              plan.color === 'blue' 
+                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+                                : plan.color === 'purple'
+                                ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700'
+                                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                            }`}
+                          >
+                            Elegir {plan.name}
+                          </button>
+                        )
+                      }
+                    />
+                  );
+                })
+              ) : (
+                <div className="col-span-3 text-center py-8">
+                  <div className="text-4xl mb-4">⏳</div>
+                  <p className="text-gray-600">Cargando planes disponibles...</p>
+                </div>
+              )}
             </div>
+            
             <div className="text-center mt-6">
               <button
                 onClick={() => setShowUpgradeModal(false)}
