@@ -444,14 +444,14 @@ export default function SubscriptionsPage() {
                   <div key={key} className={`relative rounded-2xl border-2 ${isCurrentPlan ? 'border-green-500' : (plan.popular ? 'border-purple-500' : 'border-gray-200')} p-6 flex flex-col`}>
                     {isCurrentPlan && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="bg-green-500 text-white px-4 py-1 rounded-full text-xs font-bold">
+                        <span className="bg-green-500 text-white px-4 py-1 rounded-full text-xs font-bold whitespace-nowrap">
                           TU PLAN ACTUAL
                         </span>
                       </div>
                     )}
                     {plan.popular && !isCurrentPlan && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold">
+                        <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold whitespace-nowrap">
                           MÁS POPULAR
                         </span>
                       </div>
