@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import { verifyAuth } from '@/lib/auth';
+import { getDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,13 @@ const dbName = 'tuvaloracion';
 
 // Configuración de Stripe
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+
+// Función para obtener precio del plan desde la base de datos
+async function getPlanPrice(planKey: string) {
+  const db = await getDatabase();
+  const plan = await db.collection('subscriptionplans').findOne({ key: planKey, active: true });
+  return plan ? plan.recurringPrice : 0;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -102,7 +110,7 @@ export async function POST(request: NextRequest) {
             'subscription.autoRenew': true,
             'subscription.lastPayment': {
               date: now,
-              amount: pendingPayment.plan === 'basic' ? 29 : 59,
+              amount: pendingPayment.plan === 'basic' ? process.env.STRIPE_PRICE_BASIC : process.env.STRIPE_PRICE_PREMIUM,
               method: pendingPayment.paymentMethod
             },
             ...subscriptionData,
@@ -127,7 +135,7 @@ export async function POST(request: NextRequest) {
         businessId: pendingPayment.businessId,
         userId: user.email,
         plan: pendingPayment.plan,
-        amount: pendingPayment.plan === 'basic' ? 29 : 59,
+        amount: pendingPayment.plan === 'basic' ? process.env.STRIPE_PRICE_BASIC : process.env.STRIPE_PRICE_PREMIUM,
         currency: 'EUR',
         paymentMethod: pendingPayment.paymentMethod,
         status: 'completed',

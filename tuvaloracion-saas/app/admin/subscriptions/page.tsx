@@ -69,7 +69,7 @@ const PLANS = {
   },
   basic: {
     name: 'Plan Básico',
-    price: 29,
+    price: process.env.STRIPE_PRICE_BASIC,
     duration: 'mes',
     color: 'from-blue-400 to-indigo-500',
     icon: '🚀',
@@ -84,7 +84,7 @@ const PLANS = {
   },
   premium: {
     name: 'Plan Premium',
-    price: 59,
+    price: process.env.STRIPE_PRICE_PREMIUM,
     duration: 'mes',
     color: 'from-purple-400 to-pink-500',
     icon: '👑',

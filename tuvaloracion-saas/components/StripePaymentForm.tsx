@@ -30,10 +30,35 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const PLAN_PRICES = {
-    basic: { name: 'Plan Básico', price: 29 },
-    premium: { name: 'Plan Premium', price: 59 }
-  };
+  const [planData, setPlanData] = useState<{name: string, price: number} | null>(null);
+
+  useEffect(() => {
+    // Obtener datos del plan desde la base de datos
+    const fetchPlanData = async () => {
+      try {
+        const response = await fetch('/api/admin/subscription-plans');
+        if (response.ok) {
+          const plans = await response.json();
+          const currentPlan = plans.find((p: any) => p.key === plan);
+          if (currentPlan) {
+            setPlanData({
+              name: currentPlan.name,
+              price: currentPlan.recurringPrice
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching plan data:', error);
+        // Fallback a valores por defecto
+        setPlanData({
+          name: plan === 'basic' ? 'Plan Básico' : 'Plan Premium',
+          price: plan === 'basic' ? 1 : 90
+        });
+      }
+    };
+
+    fetchPlanData();
+  }, [plan]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,10 +103,10 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-2xl">
         <h2 className="text-2xl font-bold mb-2">Completar Suscripción</h2>
         <p className="text-blue-100">
-          Actualizando <strong>{businessName}</strong> al {PLAN_PRICES[plan].name}
+          Actualizando <strong>{businessName}</strong> al {planData?.name || 'Plan'}
         </p>
         <div className="mt-4 flex items-baseline gap-2">
-          <span className="text-4xl font-bold">€{PLAN_PRICES[plan].price}</span>
+          <span className="text-4xl font-bold">€{planData?.price || 0}</span>
           <span className="text-blue-100">/mes</span>
         </div>
       </div>
@@ -143,7 +168,7 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
                     Procesando...
                   </span>
                 ) : (
-                  `Pagar €${PLAN_PRICES[plan].price}/mes`
+                  `Pagar €${planData?.price || 0}/mes`
                 )}
               </button>
             </div>

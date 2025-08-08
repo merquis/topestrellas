@@ -9,8 +9,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 const PLANS = {
-  basic: { price: 2900, name: 'Plan Básico' }, // Precio en céntimos
-  premium: { price: 5900, name: 'Plan Premium' }, // Precio en céntimos
+  basic: { price: process.env.STRIPE_PRICE_BASIC, name: 'Plan Básico' },
+  premium: { price: process.env.STRIPE_PRICE_PREMIUM, name: 'Plan Premium' },
 };
 
 export async function POST(request: Request) {
