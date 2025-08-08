@@ -30,7 +30,7 @@ export function GooglePlacesAutocompleteFocusFixed({
   const [isSelecting, setIsSelecting] = useState(false); // Flag para prevenir pérdida de foco
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const focusTimeoutRef = useRef<NodeJS.Timeout>();
+  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     query,
