@@ -136,7 +136,7 @@ export default function QRIrresistibleButton({
       <button
         onClick={handleDownload}
         disabled={loading}
-        className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-lg font-bold rounded-2xl hover:from-orange-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-yellow-500/50 border-2 border-orange-300"
+        className="relative z-[9999] inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-400 to-yellow-500 text-white text-lg font-bold rounded-2xl hover:from-orange-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-yellow-500/50 border-2 border-orange-300 cursor-pointer"
         style={{ pointerEvents: 'auto' }}
       >
         {loading ? (

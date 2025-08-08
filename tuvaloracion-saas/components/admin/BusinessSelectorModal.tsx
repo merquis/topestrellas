@@ -130,7 +130,7 @@ export default function BusinessSelectorModal({
                 <button
                   key={business._id}
                   onClick={() => handleBusinessSelect(business)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-lg border-2 transition-all hover:bg-gray-50 ${
+                  className={`w-full flex items-center gap-3 p-4 rounded-lg border-2 transition-all hover:bg-gray-50 cursor-pointer ${
                     selectedBusiness?._id === business._id 
                       ? 'border-blue-500 bg-blue-50' 
                       : 'border-gray-200'

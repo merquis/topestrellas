@@ -99,7 +99,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
           </div>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors cursor-pointer"
           >
             {isCollapsed ? '→' : '←'}
           </button>
