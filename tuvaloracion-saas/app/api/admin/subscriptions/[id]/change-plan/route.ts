@@ -94,8 +94,8 @@ export async function POST(
             date: now,
             performedBy: userEmail,
             reason: 'Cambio manual por Super Admin'
-          }
-        }
+          } as any
+        } as any
       }
     );
 
