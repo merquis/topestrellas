@@ -186,14 +186,47 @@ export default function SubscriptionsPage() {
     return diffDays;
   };
 
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando suscripciones...</p>
+  const renderSkeleton = () => (
+    <div className="space-y-6 animate-pulse">
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+          <div className="bg-gray-100 rounded-xl p-4 mt-4">
+            <div className="h-12 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-full mt-3"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6 mt-2"></div>
+          </div>
+          <div className="flex gap-3 mt-4">
+            <div className="h-12 bg-gray-200 rounded-xl flex-1"></div>
+            <div className="h-12 bg-gray-200 rounded-xl flex-1"></div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+          <div className="bg-gray-100 rounded-xl p-4 mt-4">
+            <div className="h-12 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-full mt-3"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6 mt-2"></div>
+          </div>
+          <div className="flex gap-3 mt-4">
+            <div className="h-12 bg-gray-200 rounded-xl flex-1"></div>
+          </div>
         </div>
       </div>
+    </div>
+  );
+
+  if (loading || !user) {
+    return (
+      <AdminLayout user={user}>
+        {renderSkeleton()}
+      </AdminLayout>
     );
   }
 
@@ -370,21 +403,18 @@ export default function SubscriptionsPage() {
         </div>
 
         {/* Empty State */}
-        {subscriptions.length === 0 && (
+        {!loading && subscriptions.length === 0 && (
           <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <div className="text-6xl mb-4">💳</div>
+            <div className="text-6xl mb-4">🚀</div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Cargando suscripciones...
+              Aún no tienes suscripciones activas
             </h3>
-            <p className="text-gray-600 mb-6">
-              Si no aparecen tus negocios, verifica que estés usando el email correcto
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Parece que no tienes ningún negocio con un plan de suscripción. ¡Elige un plan para empezar a disfrutar de todas las ventajas!
             </p>
-            <button
-              onClick={() => loadSubscriptions()}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
-            >
-              Recargar
-            </button>
+            <p className="text-gray-500 text-sm">
+              Si ya tienes una suscripción y no aparece, contacta con soporte.
+            </p>
           </div>
         )}
 
