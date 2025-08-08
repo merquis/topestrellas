@@ -103,7 +103,7 @@ const PLANS = {
 export default function SubscriptionsPage() {
   const [user, setUser] = useState<any>(null);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -135,7 +135,7 @@ export default function SubscriptionsPage() {
   }, [user]);
 
   useEffect(() => {
-    if (user?.role === 'superadmin' || user?.role === 'super_admin') {
+    if (user) {
       fetchPlans();
     }
   }, [user]);
@@ -147,7 +147,7 @@ export default function SubscriptionsPage() {
       const data = await res.json();
       setSubscriptionPlans(data);
     } catch (err) {
-      console.error(err);
+      console.error('Error al cargar los planes:', err);
       setToast({ message: 'Error al cargar los planes', type: 'error' });
     }
   };

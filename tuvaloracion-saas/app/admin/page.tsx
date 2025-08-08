@@ -30,6 +30,7 @@ export default function AdminDashboard() {
   const [businessPlaceId, setBusinessPlaceId] = useState('');
   const [businessPhotoUrl, setBusinessPhotoUrl] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('trial');
+  const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([]);
   const [registerError, setRegisterError] = useState('');
   const [isCreatingBusiness, setIsCreatingBusiness] = useState(false);
   const [tempUserData, setTempUserData] = useState<any>(null);
@@ -51,6 +52,13 @@ export default function AdminDashboard() {
   });
 
   const router = useRouter();
+
+  useEffect(() => {
+    fetch('/api/admin/subscription-plans')
+      .then(res => res.json())
+      .then(data => setSubscriptionPlans(data))
+      .catch(err => console.error('Error al cargar los planes:', err));
+  }, []);
 
   useEffect(() => {
     const authUser = checkAuth();
@@ -652,8 +660,9 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Plan Prueba 7 días gratis */}
-                    <div 
+                    {subscriptionPlans.map((plan) => (
+                      <div
+                        key={plan.key}
                       className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
                         selectedPlan === 'trial' 
                           ? 'border-green-500 bg-green-50 shadow-lg' 
