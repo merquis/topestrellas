@@ -332,6 +332,176 @@ export default function SubscriptionsPage() {
     );
   }
 
+  // Si es super_admin, mostrar solo la gestión de planes
+  if (user?.role === 'super_admin') {
+    return (
+      <AdminLayout user={user}>
+        <div className="space-y-6">
+          {/* Header para Super Admin */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800">🛠️ Gestión de Planes de Suscripción</h1>
+                <p className="text-gray-600 mt-2">
+                  Administra los planes disponibles para todos los negocios
+                </p>
+              </div>
+              <button
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center gap-2"
+              >
+                <span>➕</span> Crear Nuevo Plan
+              </button>
+            </div>
+          </div>
+
+          {/* Planes de Suscripción */}
+          {subscriptionPlans.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-6">
+              {subscriptionPlans.map((plan) => (
+                <div key={plan._id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+                  {/* Header con color del plan */}
+                  <div className={`h-2 bg-gradient-to-r ${
+                    plan.color === 'green' ? 'from-green-400 to-emerald-500' :
+                    plan.color === 'blue' ? 'from-blue-400 to-indigo-500' :
+                    'from-purple-400 to-pink-500'
+                  }`}></div>
+                  
+                  <div className="p-6">
+                    {/* Plan Info */}
+                    <div className="text-center mb-4">
+                      <span className="text-4xl">{plan.icon}</span>
+                      <h3 className="text-2xl font-bold text-gray-900 mt-2">{plan.name}</h3>
+                      <p className="text-gray-600 mt-1">{plan.description}</p>
+                    </div>
+
+                    {/* Precio */}
+                    <div className="text-center mb-6">
+                      <span className="text-4xl font-bold text-gray-900">
+                        €{plan.recurringPrice / 100}
+                      </span>
+                      <span className="text-gray-500">/{plan.interval}</span>
+                    </div>
+
+                    {/* Features */}
+                    <div className="space-y-3 mb-6">
+                      {plan.features.map((feature: string, index: number) => (
+                        <div key={index} className="flex items-start gap-2">
+                          <svg className="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-sm text-gray-600">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="border-t pt-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Estado:</span>
+                        <span className={`font-semibold ${plan.active ? 'text-green-600' : 'text-red-600'}`}>
+                          {plan.active ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
+                      {plan.trialDays > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Periodo de prueba:</span>
+                          <span className="font-semibold">{plan.trialDays} días</span>
+                        </div>
+                      )}
+                      {plan.popular && (
+                        <div className="text-center mt-2">
+                          <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                            MÁS POPULAR
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 mt-6">
+                      <button
+                        onClick={() => {
+                          setEditingPlan(plan);
+                          setShowEditPlanModal(true);
+                        }}
+                        className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+                      >
+                        ✏️ Editar
+                      </button>
+                      <button
+                        className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+                      >
+                        🗑️ Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                No hay planes de suscripción
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Crea tu primer plan de suscripción para empezar
+              </p>
+            </div>
+          )}
+
+          {/* Estadísticas de Planes */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">📊 Estadísticas de Uso</h2>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-500">Total Negocios</p>
+                <p className="text-2xl font-bold text-gray-900">247</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <p className="text-sm text-gray-500">Plan Trial</p>
+                <p className="text-2xl font-bold text-green-600">89</p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-gray-500">Plan Básico</p>
+                <p className="text-2xl font-bold text-blue-600">112</p>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <p className="text-sm text-gray-500">Plan Premium</p>
+                <p className="text-2xl font-bold text-purple-600">46</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Edit Plan Modal */}
+        {showEditPlanModal && editingPlan && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Editar Plan</h3>
+              <p className="text-sm text-gray-600 mb-4">Funcionalidad de edición próximamente.</p>
+              <button
+                onClick={() => setShowEditPlanModal(false)}
+                className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+      </AdminLayout>
+    );
+  }
+
+  // Vista normal para usuarios admin (no super_admin)
   return (
     <AdminLayout user={user}>
       <div className="space-y-6">
@@ -361,35 +531,6 @@ export default function SubscriptionsPage() {
         </div>
 
         {/* Active Subscriptions */}
-
-        {user?.role === 'super_admin' && subscriptionPlans.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">🛠️ Planes de Suscripción</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {subscriptionPlans.map((plan) => (
-                <div key={plan._id} className="border rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-                    <span className="text-sm text-gray-500">{plan.interval}</span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{plan.description}</p>
-                  <p className="text-2xl font-bold text-gray-900 mb-4">
-                    €{plan.recurringPrice / 100}
-                  </p>
-                  <button
-                    onClick={() => {
-                      setEditingPlan(plan);
-                      setShowEditPlanModal(true);
-                    }}
-                    className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-                  >
-                    Editar
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
         <div className="grid gap-6 lg:grid-cols-2">
           {subscriptions.map((subscription: Subscription) => (
             <div key={subscription.businessId} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">

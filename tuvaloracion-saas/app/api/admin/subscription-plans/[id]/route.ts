@@ -12,7 +12,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
     }
 
-    const result = await db.collection('subscription_plans').updateOne(
+    const result = await db.collection('subscriptionplans').updateOne(
       { _id: new ObjectId(id) },
       { $set: { ...data, updatedAt: new Date() } }
     );
@@ -37,7 +37,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
     }
 
-    const result = await db.collection('subscription_plans').deleteOne({ _id: new ObjectId(id) });
+    const result = await db.collection('subscriptionplans').deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 });
