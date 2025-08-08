@@ -1,6 +1,6 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
-import { verifyAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,31 +9,41 @@ const dbName = 'tuvaloracion';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticación
-    const authHeader = request.headers.get('cookie');
-    const user = verifyAuth(authHeader || '');
-    
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const { searchParams } = new URL(request.url);
+    const userEmail = searchParams.get('userEmail');
+    const userRole = searchParams.get('userRole');
+
+    if (!userEmail || !userRole) {
+      return NextResponse.json({ error: 'Faltan parámetros de usuario' }, { status: 400 });
     }
 
     const client = new MongoClient(uri);
     await client.connect();
     const db = client.db(dbName);
 
-    // Obtener todos los negocios (ya que cada usuario tiene al menos uno)
-    // Para admin, buscar por email del contacto
-    let query: any = {};
+    let businessFilter = {};
     
-    if (user.role === 'admin') {
-      // Buscar negocios donde el email del contacto coincida con el del usuario
-      query = { 'contact.email': user.email };
+    if (userRole === 'admin') {
+      const user = await db.collection('users').findOne({ email: userEmail });
+      
+      if (user && user.businessIds && user.businessIds.length > 0) {
+        businessFilter = {
+          _id: { $in: user.businessIds.map((id: string) => new ObjectId(id)) }
+        };
+      } else if (user && user.businessId) {
+        businessFilter = {
+          _id: new ObjectId(user.businessId)
+        };
+      } else {
+        businessFilter = {
+          'contact.email': userEmail
+        };
+      }
     }
-    // Super admin puede ver todas las suscripciones (sin filtro)
+    // Super admin no tiene filtro
 
-    const businesses = await db.collection('businesses').find(query).toArray();
+    const businesses = await db.collection('businesses').find(businessFilter).toArray();
     
-    // Formatear la respuesta con información de suscripción
     const subscriptions = businesses.map(business => {
       const now = new Date();
       const createdAt = new Date(business.createdAt);

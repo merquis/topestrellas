@@ -102,8 +102,13 @@ export default function SubscriptionsPage() {
   }, [user]);
 
   const loadSubscriptions = async () => {
+    if (!user) return;
     try {
-      const response = await fetch('/api/admin/subscriptions', { credentials: 'include' });
+      const params = new URLSearchParams({
+        userEmail: user.email,
+        userRole: user.role,
+      });
+      const response = await fetch(`/api/admin/subscriptions?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setSubscriptions(data);
