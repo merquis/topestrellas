@@ -40,14 +40,15 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
 
   // Cargar negocios para admins normales
   useEffect(() => {
-    if (user.role === 'admin') {
+    if (user && user.role === 'admin') {
       loadBusinesses();
     }
-  }, [user.email, user.role]);
+  }, [user]);
 
   const loadBusinesses = async () => {
     setLoading(true);
     try {
+      if (!user) return;
       const params = new URLSearchParams({
         userEmail: user.email,
         userRole: user.role
@@ -95,6 +96,14 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
       window.dispatchEvent(new CustomEvent('businessChanged'));
     }
   };
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
