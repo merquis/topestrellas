@@ -434,7 +434,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     e.preventDefault();
     const planData = {
       ...formData,
-      recurringPrice: parseInt(formData.recurringPrice) * 100, // Convertir a centavos
+      recurringPrice: parseFloat(formData.recurringPrice), // Guardar el valor real introducido
       setupPrice: 0,
       trialDays: parseInt(formData.trialDays),
       features: formData.features.filter(f => f.trim() !== '')
@@ -687,7 +687,7 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
     e.preventDefault();
     const planData = {
       ...formData,
-      recurringPrice: parseInt(formData.recurringPrice) * 100, // Convertir a centavos
+      recurringPrice: parseFloat(formData.recurringPrice), // Guardar el valor real introducido
       setupPrice: 0,
       trialDays: parseInt(formData.trialDays),
       features: formData.features.filter(f => f.trim() !== '')
