@@ -21,22 +21,15 @@ export async function GET(request: NextRequest) {
     await client.connect();
     const db = client.db(dbName);
 
-    // Obtener negocios del usuario con información de suscripción
+    // Obtener todos los negocios (ya que cada usuario tiene al menos uno)
+    // Para admin, buscar por email del contacto
     let query: any = {};
     
     if (user.role === 'admin') {
-      // Admin normal: solo sus negocios asignados
-      const usersCollection = db.collection('users');
-      const userData = await usersCollection.findOne({ email: user.email });
-      
-      if (userData?.businessIds && userData.businessIds.length > 0) {
-        query._id = { $in: userData.businessIds.map((id: string) => new ObjectId(id)) };
-      } else {
-        await client.close();
-        return NextResponse.json([]);
-      }
+      // Buscar negocios donde el email del contacto coincida con el del usuario
+      query = { 'contact.email': user.email };
     }
-    // Super admin puede ver todas las suscripciones
+    // Super admin puede ver todas las suscripciones (sin filtro)
 
     const businesses = await db.collection('businesses').find(query).toArray();
     

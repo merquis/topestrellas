@@ -374,16 +374,16 @@ export default function SubscriptionsPage() {
           <div className="bg-white rounded-xl shadow-lg p-12 text-center">
             <div className="text-6xl mb-4">💳</div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              No tienes suscripciones activas
+              Cargando suscripciones...
             </h3>
             <p className="text-gray-600 mb-6">
-              Crea un negocio para comenzar con una prueba gratuita de 7 días
+              Si no aparecen tus negocios, verifica que estés usando el email correcto
             </p>
             <button
-              onClick={() => router.push('/admin/new-business')}
+              onClick={() => loadSubscriptions()}
               className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
             >
-              Crear Nuevo Negocio
+              Recargar
             </button>
           </div>
         )}
