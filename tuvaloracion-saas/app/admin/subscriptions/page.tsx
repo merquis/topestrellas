@@ -142,7 +142,12 @@ export default function SubscriptionsPage() {
 
   const fetchPlans = async () => {
     try {
-      const res = await fetch('/api/admin/subscription-plans');
+      // Construir URL con parámetros del usuario para filtrado
+      const params = new URLSearchParams();
+      if (user?.email) params.append('userEmail', user.email);
+      if (user?.role) params.append('userRole', user.role);
+      
+      const res = await fetch(`/api/admin/subscription-plans?${params.toString()}`);
       if (!res.ok) throw new Error('Error al cargar los planes');
       const data = await res.json();
       setSubscriptionPlans(data);
@@ -368,7 +373,9 @@ export default function SubscriptionsPage() {
                     <span className="text-sm text-gray-500">{plan.interval}</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{plan.description}</p>
-                  <p className="text-2xl font-bold text-gray-900 mb-4">€{plan.recurringPrice}</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-4">
+                    €{plan.recurringPrice / 100}
+                  </p>
                   <button
                     onClick={() => {
                       setEditingPlan(plan);
