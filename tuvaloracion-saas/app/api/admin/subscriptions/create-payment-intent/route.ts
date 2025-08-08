@@ -5,7 +5,7 @@ import { verifyAuth } from "@/lib/auth";
 import { getDatabase } from '@/lib/mongodb';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30',
+  apiVersion: '2025-07-30.basil',
 });
 
 const PLANS = {
