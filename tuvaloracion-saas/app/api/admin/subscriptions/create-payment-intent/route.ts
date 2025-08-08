@@ -16,6 +16,11 @@ const PLANS = {
 export async function POST(request: Request) {
   try {
     const authHeader = headers().get('Authorization');
+    
+    if (!authHeader) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+    
     const user = verifyAuth(authHeader);
 
     if (!user || !user.email) {
