@@ -135,7 +135,7 @@ export default function SubscriptionsPage() {
   }, [user]);
 
   useEffect(() => {
-    if (user?.role === 'superadmin') {
+    if (user?.role === 'superadmin' || user?.role === 'super_admin') {
       fetchPlans();
     }
   }, [user]);
