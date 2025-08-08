@@ -82,23 +82,22 @@ async function createPayPalOrder(plan: string, businessName: string) {
 async function createStripeSession(plan: string, businessName: string, businessId: string) {
   // Importar Stripe dinámicamente
   const stripe = require('stripe')(STRIPE_SECRET_KEY);
-  
-  const amount = PLAN_PRICES[plan as keyof typeof PLAN_PRICES];
+
+  const priceIds = {
+    basic: process.env.STRIPE_BASIC_PLAN_PRICE_ID,
+    premium: process.env.STRIPE_PREMIUM_PLAN_PRICE_ID,
+  };
+
+  const priceId = priceIds[plan as keyof typeof priceIds];
+
+  if (!priceId) {
+    throw new Error(`Price ID no encontrado para el plan: ${plan}`);
+  }
   
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: [{
-      price_data: {
-        currency: 'eur',
-        product_data: {
-          name: `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`,
-          description: `Suscripción mensual para ${businessName}`,
-        },
-        unit_amount: amount * 100, // Stripe usa centavos
-        recurring: {
-          interval: 'month'
-        }
-      },
+      price: priceId,
       quantity: 1,
     }],
     mode: 'subscription',

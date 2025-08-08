@@ -147,6 +147,42 @@ export default function SubscriptionsPage() {
     }
   };
 
+  const handlePauseSubscription = async (subscriptionId: string) => {
+    if (!confirm('¿Estás seguro de que quieres pausar esta suscripción?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/subscriptions/${subscriptionId}/pause`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        setToast({ message: 'Suscripción pausada correctamente', type: 'success' });
+        loadSubscriptions();
+      } else {
+        throw new Error('Error al pausar la suscripción');
+      }
+    } catch (error) {
+      setToast({ message: 'Error al pausar la suscripción', type: 'error' });
+    }
+  };
+
+  const handleResumeSubscription = async (subscriptionId: string) => {
+    try {
+      const response = await fetch(`/api/admin/subscriptions/${subscriptionId}/resume`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        setToast({ message: 'Suscripción reanudada correctamente', type: 'success' });
+        loadSubscriptions();
+      } else {
+        throw new Error('Error al reanudar la suscripción');
+      }
+    } catch (error) {
+      setToast({ message: 'Error al reanudar la suscripción', type: 'error' });
+    }
+  };
+
   const processPayment = async () => {
     if (!selectedSubscription || !selectedPlan || !paymentMethod) return;
 
@@ -365,7 +401,7 @@ export default function SubscriptionsPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   {subscription.plan === 'trial' ? (
                     <>
                       <button
@@ -384,28 +420,47 @@ export default function SubscriptionsPage() {
                         Actualizar Plan
                       </button>
                     </>
-                  ) : subscription.plan === 'basic' ? (
+                  ) : (
                     <>
-                      <button
-                        onClick={() => handleUpgrade(subscription, 'premium')}
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-3 rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                      >
-                        Actualizar a Premium
-                      </button>
+                      {/* Botón de actualizar a Premium solo para plan básico */}
+                      {subscription.plan === 'basic' && (
+                        <button
+                          onClick={() => handleUpgrade(subscription, 'premium')}
+                          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-3 rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                          Actualizar a Premium
+                        </button>
+                      )}
+                      
+                      {/* Botones de pausar/reanudar según el estado */}
+                      {subscription.paymentMethod === 'stripe' && (
+                        <>
+                          {subscription.status === 'active' ? (
+                            <button
+                              onClick={() => handlePauseSubscription(subscription.businessId)}
+                              className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-3 rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            >
+                              ⏸️ Pausar
+                            </button>
+                          ) : subscription.status === 'suspended' || subscription.status === 'paused' ? (
+                            <button
+                              onClick={() => handleResumeSubscription(subscription.businessId)}
+                              className="flex-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-3 rounded-xl hover:from-green-500 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            >
+                              ▶️ Reanudar
+                            </button>
+                          ) : null}
+                        </>
+                      )}
+                      
+                      {/* Botón de cancelar siempre disponible */}
                       <button
                         onClick={() => handleCancelSubscription(subscription.businessId)}
-                        className="px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold"
+                        className="flex-1 border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl hover:bg-red-50 transition-all duration-200 font-semibold"
                       >
                         Cancelar
                       </button>
                     </>
-                  ) : (
-                    <button
-                      onClick={() => handleCancelSubscription(subscription.businessId)}
-                      className="flex-1 border-2 border-gray-300 text-gray-700 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold"
-                    >
-                      Cancelar Suscripción
-                    </button>
                   )}
                 </div>
               </div>
