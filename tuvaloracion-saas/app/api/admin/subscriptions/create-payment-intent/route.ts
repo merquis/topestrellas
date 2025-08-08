@@ -8,11 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 });
 
-const PLANS = {
-  basic: { price: process.env.STRIPE_PRICE_BASIC, name: 'Plan Básico' },
-  premium: { price: process.env.STRIPE_PRICE_PREMIUM, name: 'Plan Premium' },
-};
-
 export async function POST(request: Request) {
   try {
     const headersList = await headers();
@@ -30,8 +25,8 @@ export async function POST(request: Request) {
 
     const { plan, businessId } = await request.json();
 
-    if (!plan || !PLANS[plan as keyof typeof PLANS]) {
-      return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });
+    if (!plan) {
+      return NextResponse.json({ error: 'Plan requerido' }, { status: 400 });
     }
     
     if (!businessId) {
@@ -39,6 +34,16 @@ export async function POST(request: Request) {
     }
 
     const db = await getDatabase();
+    
+    // Buscar el plan en la base de datos
+    const planData = await db.collection('subscriptionplans').findOne({ 
+      key: plan, 
+      active: true 
+    });
+
+    if (!planData) {
+      return NextResponse.json({ error: 'Plan no encontrado' }, { status: 400 });
+    }
     
     // Buscar el negocio por _id (ObjectId de MongoDB)
     const { ObjectId } = await import('mongodb');
@@ -70,8 +75,14 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 });
     }
 
-    const amount = PLANS[plan as keyof typeof PLANS].price;
-    const planName = PLANS[plan as keyof typeof PLANS].name;
+    // Obtener el precio de la base de datos
+    const amount = planData.recurringPrice;
+    const planName = planData.name;
+
+    // Validar que el precio sea mayor que 0 para PaymentIntent
+    if (amount <= 0) {
+      return NextResponse.json({ error: 'No se puede crear un PaymentIntent para un plan gratuito' }, { status: 400 });
+    }
 
     // Crear un PaymentIntent en Stripe
     const paymentIntent = await stripe.paymentIntents.create({
