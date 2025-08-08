@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package.json ./
 # Update npm to latest version (compatible with Node 24)
 RUN npm install -g npm@latest
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
