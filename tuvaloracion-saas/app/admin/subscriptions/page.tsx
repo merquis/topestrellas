@@ -3,9 +3,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import { checkAuth } from '@/lib/auth';
+
+// Cargar el componente de Stripe dinámicamente para evitar errores de SSR
+const StripePaymentForm = dynamic(
+  () => import('@/components/StripePaymentForm'),
+  { ssr: false }
+);
 
 interface Subscription {
   businessId: string;
@@ -572,8 +579,31 @@ export default function SubscriptionsPage() {
         </div>
       )}
 
-      {/* Payment Modal */}
-      {showPaymentModal && selectedSubscription && selectedPlan && (
+      {/* Payment Modal - Stripe Elements Integration */}
+      {showPaymentModal && selectedSubscription && selectedPlan && paymentMethod === 'stripe' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="my-8">
+            <StripePaymentForm
+              businessId={selectedSubscription.businessId}
+              businessName={selectedSubscription.businessName}
+              plan={selectedPlan}
+              onSuccess={() => {
+                setShowPaymentModal(false);
+                setPaymentMethod(null);
+                setToast({ message: '¡Pago procesado con éxito!', type: 'success' });
+                loadSubscriptions();
+              }}
+              onCancel={() => {
+                setShowPaymentModal(false);
+                setPaymentMethod(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Payment Method Selection Modal */}
+      {showPaymentModal && selectedSubscription && selectedPlan && !paymentMethod && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
@@ -597,12 +627,11 @@ export default function SubscriptionsPage() {
 
             <div className="space-y-3 mb-6">
               <button
-                onClick={() => setPaymentMethod('paypal')}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  paymentMethod === 'paypal' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                onClick={() => {
+                  setPaymentMethod('paypal');
+                  processPayment();
+                }}
+                className="w-full p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -614,21 +643,15 @@ export default function SubscriptionsPage() {
                       <p className="text-xs text-gray-500">Pago seguro con PayPal</p>
                     </div>
                   </div>
-                  {paymentMethod === 'paypal' && (
-                    <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  )}
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </button>
 
               <button
                 onClick={() => setPaymentMethod('stripe')}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  paymentMethod === 'stripe' 
-                    ? 'border-purple-500 bg-purple-50' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className="w-full p-4 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -636,49 +659,26 @@ export default function SubscriptionsPage() {
                       <span className="text-2xl">💳</span>
                     </div>
                     <div className="text-left">
-                      <p className="font-bold text-gray-900">Stripe</p>
-                      <p className="text-xs text-gray-500">Tarjeta de crédito/débito</p>
+                      <p className="font-bold text-gray-900">Tarjeta de crédito/débito</p>
+                      <p className="text-xs text-gray-500">Pago seguro con Stripe</p>
                     </div>
                   </div>
-                  {paymentMethod === 'stripe' && (
-                    <svg className="w-6 h-6 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  )}
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </button>
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowPaymentModal(false);
-                  setPaymentMethod(null);
-                }}
-                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold"
-                disabled={processingPayment}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={processPayment}
-                disabled={!paymentMethod || processingPayment}
-                className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
-                  paymentMethod && !processingPayment
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {processingPayment ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Procesando...
-                  </span>
-                ) : (
-                  'Continuar al pago'
-                )}
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                setShowPaymentModal(false);
+                setPaymentMethod(null);
+              }}
+              className="w-full px-4 py-3 text-gray-600 hover:text-gray-800 font-semibold"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
       )}
