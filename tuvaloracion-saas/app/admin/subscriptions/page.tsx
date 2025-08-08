@@ -103,7 +103,7 @@ export default function SubscriptionsPage() {
 
   const loadSubscriptions = async () => {
     try {
-      const response = await fetch('/api/admin/subscriptions');
+      const response = await fetch('/api/admin/subscriptions', { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setSubscriptions(data);
