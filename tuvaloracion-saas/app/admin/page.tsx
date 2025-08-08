@@ -660,16 +660,46 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {subscriptionPlans.map((plan) => (
-                      <div
-                        key={plan.key}
-                      className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                        selectedPlan === 'trial' 
-                          ? 'border-green-500 bg-green-50 shadow-lg' 
-                          : 'border-gray-200 hover:border-green-300'
-                      }`}
-                      onClick={() => setSelectedPlan('trial')}
-                    >
+                    {subscriptionPlans.map((plan) => {
+                      const isSelected = selectedPlan === plan.key;
+                      return (
+                        <div
+                          key={plan.key}
+                          className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-green-500 bg-green-50 shadow-lg'
+                              : 'border-gray-200 hover:border-green-300'
+                          }`}
+                          onClick={() => setSelectedPlan(plan.key)}
+                        >
+                          {isSelected && (
+                            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                Seleccionado
+                              </span>
+                            </div>
+                          )}
+                          <div className="text-center">
+                            <div className="text-4xl mb-4">{plan.icon || '📦'}</div>
+                            <h4 className="text-lg font-bold text-gray-900 mb-2">{plan.name}</h4>
+                            <div className="text-3xl font-bold text-green-600 mb-2">
+                              {plan.recurringPrice > 0 ? `€${plan.recurringPrice / 100}` : 'GRATIS'}
+                            </div>
+                            <p className="text-sm text-gray-500 mb-4">
+                              {plan.recurringPrice > 0 ? `por ${plan.interval}` : `${plan.trialDays} días de prueba`}
+                            </p>
+                            <ul className="text-sm text-gray-600 space-y-2 text-left">
+                              {plan.features?.map((feature: string, index: number) => (
+                                <li key={index} className="flex items-center gap-2">
+                                  <span className="text-green-500">✓</span>
+                                  <span>{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      );
+                    })}
                       {selectedPlan === 'trial' && (
                         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                           <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
