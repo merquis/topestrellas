@@ -1075,3 +1075,24 @@ a.btn,
 [class*="button"] {
   cursor: pointer !important;
 }
+
+/* Asegura el puntero tipo manita y estilos de hover en botones de acción */
+button,
+a.button,
+a.btn,
+[role="button"],
+[class*="btn"],
+[class*="button"] {
+  cursor: pointer !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+button:hover,
+a.button:hover,
+a.btn:hover,
+[role="button"]:hover,
+[class*="btn"]:hover,
+[class*="button"]:hover {
+  background-color: var(--button-secondary, #6c7b8a);
+  color: white;
+}
