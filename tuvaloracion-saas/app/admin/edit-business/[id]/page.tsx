@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
@@ -272,7 +272,7 @@ export default function EditBusinessPage({ params }: { params: Promise<{ id: str
     console.log('Lugar seleccionado:', { place, placeId, photoUrl });
     
     // Rellenar automáticamente todos los campos
-    setFormData(prev => ({
+    setFormData((prev: typeof formData) => ({
       ...prev,
       name: place.name || prev.name,
       googleCurrentRating: place.rating || prev.googleCurrentRating,
