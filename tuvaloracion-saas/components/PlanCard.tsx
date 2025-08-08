@@ -81,7 +81,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
   };
 
   const colors = getColorClasses();
-  const price = plan.recurringPrice / 100;
+  const price = plan.recurringPrice;
   const isFree = price === 0;
 
   return (
@@ -128,7 +128,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
               {isFree ? (
                 'GRATIS'
               ) : (
-                <>{price}€</>
+                <>{plan.recurringPrice}€</>
               )}
             </div>
             <p className="text-sm text-gray-500 mt-1">
