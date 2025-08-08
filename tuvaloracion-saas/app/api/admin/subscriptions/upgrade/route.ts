@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import { verifyAuth } from '@/lib/auth';
+import { getDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,10 +23,12 @@ const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || '';
 // URLs de retorno
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-const PLAN_PRICES = {
-  basic: 29,
-  premium: 59
-};
+// Función para obtener precios de la base de datos
+async function getPlanPrice(planKey: string) {
+  const db = await getDatabase();
+  const plan = await db.collection('subscriptionplans').findOne({ key: planKey, active: true });
+  return plan ? plan.recurringPrice : null;
+}
 
 // Función para obtener token de acceso de PayPal
 async function getPayPalAccessToken() {
@@ -47,7 +50,11 @@ async function getPayPalAccessToken() {
 // Función para crear orden de PayPal
 async function createPayPalOrder(plan: string, businessName: string) {
   const accessToken = await getPayPalAccessToken();
-  const amount = PLAN_PRICES[plan as keyof typeof PLAN_PRICES];
+  const amount = await getPlanPrice(plan);
+
+  if (!amount) {
+    throw new Error(`Plan no encontrado: ${plan}`);
+  }
 
   const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
     method: 'POST',
@@ -83,15 +90,49 @@ async function createStripeSession(plan: string, businessName: string, businessI
   // Importar Stripe dinámicamente
   const stripe = require('stripe')(STRIPE_SECRET_KEY);
 
-  const priceIds = {
-    basic: process.env.STRIPE_BASIC_PLAN_PRICE_ID,
-    premium: process.env.STRIPE_PREMIUM_PLAN_PRICE_ID,
-  };
+  // Obtener el plan de la base de datos
+  const db = await getDatabase();
+  const planData = await db.collection('subscriptionplans').findOne({ key: plan, active: true });
 
-  const priceId = priceIds[plan as keyof typeof priceIds];
+  if (!planData) {
+    throw new Error(`Plan no encontrado: ${plan}`);
+  }
 
-  if (!priceId) {
-    throw new Error(`Price ID no encontrado para el plan: ${plan}`);
+  // Crear o buscar el precio en Stripe usando el precio de la base de datos
+  const priceInCents = planData.recurringPrice < 20 ? Math.round(planData.recurringPrice * 100) : planData.recurringPrice;
+  
+  // Buscar si ya existe un precio en Stripe para este plan con el precio correcto
+  const existingPrices = await stripe.prices.list({
+    lookup_keys: [plan],
+    limit: 10,
+  });
+
+  let priceId: string;
+  
+  // Buscar un precio existente que coincida con el precio actual de la BD
+  const matchingPrice = existingPrices.data.find((price: any) => 
+    price.unit_amount === priceInCents && 
+    price.currency === (planData.currency?.toLowerCase() || 'eur') &&
+    price.recurring?.interval === (planData.interval === 'mensual' ? 'month' : 'year')
+  );
+
+  if (matchingPrice) {
+    priceId = matchingPrice.id;
+  } else {
+    // Crear un nuevo precio en Stripe con el precio correcto de la BD
+    const stripePrice = await stripe.prices.create({
+      unit_amount: priceInCents,
+      currency: planData.currency?.toLowerCase() || 'eur',
+      recurring: {
+        interval: planData.interval === 'mensual' ? 'month' : 'year',
+      },
+      product_data: {
+        name: planData.name,
+        description: planData.description,
+      },
+      lookup_key: `${plan}_${Date.now()}`, // Hacer único el lookup_key
+    });
+    priceId = stripePrice.id;
   }
   
   const session = await stripe.checkout.sessions.create({
@@ -105,7 +146,9 @@ async function createStripeSession(plan: string, businessName: string, businessI
     cancel_url: `${BASE_URL}/admin/subscriptions`,
     metadata: {
       businessId: businessId,
-      plan: plan
+      plan: plan,
+      planName: planData.name,
+      recurringPrice: planData.recurringPrice.toString(),
     },
     locale: 'es'
   });
