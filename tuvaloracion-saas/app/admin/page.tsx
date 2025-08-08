@@ -54,7 +54,15 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/admin/subscription-plans')
+    const authUser = checkAuth();
+    if (!authUser) return;
+
+    const params = new URLSearchParams({
+      userEmail: authUser.email,
+      userRole: authUser.role,
+    });
+
+    fetch(`/api/admin/subscription-plans?${params.toString()}`)
       .then(res => res.json())
       .then(data => setSubscriptionPlans(data))
       .catch(err => console.error('Error al cargar los planes:', err));
@@ -700,40 +708,6 @@ export default function AdminDashboard() {
                         </div>
                       );
                     })}
-                      {selectedPlan === 'trial' && (
-                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                            Seleccionado
-                          </span>
-                        </div>
-                      )}
-                      
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">🎯</div>
-                        <h4 className="text-lg font-bold text-gray-900 mb-2">Prueba 7 días gratis</h4>
-                        <div className="text-3xl font-bold text-green-600 mb-2">GRATIS</div>
-                        <p className="text-sm text-gray-500 mb-4">7 días de prueba</p>
-                        
-                        <ul className="text-sm text-gray-600 space-y-2 text-left">
-                          <li className="flex items-center gap-2">
-                            <span className="text-green-500">✓</span>
-                            <span>Hasta 100 reseñas</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-green-500">✓</span>
-                            <span>Sistema de premios básico</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-green-500">✓</span>
-                            <span>Soporte por email</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-green-500">✓</span>
-                            <span>Sin tarjeta de crédito</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
 
                     {/* Plan Básico */}
                     <div 
