@@ -1152,25 +1152,29 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
                       <span className="text-3xl">{PLANS[subscription.plan].icon}</span>
                       <div>
                         <p className="font-bold text-lg text-gray-900">{PLANS[subscription.plan].name}</p>
-                        {subscription.plan !== 'trial' && (
+                        {subscription.plan === 'trial' ? (
+                          <p className="text-2xl font-bold text-green-600">
+                            GRATIS
+                          </p>
+                        ) : (
                           <p className="text-2xl font-bold text-gray-900">
-                  {(() => {
-                    const planDb = subscriptionPlans.find(p => p.key === subscription.plan);
-                    if (planDb) {
-                      return (
-                        <>
-                          €{planDb.recurringPrice ? planDb.recurringPrice / 100 : 0}
-                          <span className="text-sm text-gray-500 font-normal">/{planDb.interval === 'year' ? 'año' : 'mes'}</span>
-                        </>
-                      );
-                    }
-                    return (
-                      <>
-                        €{PLANS[subscription.plan].price}
-                        <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan].duration}</span>
-                      </>
-                    );
-                  })()}
+                            {(() => {
+                              const planDb = subscriptionPlans.find(p => p.key === subscription.plan);
+                              if (planDb) {
+                                return (
+                                  <>
+                                    €{planDb.recurringPrice ?? 0}
+                                    <span className="text-sm text-gray-500 font-normal">/{planDb.interval === 'year' ? 'año' : 'mes'}</span>
+                                  </>
+                                );
+                              }
+                              return (
+                                <>
+                                  €{PLANS[subscription.plan].price}
+                                  <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan].duration}</span>
+                                </>
+                              );
+                            })()}
                           </p>
                         )}
                       </div>
@@ -1443,7 +1447,7 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
                     {(() => {
                       const planDb = subscriptionPlans.find(p => p.key === selectedPlan);
                       if (planDb) {
-                        return `€${planDb.recurringPrice ? planDb.recurringPrice / 100 : 0}`;
+                        return `€${planDb.recurringPrice ?? 0}`;
                       }
                       return `€${PLANS[selectedPlan].price}`;
                     })()}
