@@ -8,6 +8,7 @@ import LoadingOverlay from '@/components/LoadingOverlay';
 import { checkAuth } from '@/lib/auth';
 import { GooglePlacesUltraSeparatedLarge } from '@/components/GooglePlacesUltraSeparated';
 import { GooglePlaceData } from '@/lib/types';
+import ChangePlanModal from '@/components/admin/ChangePlanModal';
 
 export default function EditBusinessPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
+  const [showChangePlanModal, setShowChangePlanModal] = useState(false);
   const [formData, setFormData] = useState({
     subdomain: '',
     name: '',
@@ -450,6 +452,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                       <option value="trial">🎁 Prueba (7 días gratis)</option>
                       <option value="basic">⭐ Básico</option>
                       <option value="premium">💎 Premium</option>
+                      <option value="lifetime">👑 Vitalicio</option>
                     </select>
                   </div>
 
@@ -783,6 +786,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                           {formData.plan === 'trial' && '🎁 Prueba (7 días gratis)'}
                           {formData.plan === 'basic' && '⭐ Básico'}
                           {formData.plan === 'premium' && '💎 Premium'}
+                          {formData.plan === 'lifetime' && '👑 Vitalicio (Sin expiración)'}
                         </p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -795,56 +799,122 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // TODO: Implementar cancelación de suscripción
-                          alert('Funcionalidad de cancelación en desarrollo');
-                        }}
-                        className="p-4 border-2 border-orange-300 rounded-lg hover:bg-orange-50 transition-colors text-left"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">⏸️</span>
-                          <div>
-                            <p className="font-medium text-orange-900">Cancelar Suscripción</p>
-                            <p className="text-sm text-orange-700">Pausar el servicio temporalmente</p>
-                          </div>
-                        </div>
-                      </button>
+                      {user?.role === 'super_admin' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (confirm('¿Estás seguro de que quieres pausar esta suscripción?')) {
+                                try {
+                                  const response = await fetch(`/api/admin/subscriptions/${params.id}/pause`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      userRole: user?.role,
+                                      userEmail: user?.email
+                                    })
+                                  });
+                                  
+                                  if (response.ok) {
+                                    setToast({ message: 'Suscripción pausada exitosamente', type: 'success' });
+                                    loadBusiness(); // Recargar datos
+                                  } else {
+                                    const data = await response.json();
+                                    setToast({ message: data.error || 'Error al pausar suscripción', type: 'error' });
+                                  }
+                                } catch (error) {
+                                  setToast({ message: 'Error al conectar con el servidor', type: 'error' });
+                                }
+                              }
+                            }}
+                            className="p-4 border-2 border-orange-300 rounded-lg hover:bg-orange-50 transition-colors text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">⏸️</span>
+                              <div>
+                                <p className="font-medium text-orange-900">Pausar Suscripción</p>
+                                <p className="text-sm text-orange-700">Pausar el servicio temporalmente</p>
+                              </div>
+                            </div>
+                          </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // TODO: Implementar renovación de suscripción
-                          alert('Funcionalidad de renovación en desarrollo');
-                        }}
-                        className="p-4 border-2 border-green-300 rounded-lg hover:bg-green-50 transition-colors text-left"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">🔄</span>
-                          <div>
-                            <p className="font-medium text-green-900">Renovar Suscripción</p>
-                            <p className="text-sm text-green-700">Reactivar el servicio</p>
-                          </div>
-                        </div>
-                      </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (confirm('¿Quieres renovar esta suscripción por 30 días adicionales?')) {
+                                try {
+                                  const response = await fetch(`/api/admin/subscriptions/${params.id}/renew`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      days: 30,
+                                      userRole: user?.role,
+                                      userEmail: user?.email
+                                    })
+                                  });
+                                  
+                                  if (response.ok) {
+                                    const data = await response.json();
+                                    setToast({ message: data.message || 'Suscripción renovada exitosamente', type: 'success' });
+                                    loadBusiness(); // Recargar datos
+                                  } else {
+                                    const data = await response.json();
+                                    setToast({ message: data.error || 'Error al renovar suscripción', type: 'error' });
+                                  }
+                                } catch (error) {
+                                  setToast({ message: 'Error al conectar con el servidor', type: 'error' });
+                                }
+                              }
+                            }}
+                            className="p-4 border-2 border-green-300 rounded-lg hover:bg-green-50 transition-colors text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">🔄</span>
+                              <div>
+                                <p className="font-medium text-green-900">Renovar Suscripción</p>
+                                <p className="text-sm text-green-700">Extender 30 días adicionales</p>
+                              </div>
+                            </div>
+                          </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // TODO: Implementar cambio de plan
-                          alert('Funcionalidad de cambio de plan en desarrollo');
-                        }}
-                        className="p-4 border-2 border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-left"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">📈</span>
-                          <div>
-                            <p className="font-medium text-blue-900">Cambiar Plan</p>
-                            <p className="text-sm text-blue-700">Upgrade o downgrade</p>
-                          </div>
-                        </div>
-                      </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowChangePlanModal(true)}
+                            className="p-4 border-2 border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">📈</span>
+                              <div>
+                                <p className="font-medium text-blue-900">Cambiar Plan</p>
+                                <p className="text-sm text-blue-700">Upgrade o downgrade</p>
+                              </div>
+                            </div>
+                          </button>
+                        </>
+                      )}
+
+                      {user?.role === 'admin' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setToast({ 
+                                message: 'Como administrador, contacta con soporte para cambios en la suscripción', 
+                                type: 'info' 
+                              });
+                            }}
+                            className="p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-left opacity-75"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">📞</span>
+                              <div>
+                                <p className="font-medium text-gray-900">Solicitar Cambios</p>
+                                <p className="text-sm text-gray-700">Contactar con soporte</p>
+                              </div>
+                            </div>
+                          </button>
+                        </>
+                      )}
 
                       <button
                         type="button"
@@ -895,9 +965,32 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                       </p>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (confirm('¿Estás seguro de que quieres eliminar este negocio? Esta acción no se puede deshacer.')) {
-                            // Implementar eliminación
+                        onClick={async () => {
+                          if (confirm('¿Estás seguro de que quieres eliminar este negocio? Se marcará para eliminación y podrás restaurarlo en los próximos 30 días.')) {
+                            try {
+                              const response = await fetch(`/api/admin/businesses/${params.id}/delete`, {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  userRole: user?.role,
+                                  userEmail: user?.email,
+                                  hardDelete: false
+                                })
+                              });
+                              
+                              if (response.ok) {
+                                const data = await response.json();
+                                setToast({ message: data.message || 'Negocio marcado para eliminación', type: 'success' });
+                                setTimeout(() => {
+                                  router.push('/admin/businesses');
+                                }, 2000);
+                              } else {
+                                const data = await response.json();
+                                setToast({ message: data.error || 'Error al eliminar negocio', type: 'error' });
+                              }
+                            } catch (error) {
+                              setToast({ message: 'Error al conectar con el servidor', type: 'error' });
+                            }
                           }
                         }}
                         className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -941,6 +1034,24 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Modal de Cambio de Plan */}
+      {showChangePlanModal && (
+        <ChangePlanModal
+          isOpen={showChangePlanModal}
+          onClose={() => setShowChangePlanModal(false)}
+          currentPlan={formData.plan}
+          businessId={params.id}
+          businessName={formData.name}
+          onPlanChanged={() => {
+            setToast({ message: 'Plan cambiado exitosamente', type: 'success' });
+            loadBusiness(); // Recargar datos
+            setShowChangePlanModal(false);
+          }}
+          userRole={user?.role || ''}
+          userEmail={user?.email || ''}
         />
       )}
     </AdminLayout>
