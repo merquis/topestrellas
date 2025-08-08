@@ -38,9 +38,34 @@ export async function POST(request: Request) {
     }
 
     const db = await getDatabase();
-    const business = await db.collection('businesses').findOne({ id: businessId });
+    
+    // Buscar el negocio por _id (ObjectId de MongoDB)
+    const { ObjectId } = await import('mongodb');
+    let business;
+    
+    try {
+      // Intentar buscar por _id si es un ObjectId válido
+      if (ObjectId.isValid(businessId)) {
+        business = await db.collection('businesses').findOne({ 
+          _id: new ObjectId(businessId)
+        });
+      }
+      
+      // Si no se encuentra, intentar buscar por otros campos
+      if (!business) {
+        business = await db.collection('businesses').findOne({ 
+          $or: [
+            { subdomain: businessId },
+            { id: businessId }
+          ]
+        });
+      }
+    } catch (error) {
+      console.error('Error buscando negocio:', error);
+    }
 
     if (!business) {
+        console.error('Negocio no encontrado con businessId:', businessId);
         return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 });
     }
 
