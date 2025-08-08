@@ -10,7 +10,7 @@ import { GooglePlacesUltraSeparatedLarge } from '@/components/GooglePlacesUltraS
 import { GooglePlaceData } from '@/lib/types';
 import ChangePlanModal from '@/components/admin/ChangePlanModal';
 
-export default function EditBusinessPage({ params }: { params: { id: string } }) {
+export default function EditBusinessPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -18,6 +18,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
   const [showChangePlanModal, setShowChangePlanModal] = useState(false);
+  const [businessId, setBusinessId] = useState<string>('');
   const [formData, setFormData] = useState({
     subdomain: '',
     name: '',
@@ -38,19 +39,26 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
   });
 
   useEffect(() => {
-    const authUser = checkAuth();
-    if (!authUser) {
-      router.push('/admin');
-      return;
-    }
-    // Permitir acceso tanto a super_admin como a admin
-    if (!['super_admin', 'admin'].includes(authUser.role)) {
-      router.push('/admin');
-      return;
-    }
-    setUser(authUser);
-    loadBusiness();
-  }, [params.id]);
+    const initializeComponent = async () => {
+      const resolvedParams = await params;
+      setBusinessId(resolvedParams.id);
+      
+      const authUser = checkAuth();
+      if (!authUser) {
+        router.push('/admin');
+        return;
+      }
+      // Permitir acceso tanto a super_admin como a admin
+      if (!['super_admin', 'admin'].includes(authUser.role)) {
+        router.push('/admin');
+        return;
+      }
+      setUser(authUser);
+      loadBusiness(resolvedParams.id);
+    };
+    
+    initializeComponent();
+  }, []);
 
   // Detectar hash en la URL para navegar a la pestaña correcta
   useEffect(() => {
@@ -68,9 +76,12 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     }
   }, []);
 
-  const loadBusiness = async () => {
+  const loadBusiness = async (id?: string) => {
+    const businessIdToUse = id || businessId;
+    if (!businessIdToUse) return;
+    
     try {
-      const response = await fetch(`/api/admin/businesses/${params.id}`);
+      const response = await fetch(`/api/admin/businesses/${businessIdToUse}`);
       if (response.ok) {
         const business = await response.json();
         // Extraer premios existentes
@@ -127,7 +138,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/admin/businesses/${params.id}`, {
+      const response = await fetch(`/api/admin/businesses/${businessId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -806,7 +817,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                             onClick={async () => {
                               if (confirm('¿Estás seguro de que quieres pausar esta suscripción?')) {
                                 try {
-                                  const response = await fetch(`/api/admin/subscriptions/${params.id}/pause`, {
+                            const response = await fetch(`/api/admin/subscriptions/${businessId}/pause`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
@@ -843,7 +854,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                             onClick={async () => {
                               if (confirm('¿Quieres renovar esta suscripción por 30 días adicionales?')) {
                                 try {
-                                  const response = await fetch(`/api/admin/subscriptions/${params.id}/renew`, {
+                                const response = await fetch(`/api/admin/subscriptions/${businessId}/renew`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
@@ -968,7 +979,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
                         onClick={async () => {
                           if (confirm('¿Estás seguro de que quieres eliminar este negocio? Se marcará para eliminación y podrás restaurarlo en los próximos 30 días.')) {
                             try {
-                              const response = await fetch(`/api/admin/businesses/${params.id}/delete`, {
+                              const response = await fetch(`/api/admin/businesses/${businessId}/delete`, {
                                 method: 'DELETE',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -1043,7 +1054,7 @@ export default function EditBusinessPage({ params }: { params: { id: string } })
           isOpen={showChangePlanModal}
           onClose={() => setShowChangePlanModal(false)}
           currentPlan={formData.plan}
-          businessId={params.id}
+          businessId={businessId}
           businessName={formData.name}
           onPlanChanged={() => {
             setToast({ message: 'Plan cambiado exitosamente', type: 'success' });
