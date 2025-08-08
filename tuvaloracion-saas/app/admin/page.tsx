@@ -280,7 +280,7 @@ export default function AdminDashboard() {
                     resetForms();
                     setCurrentView('login');
                   }}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] shadow-lg"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] shadow-lg cursor-pointer"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <span>🔑</span>
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
                     resetForms();
                     setCurrentView('register');
                   }}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] shadow-lg"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] shadow-lg cursor-pointer"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <span>✨</span>
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
               <div className="text-center mb-8">
                 <button
                   onClick={() => setCurrentView('welcome')}
-                  className="absolute top-6 left-6 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute top-6 left-6 p-2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -379,7 +379,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg cursor-pointer"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center gap-3">
@@ -401,7 +401,7 @@ export default function AdminDashboard() {
                       resetForms();
                       setCurrentView('register');
                     }}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                   >
                     Crear cuenta nueva
                   </button>
@@ -583,7 +583,7 @@ export default function AdminDashboard() {
                   
                   <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] shadow-lg"
+                    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] shadow-lg cursor-pointer"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <span>Continuar</span>
@@ -642,7 +642,7 @@ export default function AdminDashboard() {
                         setRegistrationStep(3);
                       }}
                       disabled={!selectedBusiness}
-                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg cursor-pointer"
                     >
                       {selectedBusiness ? (
                         <div className="flex items-center justify-center gap-2">
@@ -778,7 +778,7 @@ export default function AdminDashboard() {
                       resetForms();
                       setCurrentView('login');
                     }}
-                    className="text-green-600 hover:text-green-700 font-medium"
+                    className="text-green-600 hover:text-green-700 font-medium cursor-pointer"
                   >
                     Iniciar sesión
                   </button>
