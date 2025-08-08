@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const resolvedParams = await params;
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
     const data = await request.json();
-    const userId = params.id;
+    const userId = resolvedParams.id;
     
     // Verificar que el ID sea válido
     if (!ObjectId.isValid(userId)) {
@@ -179,11 +180,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const resolvedParams = await params;
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
-    const userId = params.id;
+    const userId = resolvedParams.id;
     
     // Verificar que el ID sea válido
     if (!ObjectId.isValid(userId)) {

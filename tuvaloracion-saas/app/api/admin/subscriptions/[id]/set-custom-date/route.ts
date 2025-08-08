@@ -8,8 +8,9 @@ const dbName = 'tuvaloracion';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { endDate, userRole, userEmail } = await request.json();
     
@@ -32,7 +33,7 @@ export async function POST(
     await client.connect();
     const db = client.db(dbName);
 
-    const businessId = new ObjectId(params.id);
+    const businessId = new ObjectId(resolvedParams.id);
     
     // Obtener el negocio actual
     const business = await db.collection('businesses').findOne({ _id: businessId });
