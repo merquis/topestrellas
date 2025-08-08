@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import { verifyAuth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = 'tuvaloracion';
 
