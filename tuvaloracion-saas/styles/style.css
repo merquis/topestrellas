@@ -1055,3 +1055,23 @@ a.btn,
 .back-arrow {
   cursor: pointer;
 }
+
+/* Fondo translúcido para todos los overlays, modales, popups y backdrops */
+.popup-overlay,
+.modal-overlay,
+.modal-backdrop,
+.backdrop,
+.overlay,
+[role="dialog"]::backdrop,
+[role="dialog"],
+[role="alertdialog"]::backdrop,
+[role="alertdialog"],
+[aria-modal="true"] {
+  background: rgba(0,0,0,0.5) !important;
+}
+
+/* Asegura el puntero tipo manita en cualquier clase que contenga "btn" o "button" */
+[class*="btn"],
+[class*="button"] {
+  cursor: pointer !important;
+}
