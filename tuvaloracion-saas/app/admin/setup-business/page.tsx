@@ -316,7 +316,7 @@ function SetupBusinessContent() {
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl font-bold text-center mb-8">Elige el plan perfecto para tu negocio</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {plans.map((plan) => (
+              {plans.map((plan: any) => (
                 <div
                   key={plan.id}
                   className={`relative bg-white rounded-xl shadow-lg p-6 cursor-pointer transition-all transform hover:scale-105 ${
@@ -339,7 +339,7 @@ function SetupBusinessContent() {
                     </div>
                   </div>
                   <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, index) => (
+                    {plan.features.map((feature: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
                         <span className="text-gray-700 text-sm">{feature}</span>
