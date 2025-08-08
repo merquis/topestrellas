@@ -120,6 +120,7 @@ export default function SubscriptionsPage() {
 
   useEffect(() => {
     const authUser = checkAuth();
+    console.log('Usuario autenticado:', authUser);
     if (!authUser) {
       router.push('/admin');
       return;
