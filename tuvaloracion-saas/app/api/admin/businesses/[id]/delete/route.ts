@@ -208,8 +208,8 @@ export async function POST(
             date: now,
             performedBy: userEmail,
             reason: 'Negocio restaurado por Super Admin'
-          }
-        }
+          } as any
+        } as any
       }
     );
 
