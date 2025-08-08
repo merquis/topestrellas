@@ -11,7 +11,7 @@ const subscriptionPlans = [
     setupPrice: 0,
     recurringPrice: 0,
     currency: 'EUR',
-    interval: 'mensual',
+    interval: 'month',
     trialDays: 7,
     features: [
       'Hasta 100 reseñas',
@@ -31,7 +31,7 @@ const subscriptionPlans = [
     setupPrice: 0,
     recurringPrice: 2900,
     currency: 'EUR',
-    interval: 'mensual',
+    interval: 'month',
     trialDays: 0,
     features: [
       'Hasta 500 reseñas',
@@ -52,7 +52,7 @@ const subscriptionPlans = [
     setupPrice: 0,
     recurringPrice: 5900,
     currency: 'EUR',
-    interval: 'mensual',
+    interval: 'month',
     trialDays: 0,
     features: [
       'Reseñas ilimitadas',

@@ -86,7 +86,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
   return (
     <div
-      className={`relative rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 transition-all duration-200 ${
+      className={`relative rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 transition-all duration-200 h-full flex flex-col ${
         onSelect ? 'cursor-pointer hover:shadow-lg' : ''
       } ${isSelected ? 'shadow-lg' : ''}`}
       onClick={onSelect}
@@ -109,7 +109,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
       )}
 
       {/* Content */}
-      <div className="text-center">
+      <div className="text-center flex flex-col h-full">
         {/* Icon */}
         <div className="text-5xl mb-4">{plan.icon || '📦'}</div>
         
@@ -144,7 +144,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         )}
         
         {/* Features */}
-        <ul className="space-y-3 mb-6 text-left">
+        <ul className="space-y-3 mb-6 text-left flex-grow">
           {plan.features.map((feature, index) => (
             <li key={index} className="flex items-start gap-2">
               <svg 
