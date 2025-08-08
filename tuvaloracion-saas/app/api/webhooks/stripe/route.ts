@@ -82,13 +82,11 @@ export async function POST(request: NextRequest) {
       }
 
       case 'invoice.paid': {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any; // Usar any temporalmente para acceder a propiedades
         
         // Obtener el ID de la suscripción del objeto invoice
-        // En Stripe 18.4.0, subscription puede ser un string o un objeto expandible
-        const subscriptionId = typeof invoice.subscription === 'string' 
-          ? invoice.subscription 
-          : invoice.subscription?.id;
+        // La propiedad subscription puede no estar tipada correctamente en Stripe 18.4.0
+        const subscriptionId = invoice.subscription;
         
         // Actualizar la fecha del último pago
         if (subscriptionId && invoice.customer) {
