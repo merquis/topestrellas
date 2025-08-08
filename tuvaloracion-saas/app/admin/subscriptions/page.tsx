@@ -364,22 +364,7 @@ export default function SubscriptionsPage() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3">
-                  {subscription.plan === 'trial' ? (
-                    <>
-                      <button
-                        onClick={() => handleUpgrade(subscription, 'basic')}
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                      >
-                        Actualizar a Básico
-                      </button>
-                      <button
-                        onClick={() => handleUpgrade(subscription, 'premium')}
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-3 rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                      >
-                        Actualizar a Premium
-                      </button>
-                    </>
-                  ) : subscription.plan === 'basic' ? (
+                  {subscription.plan === 'basic' ? (
                     <>
                       <button
                         onClick={() => handleUpgrade(subscription, 'premium')}
@@ -429,7 +414,7 @@ export default function SubscriptionsPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Planes Disponibles</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {Object.entries(PLANS).map(([key, plan]: [string, any]) => (
-              <div key={key} className={`relative rounded-2xl border-2 ${plan.popular ? 'border-purple-500 shadow-xl' : 'border-gray-200'} p-6`}>
+              <div key={key} className={`relative rounded-2xl border-2 ${plan.popular ? 'border-purple-500 shadow-xl' : 'border-gray-200'} p-6 flex flex-col`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold">
@@ -437,24 +422,40 @@ export default function SubscriptionsPage() {
                     </span>
                   </div>
                 )}
-                <div className="text-center mb-4">
-                  <span className="text-4xl">{plan.icon}</span>
-                  <h3 className="text-xl font-bold text-gray-900 mt-2">{plan.name}</h3>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-gray-900">€{plan.price}</span>
-                    {plan.price > 0 && <span className="text-gray-500">/{plan.duration}</span>}
+                <div className="flex-grow">
+                  <div className="text-center mb-4">
+                    <span className="text-4xl">{plan.icon}</span>
+                    <h3 className="text-xl font-bold text-gray-900 mt-2">{plan.name}</h3>
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold text-gray-900">€{plan.price}</span>
+                      {plan.price > 0 && <span className="text-gray-500">/{plan.duration}</span>}
+                    </div>
                   </div>
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <svg className="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm text-gray-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="space-y-3 mb-6">
-                  {plan.features.map((feature: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm text-gray-600">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                {key !== 'trial' && subscriptions.some(s => s.plan === 'trial') && (
+                  <div className="mt-auto">
+                    <button
+                      onClick={() => handleUpgrade(subscriptions.find(s => s.plan === 'trial'), key as 'basic' | 'premium')}
+                      className={`w-full px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                        key === 'basic' 
+                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+                          : 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700'
+                      }`}
+                    >
+                      Actualizar a {plan.name}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
