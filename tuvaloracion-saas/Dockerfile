@@ -1,4 +1,4 @@
-FROM node:18-alpine AS base
+FROM node:24-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -9,8 +9,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json ./
-# Update npm to latest version
-RUN npm install -g npm@11.5.2
+# Update npm to latest version (compatible with Node 24)
+RUN npm install -g npm@latest
 RUN npm install
 
 # Rebuild the source code only when needed
@@ -24,8 +24,6 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-# Update npm before build
-RUN npm install -g npm@11.5.2
 RUN npm run build
 
 # Production image, copy all the files and run next
