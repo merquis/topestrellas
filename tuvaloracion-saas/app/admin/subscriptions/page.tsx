@@ -464,7 +464,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
   };
 
   return (
-<div className="fixed inset-0 bg-black/50] flex items-center justify-center z-50 p-4 overflow-y-auto">
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-6">Editar Plan</h3>
         
@@ -1401,7 +1401,7 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
 
       {/* Payment Modal - Stripe Elements Integration */}
       {showPaymentModal && selectedSubscription && selectedPlan && paymentMethod === 'stripe' && stripeClientSecret && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="my-8">
             <StripePaymentForm
               businessId={selectedSubscription.businessId}

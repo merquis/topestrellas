@@ -323,7 +323,7 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
     <>
       {/* Overlay global que bloquea toda interacción */}
       {(showPrizesSpotlight || showQRSpotlight || showPrintInstructionsSpotlight || showHelpSpotlight) && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-80 pointer-events-auto"></div>
+        <div className="fixed inset-0 z-40 bg-black/70 pointer-events-auto"></div>
       )}
 
       {/* Stats Grid */}
