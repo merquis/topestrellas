@@ -1,135 +1,69 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { MongoClient, ObjectId } from 'mongodb';
+import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { verifyAuth } from '@/lib/auth';
+import { verifyAuth } from "@/lib/auth";
+import { getDatabase } from '@/lib/mongodb';
 
-export const dynamic = 'force-dynamic';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
 });
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const dbName = 'tuvaloracion';
-
-const PLAN_PRICES = {
-  basic: 29,
-  premium: 59
+const PLANS = {
+  basic: { price: 2900, name: 'Plan Básico' }, // Precio en céntimos
+  premium: { price: 5900, name: 'Plan Premium' }, // Precio en céntimos
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // Verificar autenticación
-    const authHeader = request.headers.get('cookie');
-    const user = verifyAuth(authHeader || '');
-    
-    if (!user) {
+    const authHeader = headers().get('Authorization');
+    const user = verifyAuth(authHeader);
+
+    if (!user || !user.email) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { businessId, plan } = await request.json();
+    const { plan, businessId } = await request.json();
 
-    if (!businessId || !plan) {
-      return NextResponse.json(
-        { error: 'Faltan parámetros requeridos' },
-        { status: 400 }
-      );
+    if (!plan || !PLANS[plan as keyof typeof PLANS]) {
+      return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });
+    }
+    
+    if (!businessId) {
+        return NextResponse.json({ error: 'ID de negocio requerido' }, { status: 400 });
     }
 
-    const client = new MongoClient(uri);
-    await client.connect();
-    const db = client.db(dbName);
-
-    // Obtener información del negocio
-    const business = await db.collection('businesses').findOne({
-      _id: new ObjectId(businessId)
-    });
+    const db = await getDatabase();
+    const business = await db.collection('businesses').findOne({ id: businessId });
 
     if (!business) {
-      await client.close();
-      return NextResponse.json(
-        { error: 'Negocio no encontrado' },
-        { status: 404 }
-      );
+        return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 });
     }
 
-    // Verificar permisos
-    if (user.role === 'admin') {
-      const usersCollection = db.collection('users');
-      const userData = await usersCollection.findOne({ email: user.email });
-      
-      if (!userData?.businessIds?.includes(businessId)) {
-        await client.close();
-        return NextResponse.json(
-          { error: 'No tienes permisos para este negocio' },
-          { status: 403 }
-        );
-      }
-    }
+    const amount = PLANS[plan as keyof typeof PLANS].price;
+    const planName = PLANS[plan as keyof typeof PLANS].name;
 
-    // Buscar o crear cliente en Stripe
-    let customerId = business.stripeCustomerId;
-    
-    if (!customerId) {
-      // Crear nuevo cliente en Stripe
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: {
-          businessId: businessId,
-          businessName: business.name
-        }
-      });
-      
-      customerId = customer.id;
-      
-      // Guardar el ID del cliente en la base de datos
-      await db.collection('businesses').updateOne(
-        { _id: new ObjectId(businessId) },
-        { $set: { stripeCustomerId: customerId } }
-      );
-    }
-
-    // Obtener el precio según el plan
-    const amount = PLAN_PRICES[plan as keyof typeof PLAN_PRICES];
-    
-    // Crear el Payment Intent para la primera cuota
+    // Crear un PaymentIntent en Stripe
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Stripe usa centavos
+      amount: amount,
       currency: 'eur',
-      customer: customerId,
       automatic_payment_methods: {
         enabled: true,
       },
       metadata: {
+        userId: user.id,
+        userEmail: user.email,
         businessId: businessId,
+        businessName: business.name,
         plan: plan,
-        type: 'subscription_setup'
       },
-      description: `Suscripción ${plan === 'basic' ? 'Básica' : 'Premium'} para ${business.name}`
+      description: `Suscripción al ${planName} para ${business.name}`,
     });
 
-    // Guardar información temporal del pago pendiente
-    await db.collection('pending_payments').insertOne({
-      businessId: new ObjectId(businessId),
-      plan,
-      paymentMethod: 'stripe',
-      paymentIntentId: paymentIntent.id,
-      status: 'pending',
-      createdAt: new Date(),
-      userId: user.email
-    });
+    return NextResponse.json({ clientSecret: paymentIntent.client_secret });
 
-    await client.close();
-
-    return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id
-    });
   } catch (error) {
-    console.error('Error creating payment intent:', error);
-    return NextResponse.json(
-      { error: 'Error al crear el intento de pago' },
-      { status: 500 }
-    );
+    console.error('Error al crear Payment Intent:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error interno del servidor';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
