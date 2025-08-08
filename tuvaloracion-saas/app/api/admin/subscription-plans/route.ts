@@ -21,8 +21,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
 
+    // Asegurar que recurringPrice se guarda en céntimos
+    let recurringPrice = Number(data.recurringPrice);
+    if (recurringPrice < 20) { // Si es menor de 20, probablemente está en euros
+      recurringPrice = Math.round(recurringPrice * 100);
+    }
     const newPlan = {
       ...data,
+      recurringPrice,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

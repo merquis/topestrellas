@@ -1154,8 +1154,23 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
                         <p className="font-bold text-lg text-gray-900">{PLANS[subscription.plan].name}</p>
                         {subscription.plan !== 'trial' && (
                           <p className="text-2xl font-bold text-gray-900">
-                            €{PLANS[subscription.plan].price}
-                            <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan].duration}</span>
+                  {(() => {
+                    const planDb = subscriptionPlans.find(p => p.key === subscription.plan);
+                    if (planDb) {
+                      return (
+                        <>
+                          €{planDb.recurringPrice ? planDb.recurringPrice / 100 : 0}
+                          <span className="text-sm text-gray-500 font-normal">/{planDb.interval === 'year' ? 'año' : 'mes'}</span>
+                        </>
+                      );
+                    }
+                    return (
+                      <>
+                        €{PLANS[subscription.plan].price}
+                        <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan].duration}</span>
+                      </>
+                    );
+                  })()}
                           </p>
                         )}
                       </div>
@@ -1424,7 +1439,15 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
                     <p className="font-bold text-lg">{PLANS[selectedPlan].name}</p>
                     <p className="text-sm text-gray-500">Facturación mensual</p>
                   </div>
-                  <p className="text-2xl font-bold">€{PLANS[selectedPlan].price}</p>
+                  <p className="text-2xl font-bold">
+                    {(() => {
+                      const planDb = subscriptionPlans.find(p => p.key === selectedPlan);
+                      if (planDb) {
+                        return `€${planDb.recurringPrice ? planDb.recurringPrice / 100 : 0}`;
+                      }
+                      return `€${PLANS[selectedPlan].price}`;
+                    })()}
+                  </p>
                 </div>
               </div>
             </div>
