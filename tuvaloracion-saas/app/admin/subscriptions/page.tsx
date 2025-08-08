@@ -116,6 +116,9 @@ export default function SubscriptionsPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const [showEditPlanModal, setShowEditPlanModal] = useState(false);
+  const [showCreatePlanModal, setShowCreatePlanModal] = useState(false);
+  const [subscriptionStats, setSubscriptionStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -137,6 +140,9 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     if (user) {
       fetchPlans();
+      if (user.role === 'super_admin') {
+        fetchSubscriptionStats();
+      }
     }
   }, [user]);
 
@@ -280,6 +286,80 @@ export default function SubscriptionsPage() {
     }
   };
 
+  const fetchSubscriptionStats = async () => {
+    try {
+      const response = await fetch('/api/admin/subscription-stats');
+      if (response.ok) {
+        const data = await response.json();
+        setSubscriptionStats(data);
+      }
+    } catch (error) {
+      console.error('Error loading subscription stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const handleCreatePlan = async (planData: any) => {
+    try {
+      const response = await fetch('/api/admin/subscription-plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(planData),
+      });
+
+      if (response.ok) {
+        setToast({ message: 'Plan creado correctamente', type: 'success' });
+        fetchPlans();
+        setShowCreatePlanModal(false);
+      } else {
+        throw new Error('Error al crear el plan');
+      }
+    } catch (error) {
+      setToast({ message: 'Error al crear el plan', type: 'error' });
+    }
+  };
+
+  const handleUpdatePlan = async (planId: string, planData: any) => {
+    try {
+      const response = await fetch(`/api/admin/subscription-plans/${planId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(planData),
+      });
+
+      if (response.ok) {
+        setToast({ message: 'Plan actualizado correctamente', type: 'success' });
+        fetchPlans();
+        setShowEditPlanModal(false);
+        setEditingPlan(null);
+      } else {
+        throw new Error('Error al actualizar el plan');
+      }
+    } catch (error) {
+      setToast({ message: 'Error al actualizar el plan', type: 'error' });
+    }
+  };
+
+  const handleDeletePlan = async (planId: string) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este plan?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/subscription-plans/${planId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setToast({ message: 'Plan eliminado correctamente', type: 'success' });
+        fetchPlans();
+      } else {
+        throw new Error('Error al eliminar el plan');
+      }
+    } catch (error) {
+      setToast({ message: 'Error al eliminar el plan', type: 'error' });
+    }
+  };
+
   const getDaysRemaining = (endDate: Date) => {
     const now = new Date();
     const end = new Date(endDate);
@@ -328,9 +408,262 @@ export default function SubscriptionsPage() {
     return (
       <AdminLayout user={user}>
         {renderSkeleton()}
-      </AdminLayout>
-    );
-  }
+    </AdminLayout>
+  );
+}
+
+// Componente para crear un nuevo plan
+function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (planData: any) => void }) {
+  const [formData, setFormData] = useState({
+    key: '',
+    name: '',
+    description: '',
+    recurringPrice: '',
+    currency: 'EUR',
+    interval: 'month',
+    trialDays: '0',
+    features: [''],
+    active: true,
+    icon: '🚀',
+    color: 'blue',
+    popular: false
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const planData = {
+      ...formData,
+      recurringPrice: parseInt(formData.recurringPrice) * 100, // Convertir a centavos
+      setupPrice: 0,
+      trialDays: parseInt(formData.trialDays),
+      features: formData.features.filter(f => f.trim() !== '')
+    };
+    onSave(planData);
+  };
+
+  const addFeature = () => {
+    setFormData(prev => ({
+      ...prev,
+      features: [...prev.features, '']
+    }));
+  };
+
+  const removeFeature = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateFeature = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.map((f, i) => i === index ? value : f)
+    }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Crear Nuevo Plan</h3>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Clave del Plan
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.key}
+                onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ej: premium"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre del Plan
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ej: Plan Premium"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Descripción
+            </label>
+            <textarea
+              required
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="Descripción del plan"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Precio (€)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.recurringPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, recurringPrice: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="29"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Intervalo
+              </label>
+              <select
+                value={formData.interval}
+                onChange={(e) => setFormData(prev => ({ ...prev, interval: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="month">Mensual</option>
+                <option value="year">Anual</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Días de Prueba
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.trialDays}
+                onChange={(e) => setFormData(prev => ({ ...prev, trialDays: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Icono
+              </label>
+              <input
+                type="text"
+                value={formData.icon}
+                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="🚀"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Color
+              </label>
+              <select
+                value={formData.color}
+                onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="green">Verde</option>
+                <option value="blue">Azul</option>
+                <option value="purple">Morado</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Características
+            </label>
+            <div className="space-y-2">
+              {formData.features.map((feature, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={feature}
+                    onChange={(e) => updateFeature(index, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Característica del plan"
+                  />
+                  {formData.features.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeFeature(index)}
+                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addFeature}
+                className="text-blue-600 hover:text-blue-800 text-sm"
+              >
+                + Añadir característica
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.active}
+                onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                className="mr-2"
+              />
+              Plan activo
+            </label>
+            
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.popular}
+                onChange={(e) => setFormData(prev => ({ ...prev, popular: e.target.checked }))}
+                className="mr-2"
+              />
+              Plan popular
+            </label>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold"
+            >
+              Crear Plan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
   // Si es super_admin, mostrar solo la gestión de planes
   if (user?.role === 'super_admin') {
@@ -347,6 +680,7 @@ export default function SubscriptionsPage() {
                 </p>
               </div>
               <button
+                onClick={() => setShowCreatePlanModal(true)}
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center gap-2"
               >
                 <span>➕</span> Crear Nuevo Plan
@@ -429,6 +763,7 @@ export default function SubscriptionsPage() {
                         ✏️ Editar
                       </button>
                       <button
+                        onClick={() => handleDeletePlan(plan._id)}
                         className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
                       >
                         🗑️ Eliminar
@@ -456,38 +791,63 @@ export default function SubscriptionsPage() {
             <div className="grid md:grid-cols-4 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-sm text-gray-500">Total Negocios</p>
-                <p className="text-2xl font-bold text-gray-900">247</p>
+                {loadingStats ? (
+                  <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">
+                    {subscriptionStats?.totalBusinesses || 0}
+                  </p>
+                )}
               </div>
               <div className="bg-green-50 rounded-lg p-4">
                 <p className="text-sm text-gray-500">Plan Trial</p>
-                <p className="text-2xl font-bold text-green-600">89</p>
+                {loadingStats ? (
+                  <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-green-600">
+                    {subscriptionStats?.trialCount || 0}
+                  </p>
+                )}
               </div>
               <div className="bg-blue-50 rounded-lg p-4">
                 <p className="text-sm text-gray-500">Plan Básico</p>
-                <p className="text-2xl font-bold text-blue-600">112</p>
+                {loadingStats ? (
+                  <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-blue-600">
+                    {subscriptionStats?.basicCount || 0}
+                  </p>
+                )}
               </div>
               <div className="bg-purple-50 rounded-lg p-4">
                 <p className="text-sm text-gray-500">Plan Premium</p>
-                <p className="text-2xl font-bold text-purple-600">46</p>
+                {loadingStats ? (
+                  <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-purple-600">
+                    {subscriptionStats?.premiumCount || 0}
+                  </p>
+                )}
               </div>
             </div>
           </div>
         </div>
 
+        {/* Create Plan Modal */}
+        {showCreatePlanModal && (
+          <CreatePlanModal
+            onClose={() => setShowCreatePlanModal(false)}
+            onSave={handleCreatePlan}
+          />
+        )}
+
         {/* Edit Plan Modal */}
         {showEditPlanModal && editingPlan && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Editar Plan</h3>
-              <p className="text-sm text-gray-600 mb-4">Funcionalidad de edición próximamente.</p>
-              <button
-                onClick={() => setShowEditPlanModal(false)}
-                className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
+          <EditPlanModal
+            plan={editingPlan}
+            onClose={() => setShowEditPlanModal(false)}
+            onSave={(planData) => handleUpdatePlan(editingPlan._id, planData)}
+          />
         )}
 
         {toast && (
