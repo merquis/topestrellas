@@ -254,18 +254,8 @@
 }
 
 .star {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: #666;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  padding: 0 10px;
-  user-select: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 50px;
-  height: 50px;
-  position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .star:hover {
@@ -1045,4 +1035,23 @@
 .highlight-email {
   color: #ffd700;
   font-weight: bold;
+}
+
+/* Asegura el puntero tipo manita en todos los elementos interactivos */
+button,
+a.button,
+a.btn,
+[role="button"],
+[role="menuitem"],
+[role="option"],
+[role="tab"],
+[role="link"],
+[tabindex="0"],
+.clickable,
+.selectable,
+.interactive,
+.menu-item,
+.dropdown-item,
+.back-arrow {
+  cursor: pointer;
 }
