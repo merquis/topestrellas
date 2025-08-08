@@ -14,8 +14,9 @@ const dbName = 'tuvaloracion';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     // Verificar autenticación
     const authHeader = request.headers.get('cookie');
@@ -25,7 +26,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const businessId = params.id;
+    const businessId = resolvedParams.id;
 
     const client = new MongoClient(uri);
     await client.connect();
