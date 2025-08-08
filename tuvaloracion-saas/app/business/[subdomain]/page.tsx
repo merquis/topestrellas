@@ -4,9 +4,9 @@ import { Business } from '@/lib/types'
 import BusinessReviewApp from '@/components/BusinessReviewApp'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     subdomain: string
-  }
+  }>
 }
 
 async function getBusinessBySubdomain(subdomain: string): Promise<{ business: Business | null, isSuspended: boolean }> {
@@ -38,7 +38,8 @@ async function getBusinessBySubdomain(subdomain: string): Promise<{ business: Bu
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { business, isSuspended } = await getBusinessBySubdomain(params.subdomain)
+  const resolvedParams = await params;
+  const { business, isSuspended } = await getBusinessBySubdomain(resolvedParams.subdomain)
   
   if (!business) {
     return {
@@ -61,7 +62,8 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function BusinessPage({ params }: PageProps) {
-  const { business, isSuspended } = await getBusinessBySubdomain(params.subdomain)
+  const resolvedParams = await params;
+  const { business, isSuspended } = await getBusinessBySubdomain(resolvedParams.subdomain)
   
   if (!business) {
     notFound()
