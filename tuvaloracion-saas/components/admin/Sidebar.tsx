@@ -150,7 +150,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       <div className="p-4 border-t border-gray-700">
         <button
           onClick={onLogout}
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all duration-200 hover:bg-red-600 text-gray-300 hover:text-white ${
+          className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-all duration-200 hover:bg-red-600 text-gray-300 hover:text-white cursor-pointer ${
             isCollapsed ? 'justify-center' : ''
           }`}
         >

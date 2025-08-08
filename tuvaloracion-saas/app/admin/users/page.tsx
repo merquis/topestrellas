@@ -460,7 +460,7 @@ export default function UsersPage() {
 
         {/* Create User Modal */}
         {showCreateModal && (
-<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]">
             <div className="bg-white rounded-xl p-6 w-full max-w-md">
               <h2 className="text-xl font-bold mb-4">Crear Nuevo Usuario</h2>
               <form onSubmit={handleCreateUser} className="space-y-4">
@@ -555,7 +555,7 @@ export default function UsersPage() {
 
         {/* Edit User Modal */}
         {showEditModal && selectedUser && (
-<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">Editar Usuario</h2>
               <form onSubmit={handleUpdateUser} className="space-y-4">

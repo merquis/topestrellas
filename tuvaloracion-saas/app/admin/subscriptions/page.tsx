@@ -717,7 +717,7 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
   };
 
   return (
-<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-6">Crear Nuevo Plan</h3>
         
@@ -1408,7 +1408,7 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
 
       {/* Payment Method Selection Modal */}
       {showPaymentModal && selectedSubscription && selectedPlan && !paymentMethod && (
-<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Selecciona método de pago
