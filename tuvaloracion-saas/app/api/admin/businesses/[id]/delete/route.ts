@@ -89,14 +89,16 @@ export async function DELETE(
 
     } else {
       // Soft delete - marcar como eliminado
+      const deletionDate = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 días desde ahora
+      
       const updateResult = await db.collection('businesses').updateOne(
         { _id: businessId },
         {
           $set: {
-            active: false,
             deletedAt: now,
             deletedBy: userEmail,
-            'subscription.status': 'cancelled',
+            deletionScheduledFor: deletionDate,
+            active: false,
             updatedAt: now
           },
           $push: {
@@ -104,9 +106,9 @@ export async function DELETE(
               action: 'business_deleted',
               date: now,
               performedBy: userEmail,
-              reason: 'Negocio marcado para eliminación'
-            }
-          }
+              reason: hardDelete ? 'Eliminación permanente' : 'Soft delete - recuperable por 30 días'
+            } as any
+          } as any
         }
       );
 
