@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = 'tuvaloracion';
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_4452e008873fd0375ecaa7129ea17157c7c66b676eb0c25d0cabfafe3ced2af8';
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
