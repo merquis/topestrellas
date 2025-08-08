@@ -67,8 +67,8 @@ export async function POST(
             date: now,
             performedBy: userEmail,
             reason: 'Renovación manual por Super Admin'
-          }
-        }
+          } as any
+        } as any
       }
     );
 

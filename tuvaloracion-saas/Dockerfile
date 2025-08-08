@@ -9,6 +9,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json ./
+# Update npm to latest version
+RUN npm install -g npm@11.5.2
 RUN npm install
 
 # Rebuild the source code only when needed
@@ -22,6 +24,8 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Update npm before build
+RUN npm install -g npm@11.5.2
 RUN npm run build
 
 # Production image, copy all the files and run next

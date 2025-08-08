@@ -76,8 +76,8 @@ export async function POST(
             date: now,
             performedBy: userEmail,
             reason: 'Fecha personalizada establecida por Super Admin'
-          }
-        }
+          } as any
+        } as any
       }
     );
 
