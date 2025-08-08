@@ -5,15 +5,16 @@ import { translatePrizesWithAI } from '@/lib/ai-translation';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
     
     let objectId;
     try {
-      objectId = new ObjectId(params.id);
+      objectId = new ObjectId(resolvedParams.id);
     } catch (e) {
       return NextResponse.json(
         { error: 'ID inválido' },
@@ -44,8 +45,9 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
@@ -53,7 +55,7 @@ export async function PUT(
     
     let objectId;
     try {
-      objectId = new ObjectId(params.id);
+      objectId = new ObjectId(resolvedParams.id);
     } catch (e) {
       return NextResponse.json(
         { error: 'ID inválido' },
@@ -235,8 +237,9 @@ export async function PUT(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
@@ -244,7 +247,7 @@ export async function PATCH(
     
     let objectId;
     try {
-      objectId = new ObjectId(params.id);
+      objectId = new ObjectId(resolvedParams.id);
     } catch (e) {
       return NextResponse.json(
         { error: 'ID inválido' },

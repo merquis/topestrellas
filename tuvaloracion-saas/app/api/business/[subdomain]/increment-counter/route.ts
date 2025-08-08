@@ -3,8 +3,9 @@ import clientPromise from '@/lib/mongodb';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { subdomain: string } }
+  { params }: { params: Promise<{ subdomain: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const client = await clientPromise;
     const db = client.db('tuvaloracion');
@@ -21,7 +22,7 @@ export async function POST(
     }
 
     // Obtener información del negocio
-    const business = await db.collection('businesses').findOne({ subdomain: params.subdomain });
+    const business = await db.collection('businesses').findOne({ subdomain: resolvedParams.subdomain });
     
     if (!business) {
       return NextResponse.json(
@@ -49,7 +50,7 @@ export async function POST(
     } else if (reviewPlatform === 'alternating') {
       // Alternado automático: incrementar contador y decidir plataforma
       const updateResult = await db.collection('businesses').findOneAndUpdate(
-        { subdomain: params.subdomain },
+        { subdomain: resolvedParams.subdomain },
         { $inc: { 'config.reviewClickCounter': 1 } },
         { returnDocument: 'after' }
       );
@@ -88,7 +89,7 @@ export async function POST(
       }
     );
 
-    console.log(`[${params.subdomain}] User: ${userEmail}, Platform: ${platform}, Counter: ${newCounter}`);
+    console.log(`[${resolvedParams.subdomain}] User: ${userEmail}, Platform: ${platform}, Counter: ${newCounter}`);
 
     return NextResponse.json({
       success: true,
