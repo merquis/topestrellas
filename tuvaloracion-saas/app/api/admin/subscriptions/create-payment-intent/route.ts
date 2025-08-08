@@ -15,7 +15,8 @@ const PLANS = {
 
 export async function POST(request: Request) {
   try {
-    const authHeader = headers().get('Authorization');
+    const headersList = await headers();
+    const authHeader = headersList.get('Authorization');
     
     if (!authHeader) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
