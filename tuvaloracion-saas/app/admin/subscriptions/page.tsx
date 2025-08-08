@@ -362,7 +362,7 @@ export default function SubscriptionsPage() {
 
         {/* Active Subscriptions */}
 
-        {user?.role === 'superadmin' && subscriptionPlans.length > 0 && (
+        {user?.role === 'super_admin' && subscriptionPlans.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">🛠️ Planes de Suscripción</h2>
             <div className="grid md:grid-cols-3 gap-6">
