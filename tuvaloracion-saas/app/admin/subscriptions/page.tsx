@@ -419,7 +419,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     key: plan.key || '',
     name: plan.name || '',
     description: plan.description || '',
-    recurringPrice: String(plan.recurringPrice / 100), // Convertir de centavos a euros
+    recurringPrice: String(plan.recurringPrice),
     currency: plan.currency || 'EUR',
     interval: plan.interval || 'month',
     trialDays: String(plan.trialDays || 0),
