@@ -14,6 +14,25 @@ const StripePaymentForm = dynamic(
   { ssr: false }
 );
 
+interface SubscriptionPlan {
+  _id: string;
+  key: string;
+  name: string;
+  description: string;
+  setupPrice: number;
+  recurringPrice: number;
+  currency: string;
+  interval: string;
+  trialDays: number;
+  features: string[];
+  active: boolean;
+  icon: string;
+  color: string;
+  popular: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 interface Subscription {
   businessId: string;
   businessName: string;
@@ -84,6 +103,7 @@ const PLANS = {
 export default function SubscriptionsPage() {
   const [user, setUser] = useState<any>(null);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -94,6 +114,8 @@ export default function SubscriptionsPage() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [creatingPayment, setCreatingPayment] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
+  const [showEditPlanModal, setShowEditPlanModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -110,6 +132,24 @@ export default function SubscriptionsPage() {
       loadSubscriptions();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user?.role === 'superadmin') {
+      fetchPlans();
+    }
+  }, [user]);
+
+  const fetchPlans = async () => {
+    try {
+      const res = await fetch('/api/admin/subscription-plans');
+      if (!res.ok) throw new Error('Error al cargar los planes');
+      const data = await res.json();
+      setSubscriptionPlans(data);
+    } catch (err) {
+      console.error(err);
+      setToast({ message: 'Error al cargar los planes', type: 'error' });
+    }
+  };
 
   const loadSubscriptions = async () => {
     if (!user) return;
@@ -315,6 +355,33 @@ export default function SubscriptionsPage() {
         </div>
 
         {/* Active Subscriptions */}
+
+        {user?.role === 'superadmin' && subscriptionPlans.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">🛠️ Planes de Suscripción</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {subscriptionPlans.map((plan) => (
+                <div key={plan._id} className="border rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                    <span className="text-sm text-gray-500">{plan.interval}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{plan.description}</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-4">€{plan.recurringPrice}</p>
+                  <button
+                    onClick={() => {
+                      setEditingPlan(plan);
+                      setShowEditPlanModal(true);
+                    }}
+                    className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+                  >
+                    Editar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="grid gap-6 lg:grid-cols-2">
           {subscriptions.map((subscription: Subscription) => (
             <div key={subscription.businessId} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
@@ -701,6 +768,22 @@ export default function SubscriptionsPage() {
           type={toast.type}
           onClose={() => setToast(null)}
         />
+      )}
+
+      {/* Edit Plan Modal */}
+      {showEditPlanModal && editingPlan && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Editar Plan</h3>
+            <p className="text-sm text-gray-600 mb-4">Funcionalidad de edición próximamente.</p>
+            <button
+              onClick={() => setShowEditPlanModal(false)}
+              className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
       )}
     </AdminLayout>
   );
