@@ -75,8 +75,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 });
     }
 
-    // Obtener el precio de la base de datos
-    const amount = planData.recurringPrice;
+    // Obtener el precio de la base de datos y convertir a céntimos para Stripe
+    const priceInEuros = planData.recurringPrice;
+    const amount = Math.round(priceInEuros * 100); // Convertir euros a céntimos
     const planName = planData.name;
 
     // Validar que el precio sea mayor que 0 para PaymentIntent
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
 
     // Crear un PaymentIntent en Stripe
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount,
+      amount: amount, // Stripe requiere el monto en céntimos
       currency: 'eur',
       automatic_payment_methods: {
         enabled: true,
