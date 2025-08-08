@@ -286,8 +286,9 @@ export default function SubscriptionsPage() {
                       ? 'bg-yellow-100 text-yellow-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {subscription.status === 'active' ? '● Activo' : 
-                     subscription.status === 'suspended' ? '⚠ Suspendido' : '○ Inactivo'}
+                    {subscription.status === 'active' && <><span className="mr-1.5">●</span> Activo</>}
+                    {subscription.status === 'suspended' && <><span className="mr-1.5">⚠</span> Suspendido</>}
+                    {subscription.status === 'inactive' && <><span className="text-red-500 mr-1.5">●</span> Inactivo</>}
                   </span>
                 </div>
 
