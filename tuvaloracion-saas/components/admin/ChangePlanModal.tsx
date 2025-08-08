@@ -97,25 +97,24 @@ export default function ChangePlanModal({
         }
       } else {
         // Cambiar plan normal
-        const response = await fetch(`/api/admin/subscriptions/${businessId}/change-plan`, {
+        const response = await fetch('/api/admin/subscriptions/create-checkout-session', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            newPlan: selectedPlan,
-            userRole,
+            businessId,
+            planKey: selectedPlan,
             userEmail
           }),
         });
 
         const data = await response.json();
 
-        if (response.ok) {
-          onPlanChanged();
-          onClose();
+        if (response.ok && data.url) {
+          window.location.href = data.url;
         } else {
-          setError(data.error || 'Error al cambiar el plan');
+          setError(data.error || 'Error al iniciar el pago');
         }
       }
     } catch (error) {
