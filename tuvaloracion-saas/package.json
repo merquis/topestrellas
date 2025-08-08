@@ -36,7 +36,7 @@
     "swr": "^2.2.4",
     "qrcode": "^1.5.3",
     "sharp": "^0.33.2",
-    "stripe": "^18.4.01",
+    "stripe": "^18.4.0",
     "@stripe/stripe-js": "^7.8.0",
     "@stripe/react-stripe-js": "^3.9.0",
     "@paypal/checkout-server-sdk": "^1.0.3",
