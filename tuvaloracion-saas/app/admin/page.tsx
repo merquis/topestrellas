@@ -55,18 +55,31 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const authUser = checkAuth();
-    if (!authUser) return;
+    // Cargar planes de suscripción
+    const loadSubscriptionPlans = async () => {
+      try {
+        // Si hay un usuario autenticado, enviar sus datos
+        const authUser = checkAuth();
+        const params = authUser 
+          ? new URLSearchParams({
+              userEmail: authUser.email,
+              userRole: authUser.role,
+            })
+          : new URLSearchParams({
+              public: 'true' // Indicar que es una solicitud pública
+            });
 
-    const params = new URLSearchParams({
-      userEmail: authUser.email,
-      userRole: authUser.role,
-    });
+        const response = await fetch(`/api/admin/subscription-plans?${params.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSubscriptionPlans(data);
+        }
+      } catch (err) {
+        console.error('Error al cargar los planes:', err);
+      }
+    };
 
-    fetch(`/api/admin/subscription-plans?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => setSubscriptionPlans(data))
-      .catch(err => console.error('Error al cargar los planes:', err));
+    loadSubscriptionPlans();
   }, []);
 
   useEffect(() => {
@@ -602,6 +615,19 @@ export default function AdminDashboard() {
               {/* Step 2: Business Search */}
               {registrationStep === 2 && (
                 <div className="space-y-6">
+                  {/* Cargar planes cuando se llega al paso 2 */}
+                  {subscriptionPlans.length === 0 && (
+                    <div style={{ display: 'none' }}>
+                      {(() => {
+                        // Cargar planes si aún no están cargados
+                        fetch('/api/admin/subscription-plans?public=true')
+                          .then(res => res.json())
+                          .then(data => setSubscriptionPlans(data))
+                          .catch(err => console.error('Error al cargar planes:', err));
+                        return null;
+                      })()}
+                    </div>
+                  )}
                   <div className="bg-green-50 p-6 rounded-xl border border-green-200">
                     <p className="text-sm text-green-700 mb-4 flex items-start gap-2">
                       <span className="text-green-500 mt-0.5">💡</span>
