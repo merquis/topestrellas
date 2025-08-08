@@ -90,49 +90,15 @@ async function createStripeSession(plan: string, businessName: string, businessI
   // Importar Stripe dinámicamente
   const stripe = require('stripe')(STRIPE_SECRET_KEY);
 
-  // Obtener el plan de la base de datos
-  const db = await getDatabase();
-  const planData = await db.collection('subscriptionplans').findOne({ key: plan, active: true });
+  const priceIds = {
+    basic: process.env.STRIPE_PRICE_BASIC!,
+    premium: process.env.STRIPE_PRICE_PREMIUM!,
+  };
 
-  if (!planData) {
-    throw new Error(`Plan no encontrado: ${plan}`);
-  }
+  const priceId = priceIds[plan as keyof typeof priceIds];
 
-  // Crear o buscar el precio en Stripe usando el precio de la base de datos
-  const priceInCents = planData.recurringPrice < 20 ? Math.round(planData.recurringPrice * 100) : planData.recurringPrice;
-  
-  // Buscar si ya existe un precio en Stripe para este plan con el precio correcto
-  const existingPrices = await stripe.prices.list({
-    lookup_keys: [plan],
-    limit: 10,
-  });
-
-  let priceId: string;
-  
-  // Buscar un precio existente que coincida con el precio actual de la BD
-  const matchingPrice = existingPrices.data.find((price: any) => 
-    price.unit_amount === priceInCents && 
-    price.currency === (planData.currency?.toLowerCase() || 'eur') &&
-    price.recurring?.interval === (planData.interval === 'mensual' ? 'month' : 'year')
-  );
-
-  if (matchingPrice) {
-    priceId = matchingPrice.id;
-  } else {
-    // Crear un nuevo precio en Stripe con el precio correcto de la BD
-    const stripePrice = await stripe.prices.create({
-      unit_amount: priceInCents,
-      currency: planData.currency?.toLowerCase() || 'eur',
-      recurring: {
-        interval: planData.interval === 'mensual' ? 'month' : 'year',
-      },
-      product_data: {
-        name: planData.name,
-        description: planData.description,
-      },
-      lookup_key: `${plan}_${Date.now()}`, // Hacer único el lookup_key
-    });
-    priceId = stripePrice.id;
+  if (!priceId) {
+    throw new Error(`Price ID no encontrado para el plan: ${plan}`);
   }
   
   const session = await stripe.checkout.sessions.create({
@@ -146,9 +112,7 @@ async function createStripeSession(plan: string, businessName: string, businessI
     cancel_url: `${BASE_URL}/admin/subscriptions`,
     metadata: {
       businessId: businessId,
-      plan: plan,
-      planName: planData.name,
-      recurringPrice: planData.recurringPrice.toString(),
+      plan: plan
     },
     locale: 'es'
   });
