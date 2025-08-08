@@ -6,7 +6,7 @@ import { verifyAuth } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-07-30.basil',
 });
 
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
