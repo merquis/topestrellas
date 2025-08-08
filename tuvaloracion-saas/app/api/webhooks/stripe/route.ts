@@ -84,10 +84,16 @@ export async function POST(request: NextRequest) {
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
         
+        // Obtener el ID de la suscripción del objeto invoice
+        // En Stripe 18.4.0, subscription puede ser un string o un objeto expandible
+        const subscriptionId = typeof invoice.subscription === 'string' 
+          ? invoice.subscription 
+          : invoice.subscription?.id;
+        
         // Actualizar la fecha del último pago
-        if (invoice.subscription && invoice.customer) {
+        if (subscriptionId && invoice.customer) {
           await db.collection('businesses').updateOne(
-            { 'subscription.stripeSubscriptionId': invoice.subscription },
+            { 'subscription.stripeSubscriptionId': subscriptionId },
             {
               $set: {
                 'subscription.lastPayment': new Date(),
@@ -96,7 +102,7 @@ export async function POST(request: NextRequest) {
               }
             }
           );
-          console.log(`✅ Payment received for subscription ${invoice.subscription}`);
+          console.log(`✅ Payment received for subscription ${subscriptionId}`);
         }
         break;
       }
