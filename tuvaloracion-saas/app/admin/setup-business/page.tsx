@@ -13,6 +13,8 @@ function SetupBusinessContent() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState('trial');
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
   
   // Datos del usuario desde los parámetros
   const userName = searchParams.get('name') || '';
@@ -152,52 +154,43 @@ function SetupBusinessContent() {
     };
   }, []);
 
-  const plans = [
-    {
-      id: 'trial',
-      name: 'Prueba Gratis',
-      price: '0€',
-      duration: '7 días',
-      features: [
-        'Todas las funciones',
-        'Sin límite de opiniones',
-        'Personalización completa',
-        'Soporte por email',
-        'Sin tarjeta de crédito'
-      ],
-      recommended: false
-    },
-    {
-      id: 'basic',
-      name: 'Básico',
-      price: '29€',
-      duration: '/mes',
-      features: [
-        'Todas las funciones',
-        'Hasta 500 opiniones/mes',
-        'Personalización básica',
-        'Soporte por email',
-        'Estadísticas básicas'
-      ],
-      recommended: false
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      price: '59€',
-      duration: '/mes',
-      features: [
-        'Todas las funciones',
-        'Opiniones ilimitadas',
-        'Personalización avanzada',
-        'Soporte prioritario 24/7',
-        'Estadísticas avanzadas',
-        'API access',
-        'Multi-idioma avanzado'
-      ],
-      recommended: true
-    }
-  ];
+  // Cargar planes desde la base de datos
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await fetch('/api/admin/subscription-plans');
+        if (response.ok) {
+          const data = await response.json();
+          // Formatear los planes para el componente
+          const formattedPlans = data.map((plan: any) => ({
+            id: plan.key,
+            name: plan.name,
+            price: plan.recurringPrice === 0 ? '0€' : `${plan.recurringPrice / 100}€`,
+            duration: plan.trialDays > 0 ? `${plan.trialDays} días` : plan.interval === 'month' ? '/mes' : '/año',
+            features: plan.features || [],
+            recommended: plan.popular || false,
+            icon: plan.icon || '📦',
+            color: plan.color || 'blue'
+          }));
+          setPlans(formattedPlans);
+          // Seleccionar el plan trial por defecto si existe
+          const trialPlan = formattedPlans.find((p: any) => p.id === 'trial');
+          if (trialPlan) {
+            setSelectedPlan('trial');
+          } else if (formattedPlans.length > 0) {
+            setSelectedPlan(formattedPlans[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar los planes:', error);
+        setToast({ message: 'Error al cargar los planes de suscripción', type: 'error' });
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   const handlePlanSelect = (planId: string) => {
     setSelectedPlan(planId);

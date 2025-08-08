@@ -413,6 +413,259 @@ export default function SubscriptionsPage() {
   );
 }
 
+// Componente para editar un plan existente
+function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onClose: () => void; onSave: (planData: any) => void }) {
+  const [formData, setFormData] = useState({
+    key: plan.key || '',
+    name: plan.name || '',
+    description: plan.description || '',
+    recurringPrice: String(plan.recurringPrice / 100), // Convertir de centavos a euros
+    currency: plan.currency || 'EUR',
+    interval: plan.interval || 'month',
+    trialDays: String(plan.trialDays || 0),
+    features: plan.features || [''],
+    active: plan.active !== undefined ? plan.active : true,
+    icon: plan.icon || '🚀',
+    color: plan.color || 'blue',
+    popular: plan.popular || false
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const planData = {
+      ...formData,
+      recurringPrice: parseInt(formData.recurringPrice) * 100, // Convertir a centavos
+      setupPrice: 0,
+      trialDays: parseInt(formData.trialDays),
+      features: formData.features.filter(f => f.trim() !== '')
+    };
+    onSave(planData);
+  };
+
+  const addFeature = () => {
+    setFormData(prev => ({
+      ...prev,
+      features: [...prev.features, '']
+    }));
+  };
+
+  const removeFeature = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateFeature = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.map((f, i) => i === index ? value : f)
+    }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Editar Plan</h3>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Clave del Plan
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.key}
+                onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ej: premium"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre del Plan
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ej: Plan Premium"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Descripción
+            </label>
+            <textarea
+              required
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="Descripción del plan"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Precio (€)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.recurringPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, recurringPrice: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="29"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Intervalo
+              </label>
+              <select
+                value={formData.interval}
+                onChange={(e) => setFormData(prev => ({ ...prev, interval: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="month">Mensual</option>
+                <option value="year">Anual</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Días de Prueba
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.trialDays}
+                onChange={(e) => setFormData(prev => ({ ...prev, trialDays: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Icono
+              </label>
+              <input
+                type="text"
+                value={formData.icon}
+                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="🚀"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Color
+              </label>
+              <select
+                value={formData.color}
+                onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="green">Verde</option>
+                <option value="blue">Azul</option>
+                <option value="purple">Morado</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Características
+            </label>
+            <div className="space-y-2">
+              {formData.features.map((feature, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={feature}
+                    onChange={(e) => updateFeature(index, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Característica del plan"
+                  />
+                  {formData.features.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeFeature(index)}
+                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addFeature}
+                className="text-blue-600 hover:text-blue-800 text-sm"
+              >
+                + Añadir característica
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.active}
+                onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                className="mr-2"
+              />
+              Plan activo
+            </label>
+            
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.popular}
+                onChange={(e) => setFormData(prev => ({ ...prev, popular: e.target.checked }))}
+                className="mr-2"
+              />
+              Plan popular
+            </label>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // Componente para crear un nuevo plan
 function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (planData: any) => void }) {
   const [formData, setFormData] = useState({
