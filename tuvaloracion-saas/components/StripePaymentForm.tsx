@@ -8,10 +8,12 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-import Toast from '@/components/Toast';
 
-// Cargar Stripe con la clave pública
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
+// IMPORTANTE: La clave pública debe estar disponible en el cliente
+// Asegúrate de que NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY esté configurada en Easypanel
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
 
 interface PaymentFormProps {
   businessId: string;
@@ -35,6 +37,8 @@ function CheckoutForm({ businessId, businessName, plan, onSuccess, onCancel }: P
 
   useEffect(() => {
     // Crear el Payment Intent en el backend
+    console.log('Creando Payment Intent para:', { businessId, plan });
+    
     fetch('/api/admin/subscriptions/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -43,16 +47,24 @@ function CheckoutForm({ businessId, businessName, plan, onSuccess, onCancel }: P
         plan,
       }),
     })
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (res) => {
+        const data = await res.json();
+        console.log('Respuesta del servidor:', data);
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Error al crear el pago');
+        }
+        
         if (data.clientSecret) {
           setClientSecret(data.clientSecret);
         } else {
-          setMessage('Error al inicializar el pago');
+          setMessage('Error: No se recibió el client secret');
+          console.error('No client secret in response:', data);
         }
       })
-      .catch(() => {
-        setMessage('Error de conexión');
+      .catch((error) => {
+        console.error('Error al crear Payment Intent:', error);
+        setMessage(error.message || 'Error de conexión');
       });
   }, [businessId, plan]);
 
