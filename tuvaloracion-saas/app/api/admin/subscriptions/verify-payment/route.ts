@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
             'subscription.autoRenew': true,
             'subscription.lastPayment': {
               date: now,
-              amount: pendingPayment.plan === 'basic' ? process.env.STRIPE_PRICE_BASIC : process.env.STRIPE_PRICE_PREMIUM,
+              amount: await getPlanPrice(pendingPayment.plan),
               method: pendingPayment.paymentMethod
             },
             ...subscriptionData,
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         businessId: pendingPayment.businessId,
         userId: user.email,
         plan: pendingPayment.plan,
-        amount: pendingPayment.plan === 'basic' ? process.env.STRIPE_PRICE_BASIC : process.env.STRIPE_PRICE_PREMIUM,
+        amount: await getPlanPrice(pendingPayment.plan),
         currency: 'EUR',
         paymentMethod: pendingPayment.paymentMethod,
         status: 'completed',
