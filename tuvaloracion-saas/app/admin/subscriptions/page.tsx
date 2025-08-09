@@ -366,21 +366,30 @@ const fetchPlans = async () => {
   };
 
   const handleDeletePlan = async (planId: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este plan?')) return;
+    if (!confirm('¿Estás seguro de que quieres eliminar este plan?\n\nEsto también archivará el producto en Stripe.')) return;
 
     try {
       const response = await fetch(`/api/admin/subscription-plans/${planId}`, {
         method: 'DELETE',
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        setToast({ message: 'Plan eliminado correctamente', type: 'success' });
+        setToast({ 
+          message: data.message || '✅ Plan eliminado y archivado en Stripe correctamente', 
+          type: 'success' 
+        });
         fetchPlans();
       } else {
-        throw new Error('Error al eliminar el plan');
+        throw new Error(data.error || 'Error al eliminar el plan');
       }
-    } catch (error) {
-      setToast({ message: 'Error al eliminar el plan', type: 'error' });
+    } catch (error: any) {
+      console.error('Error eliminando plan:', error);
+      setToast({ 
+        message: `❌ ${error.message || 'Error al eliminar el plan'}`, 
+        type: 'error' 
+      });
     }
   };
 
