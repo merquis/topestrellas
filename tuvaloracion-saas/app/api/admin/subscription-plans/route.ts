@@ -35,20 +35,11 @@ export async function GET(request: Request) {
     const db = await getDatabase();
     let query: any = activeOnly ? { active: true } : {};
     
-    if (userRole === 'admin' && userEmail) {
-      const user = await db.collection('users').findOne({ email: userEmail });
-      if (user) {
-        query = {
-          ...query,
-          $or: [
-            { assignedTo: { $in: [user._id.toString()] } },
-            { assignedTo: { $exists: false } },
-            { assignedTo: { $size: 0 } }
-          ]
-        };
-      } else {
-        return NextResponse.json({ success: false, error: 'Usuario no encontrado' }, { status: 404 });
-      }
+    // Por ahora, los admins pueden ver todos los planes activos.
+    // Si se implementa una asignación estricta de planes por admin,
+    // se deberá reactivar una lógica de filtrado aquí.
+    if (userRole === 'super_admin') {
+      // Los super_admin pueden ver todos los planes (activos o inactivos)
     }
     
     const plans = await db.collection('subscriptionplans')
