@@ -74,9 +74,10 @@ export async function POST(request: Request) {
       );
     }
     
-    // Crear el plan en la DB
-    const newPlan: SubscriptionPlan = {
-      ...validatedData,
+    // Crear el plan en la DB (sin _id para que MongoDB lo genere)
+    const { _id, ...planData } = validatedData;
+    const newPlan = {
+      ...planData,
       interval: validatedData.interval || 'month',
       createdAt: new Date(),
       updatedAt: new Date(),
