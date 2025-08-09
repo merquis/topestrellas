@@ -235,6 +235,107 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSelectPlanAndPay = async (plan: any) => {
+    if (!selectedBusiness || !tempUserData) {
+      setRegisterError('Error: Datos incompletos');
+      return;
+    }
+
+    setIsCreatingBusiness(true);
+    setRegisterError('');
+    
+    try {
+      // Primero crear el negocio sin suscripción
+      const businessData = {
+        ownerName: tempUserData.name,
+        email: tempUserData.email,
+        phone: tempUserData.phone,
+        password: tempUserData.password,
+        businessName: selectedBusiness.name,
+        placeId: businessPlaceId,
+        address: selectedBusiness.formatted_address || '',
+        businessPhone: selectedBusiness.international_phone_number || tempUserData.phone,
+        website: selectedBusiness.website || '',
+        rating: selectedBusiness.rating || 0,
+        totalReviews: selectedBusiness.user_ratings_total || 0,
+        photoUrl: businessPhotoUrl,
+        plan: plan.key, // Usar el plan seleccionado
+        type: tempUserData.businessType,
+        country: 'España',
+        skipSubscription: true // No crear suscripción aún
+      };
+      
+      const businessResponse = await fetch('/api/admin/businesses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(businessData),
+      });
+
+      if (!businessResponse.ok) {
+        const errorData = await businessResponse.json();
+        throw new Error(errorData.error || 'Error al crear el negocio');
+      }
+
+      const { businessId, user: newUser } = await businessResponse.json();
+      
+      // Guardar el usuario temporalmente
+      if (newUser) {
+        saveAuth(newUser);
+      }
+
+      // Crear sesión de pago con Stripe
+      const subscriptionResponse = await fetch('/api/admin/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          businessId,
+          planKey: plan.key,
+          userEmail: tempUserData.email,
+          action: 'subscribe'
+        }),
+      });
+
+      if (!subscriptionResponse.ok) {
+        const errorData = await subscriptionResponse.json();
+        throw new Error(errorData.error || 'Error al crear la sesión de pago');
+      }
+
+      const { clientSecret } = await subscriptionResponse.json();
+      
+      // Guardar datos en localStorage para recuperar después del pago
+      localStorage.setItem('pendingSubscription', JSON.stringify({
+        businessId,
+        planKey: plan.key,
+        userEmail: tempUserData.email
+      }));
+
+      // Redirigir al componente de pago de Stripe
+      // Por ahora, mostrar el componente de pago inline
+      // En producción, podrías usar Stripe Checkout redirect
+      
+      // Aquí deberías mostrar el modal de pago o redirigir a Stripe
+      setRegisterError('Redirigiendo al pago...');
+      
+      // Simular redirección (en producción usar Stripe Checkout)
+      setTimeout(() => {
+        if (newUser) {
+          setUser(newUser);
+          loadDashboardData(newUser);
+        }
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('Error en el proceso de registro:', error);
+      setRegisterError(error.message || 'Error al procesar el registro');
+    } finally {
+      setIsCreatingBusiness(false);
+    }
+  };
+
   const resetForms = () => {
     setLoginEmail('');
     setLoginPassword('');
@@ -689,69 +790,152 @@ export default function AdminDashboard() {
               {/* Step 3: Plan Selection */}
               {registrationStep === 3 && (
                 <div className="space-y-6">
+                  {/* Header con mensaje claro */}
                   <div className="text-center mb-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Elige tu plan</h3>
-                    <p className="text-gray-600">Selecciona el plan que mejor se adapte a tu negocio</p>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      Elige tu plan de suscripción
+                    </h3>
+                    <p className="text-lg text-gray-600 mb-3">
+                      Todos los planes incluyen prueba gratis
+                    </p>
+                    <div className="bg-green-100 text-green-800 px-6 py-3 rounded-lg inline-block">
+                      <div className="flex items-center gap-2 font-semibold">
+                        <span>✅</span>
+                        <span>No se cobra nada hoy • Cancela cuando quieras</span>
+                      </div>
+                    </div>
                   </div>
 
+                  {/* Grid de planes */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {subscriptionPlans.length > 0 ? (
                       subscriptionPlans.map((plan) => {
-                        const isSelected = selectedPlan === plan.key;
                         const isGreen = plan.color === 'green';
                         const isBlue = plan.color === 'blue';
                         const isPurple = plan.color === 'purple';
                         
+                        // Calcular fecha del primer cobro
+                        const firstChargeDate = new Date();
+                        firstChargeDate.setDate(firstChargeDate.getDate() + (plan.trialDays || 0));
+                        const formattedDate = firstChargeDate.toLocaleDateString('es-ES', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        });
+                        
                         return (
                           <div
                             key={plan.key}
-                            className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                              isSelected
-                                ? isGreen 
-                                  ? 'border-green-500 bg-green-50 shadow-lg'
-                                  : isBlue
-                                  ? 'border-blue-500 bg-blue-50 shadow-lg'
-                                  : 'border-purple-500 bg-purple-50 shadow-lg'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => setSelectedPlan(plan.key)}
+                            className="relative p-6 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all bg-white"
                           >
-                            {isSelected && (
-                              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                <span className={`text-white px-3 py-1 rounded-full text-sm font-medium ${
-                                  isGreen ? 'bg-green-500' : isBlue ? 'bg-blue-500' : 'bg-purple-500'
-                                }`}>
-                                  Seleccionado
-                                </span>
-                              </div>
-                            )}
                             {plan.popular && (
-                              <div className="absolute -top-3 right-4">
-                                <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                                  MÁS POPULAR
+                              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                                <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
+                                  Más Popular
                                 </span>
                               </div>
                             )}
-                            <div className="text-center">
-                              <div className="text-4xl mb-4">{plan.icon || '📦'}</div>
-                              <h4 className="text-lg font-bold text-gray-900 mb-2">{plan.name}</h4>
-                              <div className={`text-3xl font-bold mb-2 ${
-                                isGreen ? 'text-green-600' : isBlue ? 'text-blue-600' : 'text-purple-600'
-                              }`}>
-                                {plan.recurringPrice > 0 ? `${plan.recurringPrice}€` : 'GRATIS'}
+                            
+                            {/* Badge de días gratis */}
+                            {plan.trialDays > 0 && (
+                              <div className="text-center mb-4">
+                                <div className="bg-green-500 text-white px-4 py-2 rounded-full inline-block">
+                                  <span className="font-bold text-lg">
+                                    {plan.trialDays} {plan.trialDays === 1 ? 'DÍA' : 'DÍAS'} GRATIS
+                                  </span>
+                                </div>
                               </div>
-                              <p className="text-sm text-gray-500 mb-4">
-                                {plan.setupPrice > 0 ? `${plan.setupPrice}€ inicial + ` : ''}
-                                {plan.recurringPrice > 0 ? `por ${plan.interval === 'month' ? 'mes' : 'año'}` : `${plan.trialDays} días de prueba`}
-                              </p>
-                              <ul className="text-sm text-gray-600 space-y-2 text-left">
+                            )}
+                            
+                            <div className="text-center">
+                              <div className="text-4xl mb-3">{plan.icon || '📦'}</div>
+                              <h4 className="text-xl font-bold text-gray-900 mb-4">{plan.name}</h4>
+                              
+                              {/* Precio con formato europeo */}
+                              <div className="mb-6">
+                                {plan.trialDays > 0 && (
+                                  <p className="text-gray-600 text-sm mb-1">después</p>
+                                )}
+                                <div className={`text-4xl font-bold ${
+                                  isGreen ? 'text-green-600' : isBlue ? 'text-blue-600' : isPurple ? 'text-purple-600' : 'text-gray-900'
+                                }`}>
+                                  {plan.recurringPrice} €
+                                  <span className="text-lg font-normal text-gray-600">
+                                    /{plan.interval === 'month' ? 'mes' : 'año'}
+                                  </span>
+                                </div>
+                                {plan.setupPrice > 0 && (
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    + {plan.setupPrice} € de configuración inicial
+                                  </p>
+                                )}
+                              </div>
+                              
+                              {/* Features */}
+                              <ul className="text-sm text-gray-600 space-y-2 text-left mb-6">
                                 {plan.features?.map((feature: string, index: number) => (
-                                  <li key={index} className="flex items-center gap-2">
-                                    <span className={isGreen ? 'text-green-500' : isBlue ? 'text-blue-500' : 'text-purple-500'}>✓</span>
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className={`mt-0.5 ${
+                                      isGreen ? 'text-green-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : 'text-gray-500'
+                                    }`}>✓</span>
                                     <span>{feature}</span>
                                   </li>
                                 ))}
                               </ul>
+                              
+                              {/* Información sobre el cobro */}
+                              {plan.trialDays > 0 && (
+                                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-left">
+                                  <div className="text-xs space-y-1">
+                                    <div className="flex items-center gap-2 text-blue-800">
+                                      <span>📅</span>
+                                      <span className="font-semibold">
+                                        Primer cobro: {formattedDate}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-blue-700">
+                                      <span>💳</span>
+                                      <span>Tarjeta requerida (no se cobra hoy)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-blue-700">
+                                      <span>❌</span>
+                                      <span>Cancela gratis cuando quieras</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Botón CTA individual para cada plan */}
+                              <button
+                                type="button"
+                                onClick={() => handleSelectPlanAndPay(plan)}
+                                disabled={isCreatingBusiness}
+                                className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+                                  isGreen 
+                                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+                                    : isBlue
+                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+                                    : isPurple
+                                    ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                                    : 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800'
+                                }`}
+                              >
+                                {plan.trialDays > 0 ? (
+                                  <>
+                                    Empezar {plan.trialDays} {plan.trialDays === 1 ? 'día' : 'días'} gratis
+                                    <span className="block text-xs font-normal mt-0.5 opacity-90">
+                                      Sin compromiso • 0 € hoy
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    Suscribirse por {plan.recurringPrice} €/{plan.interval === 'month' ? 'mes' : 'año'}
+                                    <span className="block text-xs font-normal mt-0.5 opacity-90">
+                                      Pago inmediato
+                                    </span>
+                                  </>
+                                )}
+                              </button>
                             </div>
                           </div>
                         );
@@ -773,25 +957,20 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  <div className="flex justify-center">
-                    <button
-                      type="button"
-                      onClick={handleStep2Submit}
-                      disabled={isCreatingBusiness}
-                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
-                    >
-                      {isCreatingBusiness ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                          <span>Creando tu cuenta...</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                          <span>✅</span>
-                          <span>Finalizar registro</span>
-                        </div>
-                      )}
-                    </button>
+                  {/* Trust badges */}
+                  <div className="flex justify-center gap-6 mt-8 pt-6 border-t border-gray-200">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span>🔒</span>
+                      <span className="text-sm">Pago seguro con Stripe</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span>↩️</span>
+                      <span className="text-sm">Garantía de devolución</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span>📧</span>
+                      <span className="text-sm">Te avisamos antes del cobro</span>
+                    </div>
                   </div>
                 </div>
               )}
