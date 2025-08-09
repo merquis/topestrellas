@@ -62,7 +62,7 @@ export async function GET(request: Request) {
     }
 
     // Obtener historial de pagos
-    let paymentHistory = [];
+    let paymentHistory: any[] = [];
     if (business.subscription?.stripeSubscriptionId) {
       try {
         const invoices = await stripe.invoices.list({
