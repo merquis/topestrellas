@@ -89,11 +89,9 @@ export async function GET(request: Request) {
           currentPlan,
           stripeDetails: stripeSubscription ? {
             status: stripeSubscription.status,
-            // @ts-ignore
-            currentPeriodEnd: toDate(stripeSubscription.current_period_end),
+            currentPeriodEnd: toDate((stripeSubscription as any).current_period_end),
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-            // @ts-ignore
-            trialEnd: toDate(stripeSubscription.trial_end),
+            trialEnd: toDate((stripeSubscription as any).trial_end),
           } : null,
           paymentHistory,
         }
@@ -136,9 +134,9 @@ export async function GET(request: Request) {
             currentPlan,
             stripeDetails: stripeSubscription ? {
               status: stripeSubscription.status,
-              currentPeriodEnd: toDate((stripeSubscription as Stripe.Subscription).current_period_end),
+              currentPeriodEnd: toDate((stripeSubscription as any).current_period_end),
               cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-              trialEnd: toDate((stripeSubscription as Stripe.Subscription).trial_end),
+              trialEnd: toDate((stripeSubscription as any).trial_end),
             } : null,
           };
         })
