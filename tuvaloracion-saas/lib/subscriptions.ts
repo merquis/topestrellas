@@ -286,9 +286,9 @@ export async function getOrCreateStripeCustomer(
 }
 
 /**
- * Crea un Payment Intent para suscripción
+ * Crea una suscripción y devuelve el client secret para el pago embebido
  */
-export async function createSubscriptionPaymentIntent(
+export async function createSubscriptionAndReturnClientSecret(
   businessId: string,
   planKey: string,
   userEmail: string,
@@ -342,7 +342,8 @@ export async function createSubscriptionPaymentIntent(
         payment_behavior: 'default_incomplete',
         payment_settings: { 
           save_default_payment_method: 'on_subscription',
-          payment_method_types: ['card'],
+          // Permitir tarjeta y wallets (PayPal, Apple Pay, Google Pay)
+          payment_method_types: ['card', 'paypal', 'link'],
         },
         expand: ['latest_invoice.payment_intent'],
         metadata: {
@@ -350,21 +351,21 @@ export async function createSubscriptionPaymentIntent(
           planKey,
         },
         trial_period_days: plan.trialDays > 0 ? plan.trialDays : undefined,
+        // Si hay setup fee, agregarlo como un item adicional
+        add_invoice_items: plan.setupPrice > 0 ? [
+          {
+            price_data: {
+              currency: plan.currency.toLowerCase(),
+              product: plan.stripeProductId!,
+              unit_amount: eurosToCents(plan.setupPrice),
+            },
+            description: 'Configuración inicial',
+          },
+        ] : undefined,
       });
 
       const invoice = subscription.latest_invoice as Stripe.Invoice;
       const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
-
-      // Si hay un setup fee, agregarlo al payment intent
-      if (plan.setupPrice > 0) {
-        await stripe.paymentIntents.update(paymentIntent.id, {
-          amount: paymentIntent.amount + eurosToCents(plan.setupPrice),
-          metadata: {
-            ...paymentIntent.metadata,
-            setupFee: plan.setupPrice.toString(),
-          },
-        });
-      }
 
       return {
         clientSecret: paymentIntent.client_secret!,
@@ -401,22 +402,20 @@ export async function createSubscriptionPaymentIntent(
 
 /**
  * Confirma una suscripción después del pago exitoso
+ * Nota: Normalmente Stripe activa la suscripción automáticamente cuando el PaymentIntent se completa
  */
 export async function confirmSubscription(
   subscriptionId: string
 ): Promise<Stripe.Subscription> {
   try {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ['latest_invoice.payment_intent'],
+    });
     
-    if (subscription.status === 'incomplete') {
-      // La suscripción debería activarse automáticamente cuando el pago se complete
-      // pero podemos forzar una actualización si es necesario
-      return await stripe.subscriptions.update(subscriptionId, {
-        metadata: {
-          ...subscription.metadata,
-          confirmedAt: new Date().toISOString(),
-        },
-      });
+    // La suscripción se activa automáticamente cuando el payment intent de la invoice se completa
+    // Solo necesitamos verificar el estado
+    if (subscription.status === 'active' || subscription.status === 'trialing') {
+      console.log(`Suscripción ${subscriptionId} confirmada con estado: ${subscription.status}`);
     }
 
     return subscription;
@@ -450,15 +449,17 @@ export async function cancelSubscription(
 }
 
 /**
- * Pausa una suscripción en Stripe
+ * Pausa una suscripción en Stripe (por ejemplo, por impago)
  */
 export async function pauseSubscription(
-  stripeSubscriptionId: string
+  stripeSubscriptionId: string,
+  resumeAt?: Date
 ): Promise<Stripe.Subscription> {
   try {
     return await stripe.subscriptions.update(stripeSubscriptionId, {
       pause_collection: {
         behavior: 'mark_uncollectible',
+        resumes_at: resumeAt ? Math.floor(resumeAt.getTime() / 1000) : undefined,
       },
     });
   } catch (error) {

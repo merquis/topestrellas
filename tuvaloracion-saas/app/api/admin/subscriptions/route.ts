@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import {
-  createSubscriptionPaymentIntent,
+  createSubscriptionAndReturnClientSecret,
   confirmSubscription,
   cancelSubscription,
   pauseSubscription,
@@ -162,9 +162,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Crear Payment Intent para nueva suscripción
+    // Crear suscripción y obtener client secret para pago embebido
     try {
-      const { clientSecret, subscriptionId, customerId } = await createSubscriptionPaymentIntent(
+      const { clientSecret, subscriptionId, customerId } = await createSubscriptionAndReturnClientSecret(
         businessId,
         planKey,
         userEmail,

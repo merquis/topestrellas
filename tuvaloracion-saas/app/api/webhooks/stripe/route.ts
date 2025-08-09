@@ -60,53 +60,9 @@ export async function POST(request: Request) {
 
     const db = await getDatabase();
 
-    // Manejar diferentes tipos de eventos
+    // Manejar solo los eventos esenciales para suscripciones con Payment Elements
     switch (event.type) {
-      // ========== EVENTOS DE CHECKOUT ==========
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        console.log('Checkout completado:', session.id);
-
-        const businessId = session.metadata?.businessId;
-        const planKey = session.metadata?.planKey;
-
-        if (!businessId || !planKey) {
-          console.error('Metadata incompleta en checkout session');
-          break;
-        }
-
-        // Si es una suscripción
-        if (session.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string
-          );
-
-          await updateBusinessSubscription(businessId, {
-            plan: planKey,
-            status: stripeStatusToOurStatus[subscription.status] || 'active',
-            stripeSubscriptionId: subscription.id,
-            stripePriceId: subscription.items.data[0]?.price.id,
-            validUntil: new Date(subscription.current_period_end * 1000),
-            active: true,
-          });
-
-          console.log(`Suscripción creada para negocio ${businessId}`);
-        } 
-        // Si es un pago único
-        else if (session.payment_intent) {
-          await updateBusinessSubscription(businessId, {
-            plan: planKey,
-            status: 'active',
-            active: true,
-          });
-
-          console.log(`Pago único procesado para negocio ${businessId}`);
-        }
-
-        break;
-      }
-
-      // ========== EVENTOS DE SUSCRIPCIÓN ==========
+      // ========== EVENTOS DE SUSCRIPCIÓN (los más importantes) ==========
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
@@ -134,7 +90,7 @@ export async function POST(request: Request) {
           await resetPaymentFailures(businessId);
         }
 
-        console.log(`Suscripción ${event.type} para negocio ${businessId}`);
+        console.log(`Suscripción ${event.type} para negocio ${businessId}, estado: ${subscription.status}`);
         break;
       }
 
@@ -221,8 +177,8 @@ export async function POST(request: Request) {
         break;
       }
 
-      // ========== EVENTOS DE FACTURA ==========
-      case 'invoice.paid': {
+      // ========== EVENTOS DE FACTURA (para gestionar pagos recurrentes) ==========
+      case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
         const subscription = invoice.subscription;
 
@@ -246,7 +202,22 @@ export async function POST(request: Request) {
 
         await resetPaymentFailures(businessId);
 
-        console.log(`Factura pagada para negocio ${businessId}`);
+        console.log(`Pago de factura exitoso para negocio ${businessId}`);
+        
+        // Registrar el evento
+        await db.collection('activity_logs').insertOne({
+          businessId,
+          type: 'invoice_paid',
+          description: 'Factura pagada exitosamente',
+          metadata: {
+            invoiceId: invoice.id,
+            amount: invoice.amount_paid,
+            currency: invoice.currency,
+            subscriptionId: subscription,
+          },
+          createdAt: new Date(),
+        });
+
         break;
       }
 
@@ -266,6 +237,7 @@ export async function POST(request: Request) {
           break;
         }
 
+        // Manejar el fallo de pago (incrementar contador, suspender si es necesario)
         await handlePaymentFailure(businessId);
 
         console.log(`Pago fallido para negocio ${businessId}`);
@@ -274,11 +246,12 @@ export async function POST(request: Request) {
         await db.collection('activity_logs').insertOne({
           businessId,
           type: 'payment_failed',
-          description: 'Fallo en el pago de la suscripción',
+          description: 'Fallo en el pago de la factura',
           metadata: {
             invoiceId: invoice.id,
             amountDue: invoice.amount_due,
             attemptCount: invoice.attempt_count,
+            nextPaymentAttempt: invoice.next_payment_attempt ? new Date(invoice.next_payment_attempt * 1000) : null,
           },
           createdAt: new Date(),
         });
@@ -320,13 +293,14 @@ export async function POST(request: Request) {
         break;
       }
 
-      // ========== EVENTOS DE PAGO ==========
+      // ========== EVENTOS DE PAYMENT INTENT (para pagos únicos y primera suscripción) ==========
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         const businessId = paymentIntent.metadata?.businessId;
 
         if (!businessId) {
-          console.log('PaymentIntent sin businessId en metadata');
+          // Es normal que algunos payment intents no tengan businessId
+          console.log('PaymentIntent sin businessId en metadata (puede ser de una invoice)');
           break;
         }
 
@@ -341,6 +315,29 @@ export async function POST(request: Request) {
             paymentIntentId: paymentIntent.id,
             amount: paymentIntent.amount,
             currency: paymentIntent.currency,
+          },
+          createdAt: new Date(),
+        });
+
+        break;
+      }
+
+      case 'payment_intent.processing': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const businessId = paymentIntent.metadata?.businessId;
+
+        if (!businessId) break;
+
+        console.log(`Pago en procesamiento para negocio ${businessId}`);
+        
+        // Registrar el evento
+        await db.collection('activity_logs').insertOne({
+          businessId,
+          type: 'payment_processing',
+          description: 'Pago en procesamiento',
+          metadata: {
+            paymentIntentId: paymentIntent.id,
+            amount: paymentIntent.amount,
           },
           createdAt: new Date(),
         });
@@ -375,94 +372,11 @@ export async function POST(request: Request) {
         break;
       }
 
-      // ========== EVENTOS DE MÉTODO DE PAGO ==========
-      case 'payment_method.attached': {
-        const paymentMethod = event.data.object as Stripe.PaymentMethod;
-        console.log(`Método de pago adjuntado: ${paymentMethod.id}`);
-        break;
-      }
-
-      case 'payment_method.detached': {
-        const paymentMethod = event.data.object as Stripe.PaymentMethod;
-        console.log(`Método de pago desvinculado: ${paymentMethod.id}`);
-        break;
-      }
-
-      case 'payment_method.updated': {
-        const paymentMethod = event.data.object as Stripe.PaymentMethod;
-        console.log(`Método de pago actualizado: ${paymentMethod.id}`);
-        break;
-      }
-
-      // ========== EVENTOS DE CARGO ==========
-      case 'charge.succeeded': {
-        const charge = event.data.object as Stripe.Charge;
-        console.log(`Cargo exitoso: ${charge.id}`);
-        break;
-      }
-
-      case 'charge.failed': {
-        const charge = event.data.object as Stripe.Charge;
-        console.log(`Cargo fallido: ${charge.id}`);
-        break;
-      }
-
-      case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge;
-        const businessId = charge.metadata?.businessId;
-
-        if (businessId) {
-          console.log(`Reembolso procesado para negocio ${businessId}`);
-          
-          // Registrar el evento
-          await db.collection('activity_logs').insertOne({
-            businessId,
-            type: 'refund_processed',
-            description: 'Reembolso procesado',
-            metadata: {
-              chargeId: charge.id,
-              amount: charge.amount_refunded,
-              currency: charge.currency,
-            },
-            createdAt: new Date(),
-          });
-        }
-        break;
-      }
-
-      // ========== EVENTOS DE DISPUTA ==========
-      case 'charge.dispute.created': {
-        const dispute = event.data.object as Stripe.Dispute;
-        const charge = await stripe.charges.retrieve(dispute.charge as string);
-        const businessId = charge.metadata?.businessId;
-
-        if (businessId) {
-          console.log(`Disputa creada para negocio ${businessId}`);
-          
-          // Suspender la cuenta temporalmente
-          await updateBusinessSubscription(businessId, {
-            status: 'suspended',
-            active: false,
-          });
-          
-          // Registrar el evento
-          await db.collection('activity_logs').insertOne({
-            businessId,
-            type: 'dispute_created',
-            description: 'Disputa de pago iniciada',
-            metadata: {
-              disputeId: dispute.id,
-              amount: dispute.amount,
-              reason: dispute.reason,
-            },
-            createdAt: new Date(),
-          });
-        }
-        break;
-      }
-
       default:
-        console.log(`Evento no manejado: ${event.type}`);
+        // Solo loguear eventos no manejados en desarrollo
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Evento no manejado: ${event.type}`);
+        }
     }
 
     return NextResponse.json({ received: true });
