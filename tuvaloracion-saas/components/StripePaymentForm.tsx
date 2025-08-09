@@ -72,13 +72,12 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
     setIsProcessing(true);
     setMessage(null);
 
-    // Confirmar el pago
-    const { error, paymentIntent } = await stripe.confirmPayment({
+    // Confirmar el método de pago (SetupIntent)
+    const { error, setupIntent } = await stripe.confirmSetup({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/admin/subscriptions/payment-success`,
       },
-      redirect: 'if_required',
     });
 
     if (error) {
@@ -88,8 +87,8 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
       } else {
         setMessage('Ha ocurrido un error inesperado.');
       }
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      // Pago exitoso
+    } else if (setupIntent && setupIntent.status === 'succeeded') {
+      // Configuración exitosa
       setMessage('¡Pago procesado con éxito!');
       
       // Actualizar el rol del usuario a 'admin' después del pago exitoso
