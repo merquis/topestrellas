@@ -310,6 +310,7 @@ export async function POST(request: Request) {
         const newUser = {
           email: data.email,
           name: data.ownerName,
+          phone: data.phone || '', // Guardar el teléfono del propietario
           password: data.password || 'temp123', // Contraseña temporal si no se proporciona
           role: 'admin',
           businessId: result.insertedId.toString(),
@@ -333,18 +334,21 @@ export async function POST(request: Request) {
           message: 'Negocio y usuario creados exitosamente'
         });
       } else {
-        // Usuario ya existe, solo actualizar businessId si es necesario
-        if (!existingUser.businessId) {
-          await db.collection('users').updateOne(
-            { email: data.email },
-            { 
-              $set: { 
-                businessId: result.insertedId.toString(),
-                updatedAt: new Date()
-              }
-            }
-          );
+        // Usuario ya existe, actualizar businessId y teléfono si es necesario
+        const updateFields: any = {
+          businessId: result.insertedId.toString(),
+          updatedAt: new Date()
+        };
+        
+        // Si se proporciona teléfono y el usuario no lo tiene, actualizarlo
+        if (data.phone && !existingUser.phone) {
+          updateFields.phone = data.phone;
         }
+        
+        await db.collection('users').updateOne(
+          { email: data.email },
+          { $set: updateFields }
+        );
         
         return NextResponse.json({
           success: true,
