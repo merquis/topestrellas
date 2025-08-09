@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     }
     
     // Obtener creatorId de userEmail si se proporciona
-    let assignedTo = [];
+    let assignedTo: string[] = [];
     if (body.userEmail) {
       const creator = await db.collection('users').findOne({ email: body.userEmail });
       if (creator && creator.role !== 'super_admin') {
