@@ -30,7 +30,8 @@ const stripeStatusToOurStatus: Record<string, string> = {
 export async function POST(request: Request) {
   try {
     const body = await request.text();
-    const signature = headers().get('stripe-signature');
+    const headersList = await headers();
+    const signature = headersList.get('stripe-signature');
 
     if (!signature) {
       console.error('No stripe-signature header');
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
           status: stripeStatusToOurStatus[subscription.status] || 'active',
           stripeSubscriptionId: subscription.id,
           stripePriceId: subscription.items.data[0]?.price.id,
-          validUntil: new Date(subscription.current_period_end * 1000),
+          validUntil: new Date((subscription as any).current_period_end * 1000),
           active: subscription.status === 'active' || subscription.status === 'trialing',
         });
 
@@ -169,7 +170,7 @@ export async function POST(request: Request) {
           description: 'El periodo de prueba terminará en 3 días',
           metadata: {
             subscriptionId: subscription.id,
-            trialEnd: new Date(subscription.trial_end! * 1000),
+            trialEnd: new Date((subscription as any).trial_end! * 1000),
           },
           createdAt: new Date(),
         });
@@ -197,7 +198,7 @@ export async function POST(request: Request) {
         await updateBusinessSubscription(businessId, {
           status: 'active',
           active: true,
-          validUntil: new Date(subscriptionObj.current_period_end * 1000),
+          validUntil: new Date((subscriptionObj as any).current_period_end * 1000),
         });
 
         await resetPaymentFailures(businessId);
@@ -285,7 +286,7 @@ export async function POST(request: Request) {
           description: 'Próxima factura de suscripción',
           metadata: {
             amountDue: invoice.amount_due,
-            dueDate: new Date(invoice.period_end * 1000),
+            dueDate: new Date((invoice as any).period_end * 1000),
           },
           createdAt: new Date(),
         });
