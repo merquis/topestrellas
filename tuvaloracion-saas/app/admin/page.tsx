@@ -181,6 +181,74 @@ export default function AdminDashboard() {
     setRegistrationStep(2);
   };
 
+  const handleStep2Continue = async () => {
+    if (!selectedBusiness || !tempUserData) {
+      setRegisterError('Por favor busca y selecciona tu negocio');
+      return;
+    }
+
+    setIsCreatingBusiness(true);
+    setRegisterError('');
+    
+    try {
+      // Guardar datos parciales en la base de datos (lead/registro incompleto)
+      const partialBusinessData = {
+        ownerName: tempUserData.name,
+        email: tempUserData.email,
+        phone: tempUserData.phone,
+        password: tempUserData.password,
+        businessName: selectedBusiness.name,
+        placeId: businessPlaceId,
+        address: selectedBusiness.formatted_address || '',
+        businessPhone: selectedBusiness.international_phone_number || tempUserData.phone,
+        website: selectedBusiness.website || '',
+        rating: selectedBusiness.rating || 0,
+        totalReviews: selectedBusiness.user_ratings_total || 0,
+        photoUrl: businessPhotoUrl,
+        type: tempUserData.businessType,
+        country: 'España',
+        // Marcar como registro parcial/lead
+        registrationStatus: 'partial',
+        registrationStep: 2,
+        plan: 'pending', // Plan pendiente de selección
+        active: false // No activo hasta completar registro
+      };
+      
+      const response = await fetch('/api/admin/businesses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(partialBusinessData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Guardar el businessId para usar en el paso 3
+        setTempUserData({
+          ...tempUserData,
+          businessId: data.businessId
+        });
+        setRegistrationStep(3);
+        setRegisterError('');
+      } else {
+        const errorData = await response.json();
+        // Si el error es porque el email ya existe, continuar al paso 3
+        if (errorData.error && errorData.error.includes('ya existe')) {
+          setRegistrationStep(3);
+        } else {
+          setRegisterError(`Error: ${errorData.error}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error guardando datos parciales:', error);
+      // Continuar al paso 3 aunque falle el guardado parcial
+      setRegistrationStep(3);
+    } finally {
+      setIsCreatingBusiness(false);
+    }
+  };
+
   const handleStep2Submit = async () => {
     if (!selectedBusiness || !tempUserData) {
       setRegisterError('Por favor busca y selecciona tu negocio');
@@ -761,17 +829,16 @@ export default function AdminDashboard() {
                   <div className="flex justify-center">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!selectedBusiness) {
-                          setRegisterError('Por favor busca y selecciona tu negocio');
-                          return;
-                        }
-                        setRegistrationStep(3);
-                      }}
-                      disabled={!selectedBusiness}
+                      onClick={handleStep2Continue}
+                      disabled={!selectedBusiness || isCreatingBusiness}
                       className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg cursor-pointer"
                     >
-                      {selectedBusiness ? (
+                      {isCreatingBusiness ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          <span>Guardando datos...</span>
+                        </div>
+                      ) : selectedBusiness ? (
                         <div className="flex items-center justify-center gap-2">
                           <span>Continuar</span>
                           <span>→</span>
