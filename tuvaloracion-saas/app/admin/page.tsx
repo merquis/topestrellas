@@ -732,7 +732,7 @@ export default function AdminDashboard() {
                   }`}>
                     {registrationStep > 1 ? '✓' : '1'}
                   </div>
-                  <div className={`w-16 h-1 rounded-full transition-all ${
+                  <div className={`w-12 h-1 rounded-full transition-all ${
                     registrationStep >= 2 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
                   <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
@@ -740,13 +740,21 @@ export default function AdminDashboard() {
                   }`}>
                     {registrationStep > 2 ? '✓' : '2'}
                   </div>
-                  <div className={`w-16 h-1 rounded-full transition-all ${
+                  <div className={`w-12 h-1 rounded-full transition-all ${
                     registrationStep >= 3 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
                   <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
                     registrationStep >= 3 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
-                    3
+                    {registrationStep > 3 ? '✓' : '3'}
+                  </div>
+                  <div className={`w-12 h-1 rounded-full transition-all ${
+                    registrationStep >= 4 ? 'bg-green-600' : 'bg-gray-300'
+                  }`}></div>
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+                    registrationStep >= 4 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    4
                   </div>
                 </div>
               </div>
