@@ -20,8 +20,8 @@ export interface SubscriptionPlan {
   trialDays: number;
   features: string[];
   active: boolean;
-  icon: string;
-  color: string;
+  icon?: string;
+  color?: string;
   popular: boolean;
   stripeProductId?: string;
   stripePriceId?: string;
