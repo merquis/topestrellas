@@ -36,10 +36,16 @@ export async function GET(request: Request) {
     let query: any = activeOnly ? { active: true } : {};
     
     if (userRole === 'admin' && userEmail) {
-      // Encontrar el userId por email
       const user = await db.collection('users').findOne({ email: userEmail });
       if (user) {
-        query = { ...query, assignedTo: { $in: [user._id.toString()] } };
+        query = {
+          ...query,
+          $or: [
+            { assignedTo: { $in: [user._id.toString()] } },
+            { assignedTo: { $exists: false } },
+            { assignedTo: { $size: 0 } }
+          ]
+        };
       } else {
         return NextResponse.json({ success: false, error: 'Usuario no encontrado' }, { status: 404 });
       }

@@ -67,6 +67,14 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
   productId: string;
   priceId: string;
 }> {
+  // No sincronizar el plan de prueba con Stripe
+  if (plan.key === 'trial') {
+    return {
+      productId: 'local_trial_product',
+      priceId: 'local_trial_price',
+    };
+  }
+
   try {
     let product: Stripe.Product;
     let price: Stripe.Price;
