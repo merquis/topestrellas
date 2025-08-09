@@ -1,6 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+// Importar dinámicamente el componente de Stripe para evitar problemas de SSR
+const StripePaymentForm = dynamic(
+  () => import('../StripePaymentForm'),
+  { ssr: false }
+);
 
 interface ChangePlanModalProps {
   isOpen: boolean;
@@ -28,6 +35,8 @@ export default function ChangePlanModal({
   const [error, setError] = useState('');
   const [showCustomDate, setShowCustomDate] = useState(false);
   const [customDate, setCustomDate] = useState('');
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [clientSecret, setClientSecret] = useState('');
 
   if (!isOpen) return null;
 
@@ -96,8 +105,8 @@ export default function ChangePlanModal({
           setError(data.error || 'Error al establecer fecha personalizada');
         }
       } else {
-        // Cambiar plan normal
-        const response = await fetch('/api/admin/subscriptions/create-checkout-session', {
+        // Cambiar plan normal usando Payment Elements
+        const response = await fetch('/api/admin/subscriptions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -105,16 +114,25 @@ export default function ChangePlanModal({
           body: JSON.stringify({
             businessId,
             planKey: selectedPlan,
-            userEmail
+            userEmail,
+            action: currentPlan === 'trial' ? 'subscribe' : 'change'
           }),
         });
 
         const data = await response.json();
 
-        if (response.ok && data.url) {
-          window.location.href = data.url;
+        if (response.ok && data.clientSecret) {
+          // Si es un plan de pago, mostrar el formulario de pago
+          if (selectedPlan !== 'trial') {
+            setClientSecret(data.clientSecret);
+            setShowPaymentForm(true);
+          } else {
+            // Si es trial, no necesita pago
+            onPlanChanged();
+            onClose();
+          }
         } else {
-          setError(data.error || 'Error al iniciar el pago');
+          setError(data.error || 'Error al procesar el cambio de plan');
         }
       }
     } catch (error) {
@@ -129,8 +147,31 @@ export default function ChangePlanModal({
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split('T')[0];
 
+  // Si estamos mostrando el formulario de pago
+  if (showPaymentForm && clientSecret) {
+    return (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <StripePaymentForm
+          businessId={businessId}
+          businessName={businessName}
+          plan={selectedPlan as 'basic' | 'premium'}
+          clientSecret={clientSecret}
+          onSuccess={() => {
+            setShowPaymentForm(false);
+            onPlanChanged();
+            onClose();
+          }}
+          onCancel={() => {
+            setShowPaymentForm(false);
+            setClientSecret('');
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
-<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">

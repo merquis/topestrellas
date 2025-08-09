@@ -9,9 +9,14 @@ import Toast from '@/components/Toast';
 import { checkAuth } from '@/lib/auth';
 import PlanCard from '@/components/PlanCard';
 
-// Cargar el componente de Stripe dinámicamente para evitar errores de SSR
+// Cargar componentes dinámicamente para evitar errores de SSR
 const StripePaymentForm = dynamic(
   () => import('@/components/StripePaymentForm'),
+  { ssr: false }
+);
+
+const CreatePlanModal = dynamic(
+  () => import('@/components/admin/CreatePlanModal'),
   { ssr: false }
 );
 
@@ -304,21 +309,38 @@ const fetchPlans = async () => {
 
   const handleCreatePlan = async (planData: any) => {
     try {
+      // Añadir el email del usuario para tracking
+      const planDataWithUser = {
+        ...planData,
+        userEmail: user?.email
+      };
+
       const response = await fetch('/api/admin/subscription-plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(planData),
+        body: JSON.stringify(planDataWithUser),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        setToast({ message: 'Plan creado correctamente', type: 'success' });
+        setToast({ 
+          message: '✅ Plan creado y sincronizado con Stripe correctamente', 
+          type: 'success' 
+        });
         fetchPlans();
         setShowCreatePlanModal(false);
       } else {
-        throw new Error('Error al crear el plan');
+        throw new Error(data.error || data.details || 'Error al crear el plan');
       }
-    } catch (error) {
-      setToast({ message: 'Error al crear el plan', type: 'error' });
+    } catch (error: any) {
+      console.error('Error creando plan:', error);
+      setToast({ 
+        message: `❌ ${error.message || 'Error al crear el plan'}`, 
+        type: 'error' 
+      });
+      // No cerrar el modal en caso de error para que el usuario pueda intentar de nuevo
+      throw error; // Re-lanzar el error para que el modal lo maneje
     }
   };
 
@@ -667,258 +689,6 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
   );
 }
 
-// Componente para crear un nuevo plan
-function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (planData: any) => void }) {
-  const [formData, setFormData] = useState({
-    key: '',
-    name: '',
-    description: '',
-    recurringPrice: '',
-    currency: 'EUR',
-    interval: 'month',
-    trialDays: '0',
-    features: [''],
-    active: true,
-    icon: '🚀',
-    color: 'blue',
-    popular: false
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const planData = {
-      ...formData,
-      recurringPrice: parseFloat(formData.recurringPrice), // Guardar el valor real introducido
-      setupPrice: 0,
-      trialDays: parseInt(formData.trialDays),
-      features: formData.features.filter(f => f.trim() !== '')
-    };
-    onSave(planData);
-  };
-
-  const addFeature = () => {
-    setFormData(prev => ({
-      ...prev,
-      features: [...prev.features, '']
-    }));
-  };
-
-  const removeFeature = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateFeature = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.map((f, i) => i === index ? value : f)
-    }));
-  };
-
-  return (
-<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Crear Nuevo Plan</h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Clave del Plan
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.key}
-                onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="ej: premium"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del Plan
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="ej: Plan Premium"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descripción
-            </label>
-            <textarea
-              required
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={3}
-              placeholder="Descripción del plan"
-            />
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Precio (€)
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formData.recurringPrice}
-                onChange={(e) => setFormData(prev => ({ ...prev, recurringPrice: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="29"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Intervalo
-              </label>
-              <select
-                value={formData.interval}
-                onChange={(e) => setFormData(prev => ({ ...prev, interval: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="month">Mensual</option>
-                <option value="year">Anual</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Días de Prueba
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.trialDays}
-                onChange={(e) => setFormData(prev => ({ ...prev, trialDays: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Icono
-              </label>
-              <input
-                type="text"
-                value={formData.icon}
-                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="🚀"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color
-              </label>
-              <select
-                value={formData.color}
-                onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="green">Verde</option>
-                <option value="blue">Azul</option>
-                <option value="purple">Morado</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Características
-            </label>
-            <div className="space-y-2">
-              {formData.features.map((feature, index) => (
-                <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={feature}
-                    onChange={(e) => updateFeature(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Característica del plan"
-                  />
-                  {formData.features.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeFeature(index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addFeature}
-                className="text-blue-600 hover:text-blue-800 text-sm"
-              >
-                + Añadir característica
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.active}
-                onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
-                className="mr-2"
-              />
-              Plan activo
-            </label>
-            
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.popular}
-                onChange={(e) => setFormData(prev => ({ ...prev, popular: e.target.checked }))}
-                className="mr-2"
-              />
-              Plan popular
-            </label>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold"
-            >
-              Crear Plan
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
   // Si es super_admin, mostrar solo la gestión de planes
   if (user?.role === 'super_admin') {
@@ -969,6 +739,22 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
                                 {plan.active ? 'Activo' : 'Inactivo'}
                               </span>
                             </div>
+                            {plan.stripeProductId && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Stripe:</span>
+                                <span className="font-semibold text-green-600" title={`Product: ${plan.stripeProductId}`}>
+                                  ✅ Sincronizado
+                                </span>
+                              </div>
+                            )}
+                            {!plan.stripeProductId && plan.key !== 'trial' && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Stripe:</span>
+                                <span className="font-semibold text-yellow-600">
+                                  ⚠️ No sincronizado
+                                </span>
+                              </div>
+                            )}
                             {plan.trialDays > 0 && (
                               <div className="flex justify-between text-sm">
                                 <span className="text-gray-500">Periodo de prueba:</span>
