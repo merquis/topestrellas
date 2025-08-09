@@ -181,7 +181,7 @@ export async function POST(request: Request) {
       // ========== EVENTOS DE FACTURA (para gestionar pagos recurrentes) ==========
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscription = invoice.subscription;
+        const subscription = (invoice as any).subscription;
 
         if (!subscription) break;
 
@@ -224,7 +224,7 @@ export async function POST(request: Request) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscription = invoice.subscription;
+        const subscription = (invoice as any).subscription;
 
         if (!subscription) break;
 
@@ -262,7 +262,7 @@ export async function POST(request: Request) {
 
       case 'invoice.upcoming': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscription = invoice.subscription;
+        const subscription = (invoice as any).subscription;
 
         if (!subscription) break;
 
