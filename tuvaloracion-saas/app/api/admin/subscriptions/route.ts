@@ -134,9 +134,9 @@ export async function GET(request: Request) {
             currentPlan,
             stripeDetails: stripeSubscription ? {
               status: stripeSubscription.status,
-              currentPeriodEnd: toDate(stripeSubscription.current_period_end),
+              currentPeriodEnd: toDate((stripeSubscription as Stripe.Subscription).current_period_end),
               cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-              trialEnd: toDate(stripeSubscription.trial_end),
+              trialEnd: toDate((stripeSubscription as Stripe.Subscription).trial_end),
             } : null,
           };
         })
