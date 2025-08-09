@@ -69,7 +69,7 @@ export async function GET(request: Request) {
           subscription: business.subscription.stripeSubscriptionId,
           limit: 10,
         });
-        paymentHistory = invoices.data.map(invoice => ({
+        paymentHistory = invoices.data.map((invoice: any) => ({
           id: invoice.id,
           amount: invoice.amount_paid / 100, // Convertir de céntimos a euros
           currency: invoice.currency,
@@ -89,9 +89,9 @@ export async function GET(request: Request) {
         currentPlan,
         stripeDetails: stripeSubscription ? {
           status: stripeSubscription.status,
-          currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+          currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
           cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-          trialEnd: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000) : null,
+          trialEnd: (stripeSubscription as any).trial_end ? new Date((stripeSubscription as any).trial_end * 1000) : null,
         } : null,
         paymentHistory,
       }
