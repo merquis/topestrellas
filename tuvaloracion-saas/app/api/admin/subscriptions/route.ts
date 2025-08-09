@@ -18,84 +18,134 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 });
 
-// GET - Obtener información de suscripción del negocio actual
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const businessId = searchParams.get('businessId');
-    
-    if (!businessId) {
+    const userEmail = searchParams.get('userEmail');
+    const userRole = searchParams.get('userRole');
+
+    const db = await getDatabase();
+
+    if (businessId) {
+      // Lógica existente para un businessId específico
+      const business = await db.collection('businesses').findOne({
+        _id: new ObjectId(businessId)
+      });
+
+      if (!business) {
+        return NextResponse.json(
+          { success: false, error: 'Negocio no encontrado' },
+          { status: 404 }
+        );
+      }
+
+      // Si hay una suscripción de Stripe, obtener información actualizada
+      let stripeSubscription = null;
+      if (business.subscription?.stripeSubscriptionId) {
+        try {
+          stripeSubscription = await stripe.subscriptions.retrieve(
+            business.subscription.stripeSubscriptionId
+          );
+        } catch (error) {
+          console.error('Error obteniendo suscripción de Stripe:', error);
+        }
+      }
+
+      // Obtener información del plan actual
+      let currentPlan = null;
+      if (business.subscription?.plan) {
+        currentPlan = await getPlanFromDB(business.subscription.plan);
+      }
+
+      // Obtener historial de pagos
+      let paymentHistory: any[] = [];
+      if (business.subscription?.stripeSubscriptionId) {
+        try {
+          const invoices = await stripe.invoices.list({
+            subscription: business.subscription.stripeSubscriptionId,
+            limit: 10,
+          });
+          paymentHistory = invoices.data.map((invoice: any) => ({
+            id: invoice.id,
+            amount: invoice.amount_paid / 100, // Convertir de céntimos a euros
+            currency: invoice.currency,
+            status: invoice.status,
+            date: new Date(invoice.created * 1000),
+            pdfUrl: invoice.invoice_pdf,
+          }));
+        } catch (error) {
+          console.error('Error obteniendo historial de pagos:', error);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        subscription: {
+          ...business.subscription,
+          currentPlan,
+          stripeDetails: stripeSubscription ? {
+            status: stripeSubscription.status,
+            currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+            cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+            trialEnd: (stripeSubscription as any).trial_end ? new Date((stripeSubscription as any).trial_end * 1000) : null,
+          } : null,
+          paymentHistory,
+        }
+      });
+    } else if (userEmail && userRole === 'admin') {
+      // Obtener lista de suscripciones para los negocios del usuario
+      const businesses = await db.collection('businesses').find({
+        'contact.email': userEmail
+      }).toArray();
+
+      const subscriptions = await Promise.all(
+        businesses.map(async (business) => {
+          let stripeSubscription = null;
+          if (business.subscription?.stripeSubscriptionId) {
+            try {
+              stripeSubscription = await stripe.subscriptions.retrieve(
+                business.subscription.stripeSubscriptionId
+              );
+            } catch (error) {
+              console.error('Error obteniendo suscripción de Stripe:', error);
+            }
+          }
+
+          let currentPlan = null;
+          if (business.subscription?.plan) {
+            currentPlan = await getPlanFromDB(business.subscription.plan);
+          }
+
+          return {
+            businessId: business._id.toString(),
+            businessName: business.name,
+            subdomain: business.subdomain,
+            plan: business.subscription?.plan || 'trial',
+            status: business.subscription?.status || 'active',
+            startDate: business.createdAt,
+            endDate: business.subscription?.validUntil,
+            trialEndsAt: business.subscription?.validUntil, // Para trials
+            autoRenew: !!business.subscription?.stripeSubscriptionId,
+            paymentMethod: business.subscription?.stripeSubscriptionId ? 'stripe' : null,
+            currentPlan,
+            stripeDetails: stripeSubscription ? {
+              status: stripeSubscription.status,
+              currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+              cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+              trialEnd: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000) : null,
+            } : null,
+          };
+        })
+      );
+
+      return NextResponse.json(subscriptions);
+    } else {
       return NextResponse.json(
-        { success: false, error: 'businessId requerido' },
+        { success: false, error: 'Parámetros inválidos' },
         { status: 400 }
       );
     }
-
-    const db = await getDatabase();
-    const business = await db.collection('businesses').findOne({
-      _id: new ObjectId(businessId)
-    });
-
-    if (!business) {
-      return NextResponse.json(
-        { success: false, error: 'Negocio no encontrado' },
-        { status: 404 }
-      );
-    }
-
-    // Si hay una suscripción de Stripe, obtener información actualizada
-    let stripeSubscription = null;
-    if (business.subscription?.stripeSubscriptionId) {
-      try {
-        stripeSubscription = await stripe.subscriptions.retrieve(
-          business.subscription.stripeSubscriptionId
-        );
-      } catch (error) {
-        console.error('Error obteniendo suscripción de Stripe:', error);
-      }
-    }
-
-    // Obtener información del plan actual
-    let currentPlan = null;
-    if (business.subscription?.plan) {
-      currentPlan = await getPlanFromDB(business.subscription.plan);
-    }
-
-    // Obtener historial de pagos
-    let paymentHistory: any[] = [];
-    if (business.subscription?.stripeSubscriptionId) {
-      try {
-        const invoices = await stripe.invoices.list({
-          subscription: business.subscription.stripeSubscriptionId,
-          limit: 10,
-        });
-        paymentHistory = invoices.data.map((invoice: any) => ({
-          id: invoice.id,
-          amount: invoice.amount_paid / 100, // Convertir de céntimos a euros
-          currency: invoice.currency,
-          status: invoice.status,
-          date: new Date(invoice.created * 1000),
-          pdfUrl: invoice.invoice_pdf,
-        }));
-      } catch (error) {
-        console.error('Error obteniendo historial de pagos:', error);
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      subscription: {
-        ...business.subscription,
-        currentPlan,
-        stripeDetails: stripeSubscription ? {
-          status: stripeSubscription.status,
-          currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
-          cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-          trialEnd: (stripeSubscription as any).trial_end ? new Date((stripeSubscription as any).trial_end * 1000) : null,
-        } : null,
-        paymentHistory,
-      }
-    });
   } catch (error) {
     console.error('Error obteniendo información de suscripción:', error);
     return NextResponse.json(

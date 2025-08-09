@@ -738,9 +738,10 @@ export default function AdminDashboard() {
                               <div className={`text-3xl font-bold mb-2 ${
                                 isGreen ? 'text-green-600' : isBlue ? 'text-blue-600' : 'text-purple-600'
                               }`}>
-                                {plan.recurringPrice > 0 ? `€${plan.recurringPrice / 100}` : 'GRATIS'}
+                                {plan.recurringPrice > 0 ? `${plan.recurringPrice}€` : 'GRATIS'}
                               </div>
                               <p className="text-sm text-gray-500 mb-4">
+                                {plan.setupPrice > 0 ? `${plan.setupPrice}€ inicial + ` : ''}
                                 {plan.recurringPrice > 0 ? `por ${plan.interval === 'month' ? 'mes' : 'año'}` : `${plan.trialDays} días de prueba`}
                               </p>
                               <ul className="text-sm text-gray-600 space-y-2 text-left">
