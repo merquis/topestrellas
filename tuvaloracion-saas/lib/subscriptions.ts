@@ -389,22 +389,19 @@ export async function createSubscriptionAndReturnClientSecret(
     if (plan.interval) {
       console.log('[createSubscriptionAndReturnClientSecret] Creando suscripción recurrente...');
       
-      // Preparar los parámetros de la suscripción
-      const subscriptionParams: any = {
+      // Preparar los parámetros de la suscripción - SIN automatic_payment_methods
+      const subscriptionParams: Stripe.SubscriptionCreateParams = {
         customer: customerId,
         items: [
           {
-            price: plan.stripePriceId,
+            price: plan.stripePriceId!,
           },
         ],
         payment_behavior: 'default_incomplete',
         payment_settings: { 
-          save_default_payment_method: 'on_subscription'
-        },
-        // Habilitar métodos de pago automáticos (incluye tarjeta, PayPal, etc.)
-        automatic_payment_methods: {
-          enabled: true,
-          allow_redirects: 'always' // Permite métodos que requieren redirección como PayPal
+          save_default_payment_method: 'on_subscription',
+          // Si quieres limitar métodos de pago, puedes añadir:
+          // payment_method_types: ['card']
         },
         expand: ['latest_invoice.payment_intent'],
         metadata: {
@@ -443,7 +440,7 @@ export async function createSubscriptionAndReturnClientSecret(
       });
 
       const invoice = subscription.latest_invoice as Stripe.Invoice;
-      const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
+      const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
 
       if (!paymentIntent?.client_secret) {
         throw new Error('No se pudo obtener el client_secret del payment_intent');
@@ -461,6 +458,7 @@ export async function createSubscriptionAndReturnClientSecret(
       console.log('[createSubscriptionAndReturnClientSecret] Creando pago único...');
       const totalAmount = eurosToCents(plan.recurringPrice + (plan.setupPrice || 0));
       
+      // Para pagos únicos SÍ podemos usar automatic_payment_methods
       const paymentIntent = await stripe.paymentIntents.create({
         amount: totalAmount,
         currency: plan.currency.toLowerCase(),
