@@ -1016,7 +1016,7 @@ export default function AdminDashboard() {
                                 type="button"
                                 onClick={() => handleSelectPlanAndPay(plan)}
                                 disabled={isCreatingBusiness}
-                                className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+                                className={`w-full py-3.5 px-6 rounded-full font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg ${
                                   isGreen 
                                     ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
                                     : isBlue
@@ -1027,19 +1027,19 @@ export default function AdminDashboard() {
                                 }`}
                               >
                                 {plan.trialDays > 0 ? (
-                                  <>
-                                    Empezar {plan.trialDays} {plan.trialDays === 1 ? 'día' : 'días'} gratis
-                                    <span className="block text-xs font-normal mt-0.5 opacity-90">
-                                      Sin compromiso • 0 € hoy
-                                    </span>
-                                  </>
+                                  <div className="text-center">
+                                    <div className="text-base font-semibold">Prueba gratuita</div>
+                                    <div className="text-xs font-normal opacity-90 mt-0.5">
+                                      {plan.trialDays} días gratis, luego {plan.recurringPrice} € al {plan.interval === 'month' ? 'mes' : 'año'}.
+                                    </div>
+                                  </div>
                                 ) : (
-                                  <>
-                                    Suscribirse por {plan.recurringPrice} €/{plan.interval === 'month' ? 'mes' : 'año'}
-                                    <span className="block text-xs font-normal mt-0.5 opacity-90">
-                                      Pago inmediato
-                                    </span>
-                                  </>
+                                  <div className="text-center">
+                                    <div className="text-base font-semibold">Suscribirse</div>
+                                    <div className="text-xs font-normal opacity-90 mt-0.5">
+                                      {plan.recurringPrice} € al {plan.interval === 'month' ? 'mes' : 'año'}
+                                    </div>
+                                  </div>
                                 )}
                               </button>
                             </div>
