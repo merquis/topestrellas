@@ -955,18 +955,65 @@ export default function AdminDashboard() {
               )}
 
               {/* Step 4: Payment */}
-              {registrationStep === 4 && clientSecret && selectedPlanData && (
+              {registrationStep === 4 && (
                 <div className="space-y-6">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      Completa tu suscripción
-                    </h3>
-                    <p className="text-lg text-gray-600">
-                      Último paso: Añade tu método de pago
-                    </p>
-                  </div>
+                  {console.log("Hola - Estoy en el paso 4")}
+                  {console.log("clientSecret:", clientSecret)}
+                  {console.log("selectedPlanData:", selectedPlanData)}
+                  {console.log("isLoadingPayment:", isLoadingPayment)}
+                  
+                  {/* Mostrar loading mientras se prepara el pago */}
+                  {isLoadingPayment && (
+                    <div className="text-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Preparando el formulario de pago...</p>
+                    </div>
+                  )}
+                  
+                  {/* Mostrar error si no hay clientSecret */}
+                  {!isLoadingPayment && !clientSecret && (
+                    <div className="text-center py-12">
+                      <div className="text-red-500 text-4xl mb-4">⚠️</div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        Error al preparar el pago
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        No se pudo conectar con el sistema de pagos.
+                      </p>
+                      {registerError && (
+                        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200 max-w-md mx-auto">
+                          <div className="flex items-center gap-2">
+                            <span className="text-red-500">❌</span>
+                            <span>{registerError}</span>
+                          </div>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          setRegistrationStep(3);
+                          setClientSecret('');
+                          setRegisterError('');
+                        }}
+                        className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        Volver a intentar
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Mostrar formulario de pago cuando esté listo */}
+                  {!isLoadingPayment && clientSecret && selectedPlanData && (
+                    <>
+                      <div className="text-center mb-8">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                          Completa tu suscripción
+                        </h3>
+                        <p className="text-lg text-gray-600">
+                          Último paso: Añade tu método de pago
+                        </p>
+                      </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Columna Izquierda - Resumen del pedido */}
                     <div className="space-y-6">
                       {/* Información del negocio */}
@@ -1128,6 +1175,8 @@ export default function AdminDashboard() {
                       <span className="text-sm">Soporte 24/7</span>
                     </div>
                   </div>
+                    </>
+                  )}
                 </div>
               )}
 
