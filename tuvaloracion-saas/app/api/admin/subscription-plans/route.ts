@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     const userRole = searchParams.get('userRole');
     
     const db = await getDatabase();
-    let query = activeOnly ? { active: true } : {};
+    let query: any = activeOnly ? { active: true } : {};
     
     if (userRole === 'admin' && userEmail) {
       // Encontrar el userId por email
