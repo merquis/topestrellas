@@ -875,7 +875,7 @@ export default function AdminDashboard() {
                   
                   <div className="text-center">
                     <p className="text-sm text-gray-600">
-                      Paso 1 de 3: Información personal
+                      Paso 1 de 4: Información personal
                     </p>
                   </div>
                 </form>
