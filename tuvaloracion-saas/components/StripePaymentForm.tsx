@@ -87,7 +87,7 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
       } else {
         setMessage('Ha ocurrido un error inesperado.');
       }
-    } else if ('setupIntent' in result && result.setupIntent?.status === 'succeeded') {
+    } else if ((result as any).setupIntent?.status === 'succeeded') {
       // Configuración exitosa
       setMessage('¡Pago procesado con éxito!');
       
