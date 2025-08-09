@@ -313,47 +313,72 @@ export default function AdminDashboard() {
     setRegisterError('');
     
     try {
-      // Primero crear el negocio sin suscripción
-      const businessData = {
-        ownerName: tempUserData.name,
-        email: tempUserData.email,
-        phone: tempUserData.phone,
-        password: tempUserData.password,
-        businessName: selectedBusiness.name,
-        placeId: businessPlaceId,
-        address: selectedBusiness.formatted_address || '',
-        businessPhone: selectedBusiness.international_phone_number || tempUserData.phone,
-        website: selectedBusiness.website || '',
-        rating: selectedBusiness.rating || 0,
-        totalReviews: selectedBusiness.user_ratings_total || 0,
-        photoUrl: businessPhotoUrl,
-        plan: plan.key, // Usar el plan seleccionado
-        type: tempUserData.businessType,
-        country: 'España',
-        skipSubscription: true // No crear suscripción aún
-      };
+      // Si ya tenemos un businessId del paso 2, usarlo
+      let businessId = tempUserData.businessId;
+      let newUser = null;
       
-      const businessResponse = await fetch('/api/admin/businesses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(businessData),
-      });
+      // Si no tenemos businessId (por si el guardado parcial falló), crear el negocio ahora
+      if (!businessId) {
+        const businessData = {
+          ownerName: tempUserData.name,
+          email: tempUserData.email,
+          phone: tempUserData.phone,
+          password: tempUserData.password,
+          businessName: selectedBusiness.name,
+          placeId: businessPlaceId,
+          address: selectedBusiness.formatted_address || '',
+          businessPhone: selectedBusiness.international_phone_number || tempUserData.phone,
+          website: selectedBusiness.website || '',
+          rating: selectedBusiness.rating || 0,
+          totalReviews: selectedBusiness.user_ratings_total || 0,
+          photoUrl: businessPhotoUrl,
+          plan: plan.key,
+          type: tempUserData.businessType,
+          country: 'España',
+          registrationStatus: 'completing', // Marcando como en proceso de completar
+          skipSubscription: true // No crear suscripción aún
+        };
+        
+        const businessResponse = await fetch('/api/admin/businesses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(businessData),
+        });
 
-      if (!businessResponse.ok) {
-        const errorData = await businessResponse.json();
-        throw new Error(errorData.error || 'Error al crear el negocio');
+        if (!businessResponse.ok) {
+          const errorData = await businessResponse.json();
+          // Si el error es porque ya existe, intentar obtener el businessId
+          if (errorData.error && errorData.error.includes('ya existe')) {
+            // Por ahora continuar sin businessId
+            throw new Error('El email ya está registrado. Por favor, inicia sesión.');
+          }
+          throw new Error(errorData.error || 'Error al crear el negocio');
+        }
+
+        const responseData = await businessResponse.json();
+        businessId = responseData.businessId;
+        newUser = responseData.user;
+        
+        // Guardar el usuario temporalmente
+        if (newUser) {
+          saveAuth(newUser);
+        }
       }
 
-      const { businessId, user: newUser } = await businessResponse.json();
-      
-      // Guardar el usuario temporalmente
-      if (newUser) {
-        saveAuth(newUser);
+      // Verificar que tenemos businessId antes de continuar
+      if (!businessId) {
+        throw new Error('No se pudo obtener el ID del negocio');
       }
 
       // Crear sesión de pago con Stripe
+      console.log('Creando sesión de pago para:', {
+        businessId,
+        planKey: plan.key,
+        userEmail: tempUserData.email
+      });
+
       const subscriptionResponse = await fetch('/api/admin/subscriptions', {
         method: 'POST',
         headers: {
@@ -367,34 +392,48 @@ export default function AdminDashboard() {
         }),
       });
 
+      const subscriptionData = await subscriptionResponse.json();
+
       if (!subscriptionResponse.ok) {
-        const errorData = await subscriptionResponse.json();
-        throw new Error(errorData.error || 'Error al crear la sesión de pago');
+        console.error('Error de suscripción:', subscriptionData);
+        throw new Error(subscriptionData.error || 'Error al crear la sesión de pago');
       }
 
-      const { clientSecret } = await subscriptionResponse.json();
+      const { clientSecret, subscriptionId, customerId } = subscriptionData;
       
+      if (!clientSecret) {
+        throw new Error('No se pudo obtener el client secret para el pago');
+      }
+
       // Guardar datos en localStorage para recuperar después del pago
       localStorage.setItem('pendingSubscription', JSON.stringify({
         businessId,
         planKey: plan.key,
-        userEmail: tempUserData.email
+        userEmail: tempUserData.email,
+        subscriptionId,
+        customerId,
+        clientSecret
       }));
 
-      // Redirigir al componente de pago de Stripe
-      // Por ahora, mostrar el componente de pago inline
-      // En producción, podrías usar Stripe Checkout redirect
+      // TODO: Aquí deberías mostrar el modal de pago con Stripe Elements
+      // Por ahora, mostrar mensaje de éxito temporal
+      setRegisterError('');
       
-      // Aquí deberías mostrar el modal de pago o redirigir a Stripe
-      setRegisterError('Redirigiendo al pago...');
+      // Mensaje temporal - en producción aquí iría el modal de Stripe
+      alert(`¡Casi listo! Ahora deberías ver el formulario de pago de Stripe.\n\nClient Secret: ${clientSecret.substring(0, 20)}...`);
       
-      // Simular redirección (en producción usar Stripe Checkout)
+      // Simular éxito del pago después de 3 segundos
       setTimeout(() => {
         if (newUser) {
           setUser(newUser);
           loadDashboardData(newUser);
+        } else {
+          // Si no tenemos usuario, redirigir al login
+          setCurrentView('login');
+          setRegisterError('');
+          alert('¡Registro completado! Por favor, inicia sesión con tu email y contraseña.');
         }
-      }, 2000);
+      }, 3000);
       
     } catch (error: any) {
       console.error('Error en el proceso de registro:', error);
