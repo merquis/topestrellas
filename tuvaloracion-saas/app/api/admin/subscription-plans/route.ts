@@ -74,10 +74,9 @@ export async function POST(request: Request) {
       );
     }
     
-    // Crear el plan en la DB (sin _id para que MongoDB lo genere)
-    const { _id, ...planData } = validatedData;
+    // Crear el plan en la DB (MongoDB generará el _id automáticamente)
     const newPlan = {
-      ...planData,
+      ...validatedData,
       interval: validatedData.interval || 'month',
       createdAt: new Date(),
       updatedAt: new Date(),
