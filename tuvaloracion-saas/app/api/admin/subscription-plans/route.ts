@@ -201,8 +201,11 @@ export async function PUT(request: Request) {
       try {
         const { productId, priceId } = await syncPlanToStripe(updatedPlan as SubscriptionPlan);
         
-        updatedPlan.stripeProductId = productId;
-        updatedPlan.stripePriceId = priceId;
+        // Actualizar los IDs de Stripe en el objeto
+        Object.assign(updatedPlan, {
+          stripeProductId: productId,
+          stripePriceId: priceId
+        });
       } catch (stripeError) {
         console.error('Error sincronizando con Stripe:', stripeError);
         // No fallar la actualizaciรณn, pero registrar el error
