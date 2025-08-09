@@ -39,7 +39,9 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
         const response = await fetch('/api/admin/subscription-plans');
         if (response.ok) {
           const plans = await response.json();
-          const currentPlan = plans.find((p: any) => p.key === plan);
+          const currentPlan = plans && Array.isArray(plans.plans)
+            ? plans.plans.find((p: any) => p.key === plan)
+            : null;
           if (currentPlan) {
             setPlanData({
               name: currentPlan.name,
