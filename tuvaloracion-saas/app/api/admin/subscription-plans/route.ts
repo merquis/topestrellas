@@ -101,13 +101,16 @@ export async function POST(request: Request) {
     
     const result = await db.collection('subscriptionplans').insertOne(newPlan);
     
-    // Sincronizar con Stripe si está activo
-    if (newPlan.active) {
+    // Sincronizar con Stripe si está activo (excepto trial)
+    if (newPlan.active && newPlan.key !== 'trial') {
+      console.log(`[POST /subscription-plans] Sincronizando plan ${newPlan.key} con Stripe...`);
       try {
         const { productId, priceId } = await syncPlanToStripe({
           ...newPlan,
           _id: result.insertedId,
         });
+        
+        console.log(`[POST /subscription-plans] Plan sincronizado - ProductID: ${productId}, PriceID: ${priceId}`);
         
         await db.collection('subscriptionplans').updateOne(
           { _id: result.insertedId },
@@ -119,8 +122,22 @@ export async function POST(request: Request) {
             } 
           }
         );
-      } catch (stripeError) {
-        console.error('Error sincronizando con Stripe:', stripeError);
+        
+        console.log(`[POST /subscription-plans] IDs de Stripe guardados en MongoDB`);
+      } catch (stripeError: any) {
+        console.error('[POST /subscription-plans] Error crítico sincronizando con Stripe:', stripeError);
+        
+        // Eliminar el plan creado si falla la sincronización con Stripe
+        await db.collection('subscriptionplans').deleteOne({ _id: result.insertedId });
+        
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Error sincronizando con Stripe', 
+            details: stripeError.message 
+          },
+          { status: 500 }
+        );
       }
     }
     
@@ -203,7 +220,8 @@ export async function PUT(request: Request) {
       updatedAt: new Date(),
     };
     
-    if (updatedPlan.active && (
+    // Sincronizar con Stripe si está activo y hubo cambios relevantes (excepto trial)
+    if (updatedPlan.active && updatedPlan.key !== 'trial' && (
       validatedData.recurringPrice !== undefined ||
       validatedData.setupPrice !== undefined ||
       validatedData.interval !== undefined ||
@@ -211,15 +229,27 @@ export async function PUT(request: Request) {
       validatedData.name !== undefined ||
       validatedData.description !== undefined
     )) {
+      console.log(`[PUT /subscription-plans] Sincronizando cambios del plan ${updatedPlan.key} con Stripe...`);
       try {
         const { productId, priceId } = await syncPlanToStripe(updatedPlan as SubscriptionPlan);
+        
+        console.log(`[PUT /subscription-plans] Plan actualizado - ProductID: ${productId}, PriceID: ${priceId}`);
         
         Object.assign(updatedPlan, {
           stripeProductId: productId,
           stripePriceId: priceId
         });
-      } catch (stripeError) {
-        console.error('Error sincronizando con Stripe:', stripeError);
+      } catch (stripeError: any) {
+        console.error('[PUT /subscription-plans] Error crítico sincronizando con Stripe:', stripeError);
+        
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Error sincronizando con Stripe', 
+            details: stripeError.message 
+          },
+          { status: 500 }
+        );
       }
     }
     

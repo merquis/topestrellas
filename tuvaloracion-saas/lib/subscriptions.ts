@@ -67,8 +67,11 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
   productId: string;
   priceId: string;
 }> {
+  console.log(`[syncPlanToStripe] Iniciando sincronización para plan: ${plan.key}`);
+  
   // No sincronizar el plan de prueba con Stripe
   if (plan.key === 'trial') {
+    console.log(`[syncPlanToStripe] Plan trial detectado, saltando sincronización con Stripe`);
     return {
       productId: 'local_trial_product',
       priceId: 'local_trial_price',
@@ -76,13 +79,17 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
   }
 
   try {
+    console.log(`[syncPlanToStripe] Procesando plan: ${plan.name} (${plan.key})`);
     let product: Stripe.Product;
     let price: Stripe.Price;
 
     // Verificar si el producto ya existe en Stripe
     if (plan.stripeProductId) {
       try {
+        console.log(`[syncPlanToStripe] Buscando producto existente: ${plan.stripeProductId}`);
         product = await stripe.products.retrieve(plan.stripeProductId);
+        console.log(`[syncPlanToStripe] Producto encontrado, actualizando...`);
+        
         // Actualizar el producto si es necesario
         product = await stripe.products.update(plan.stripeProductId, {
           name: plan.name,
@@ -95,22 +102,26 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
             popular: plan.popular ? 'true' : 'false',
           },
         });
-      } catch (error) {
+        console.log(`[syncPlanToStripe] Producto actualizado exitosamente`);
+      } catch (error: any) {
         // Si el producto no existe, lo creamos
-        console.log(`Producto ${plan.stripeProductId} no encontrado, creando uno nuevo`);
+        console.log(`[syncPlanToStripe] Producto ${plan.stripeProductId} no encontrado en Stripe: ${error.message}`);
+        console.log(`[syncPlanToStripe] Creando nuevo producto...`);
         product = await stripe.products.create({
           name: plan.name,
           description: plan.description || undefined,
           active: plan.active,
-        metadata: {
-          planKey: plan.key,
-          icon: plan.icon || '',
-          color: plan.color || '',
-          popular: plan.popular ? 'true' : 'false',
-        },
+          metadata: {
+            planKey: plan.key,
+            icon: plan.icon || '',
+            color: plan.color || '',
+            popular: plan.popular ? 'true' : 'false',
+          },
         });
+        console.log(`[syncPlanToStripe] Nuevo producto creado: ${product.id}`);
       }
     } else {
+      console.log(`[syncPlanToStripe] No hay stripeProductId, creando nuevo producto...`);
       // Crear nuevo producto en Stripe
       product = await stripe.products.create({
         name: plan.name,
@@ -123,6 +134,7 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
           popular: plan.popular ? 'true' : 'false',
         },
       });
+      console.log(`[syncPlanToStripe] Nuevo producto creado: ${product.id}`);
     }
 
     // Crear un nuevo precio para el producto
@@ -150,23 +162,35 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
       priceData.unit_amount = eurosToCents(plan.recurringPrice);
     }
 
+    console.log(`[syncPlanToStripe] Creando nuevo precio con datos:`, {
+      product: product.id,
+      currency: plan.currency,
+      amount: eurosToCents(plan.recurringPrice),
+      interval: plan.interval
+    });
+    
     price = await stripe.prices.create(priceData);
+    console.log(`[syncPlanToStripe] Nuevo precio creado: ${price.id}`);
 
     // Si hay un precio anterior, lo desactivamos
     if (plan.stripePriceId && plan.stripePriceId !== price.id) {
       try {
+        console.log(`[syncPlanToStripe] Desactivando precio anterior: ${plan.stripePriceId}`);
         await stripe.prices.update(plan.stripePriceId, { active: false });
-      } catch (error) {
-        console.log(`No se pudo desactivar el precio anterior: ${plan.stripePriceId}`);
+        console.log(`[syncPlanToStripe] Precio anterior desactivado exitosamente`);
+      } catch (error: any) {
+        console.log(`[syncPlanToStripe] No se pudo desactivar el precio anterior: ${plan.stripePriceId} - ${error.message}`);
       }
     }
 
+    console.log(`[syncPlanToStripe] ✅ Sincronización completada - ProductID: ${product.id}, PriceID: ${price.id}`);
     return {
       productId: product.id,
       priceId: price.id,
     };
-  } catch (error) {
-    console.error('Error sincronizando plan con Stripe:', error);
+  } catch (error: any) {
+    console.error('[syncPlanToStripe] ❌ Error sincronizando plan con Stripe:', error.message);
+    console.error('[syncPlanToStripe] Stack trace:', error.stack);
     throw error;
   }
 }
