@@ -307,13 +307,23 @@ export async function POST(request: Request) {
       const existingUser = await db.collection('users').findOne({ email: data.email });
       
       if (!existingUser) {
+        // Determinar el rol basado en el estado del registro
+        let userRole = 'lead'; // Por defecto es lead hasta que complete el pago
+        
+        // Si viene con registrationStatus 'completed' o paymentCompleted true, es admin
+        if (data.registrationStatus === 'completed' || data.paymentCompleted === true) {
+          userRole = 'admin';
+        }
+        
         const newUser = {
           email: data.email,
           name: data.ownerName,
           phone: data.phone || '', // Guardar el teléfono del propietario
           password: data.password || 'temp123', // Contraseña temporal si no se proporciona
-          role: 'admin',
+          role: userRole,
           businessId: result.insertedId.toString(),
+          registrationStatus: data.registrationStatus || 'partial', // Estado del registro
+          paymentCompleted: data.paymentCompleted || false, // Si completó el pago
           createdAt: new Date(),
           updatedAt: new Date()
         };

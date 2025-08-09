@@ -89,6 +89,32 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       // Pago exitoso
       setMessage('¡Pago procesado con éxito!');
+      
+      // Actualizar el rol del usuario a 'admin' después del pago exitoso
+      try {
+        // Obtener el email del localStorage si está disponible
+        const pendingSubscription = localStorage.getItem('pendingSubscription');
+        if (pendingSubscription) {
+          const { userEmail } = JSON.parse(pendingSubscription);
+          
+          // Actualizar el rol del usuario
+          await fetch('/api/admin/users/update-role', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: userEmail,
+              businessId,
+              newRole: 'admin',
+              paymentCompleted: true
+            }),
+          });
+        }
+      } catch (error) {
+        console.error('Error actualizando rol del usuario:', error);
+      }
+      
       setTimeout(() => {
         onSuccess();
       }, 1500);
