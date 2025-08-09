@@ -145,8 +145,14 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
             <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
               <PaymentElement 
                 options={{
-                  layout: 'tabs',
-                  paymentMethodOrder: ['card', 'sepa_debit'],
+                  layout: {
+                    type: 'accordion',
+                    defaultCollapsed: false,
+                    radios: true,
+                    spacedAccordionItems: false
+                  },
+                  // No especificar paymentMethodOrder para que Stripe muestre todos los métodos disponibles
+                  // Los métodos se mostrarán automáticamente según la configuración en el Dashboard
                 }}
               />
             </div>

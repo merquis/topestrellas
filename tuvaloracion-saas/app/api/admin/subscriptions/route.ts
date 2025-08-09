@@ -251,11 +251,31 @@ export async function POST(request: Request) {
           interval: plan.interval,
         }
       });
-    } catch (error) {
-      console.error('Error creando payment intent:', error);
+    } catch (error: any) {
+      // Mejorar el manejo de errores para mostrar el error real de Stripe
+      const stripeError = error?.raw || error;
+      console.error('[POST /api/admin/subscriptions] Error detallado:', {
+        type: stripeError?.type,
+        code: stripeError?.code,
+        message: stripeError?.message || error?.message,
+        statusCode: stripeError?.statusCode,
+        param: stripeError?.param,
+        businessId,
+        planKey,
+        userEmail
+      });
+      
+      const errorMessage = stripeError?.message || error?.message || 'Error procesando el pago';
+      const statusCode = stripeError?.statusCode || 400;
+      
       return NextResponse.json(
-        { success: false, error: 'Error creando payment intent' },
-        { status: 500 }
+        { 
+          success: false, 
+          error: errorMessage,
+          code: stripeError?.code,
+          type: stripeError?.type
+        },
+        { status: statusCode }
       );
     }
   } catch (error) {

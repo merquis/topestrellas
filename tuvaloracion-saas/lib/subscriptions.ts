@@ -331,14 +331,36 @@ export async function createSubscriptionAndReturnClientSecret(
   customerId: string;
 }> {
   try {
+    console.log('[createSubscriptionAndReturnClientSecret] Iniciando con:', {
+      businessId,
+      planKey,
+      userEmail,
+      userName
+    });
+
+    // Verificar que tenemos STRIPE_SECRET_KEY
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY no está configurada');
+    }
+
     // Obtener el plan de la DB
     const plan = await getPlanFromDB(planKey);
     if (!plan) {
-      throw new Error(`Plan ${planKey} no encontrado`);
+      throw new Error(`Plan ${planKey} no encontrado en la base de datos`);
     }
+
+    console.log('[createSubscriptionAndReturnClientSecret] Plan encontrado:', {
+      key: plan.key,
+      name: plan.name,
+      stripePriceId: plan.stripePriceId,
+      interval: plan.interval,
+      recurringPrice: plan.recurringPrice,
+      setupPrice: plan.setupPrice
+    });
 
     // Asegurarse de que el plan esté sincronizado con Stripe
     if (!plan.stripePriceId) {
+      console.log('[createSubscriptionAndReturnClientSecret] Sincronizando plan con Stripe...');
       const { productId, priceId } = await syncPlanToStripe(plan);
       
       // Actualizar el plan en la DB con los IDs de Stripe
@@ -359,12 +381,16 @@ export async function createSubscriptionAndReturnClientSecret(
     }
 
     // Obtener o crear cliente de Stripe
+    console.log('[createSubscriptionAndReturnClientSecret] Obteniendo/creando cliente de Stripe...');
     const customerId = await getOrCreateStripeCustomer(userEmail, businessId, userName);
+    console.log('[createSubscriptionAndReturnClientSecret] Cliente de Stripe:', customerId);
 
     // Si es una suscripción recurrente
     if (plan.interval) {
-      // Crear la suscripción con payment_behavior='default_incomplete'
-      const subscription = await stripe.subscriptions.create({
+      console.log('[createSubscriptionAndReturnClientSecret] Creando suscripción recurrente...');
+      
+      // Preparar los parámetros de la suscripción
+      const subscriptionParams: any = {
         customer: customerId,
         items: [
           {
@@ -373,8 +399,12 @@ export async function createSubscriptionAndReturnClientSecret(
         ],
         payment_behavior: 'default_incomplete',
         payment_settings: { 
-          save_default_payment_method: 'on_subscription',
-          payment_method_types: ['card', 'paypal'], // Especificar métodos de pago permitidos
+          save_default_payment_method: 'on_subscription'
+        },
+        // Habilitar métodos de pago automáticos (incluye tarjeta, PayPal, etc.)
+        automatic_payment_methods: {
+          enabled: true,
+          allow_redirects: 'always' // Permite métodos que requieren redirección como PayPal
         },
         expand: ['latest_invoice.payment_intent'],
         metadata: {
@@ -382,8 +412,11 @@ export async function createSubscriptionAndReturnClientSecret(
           planKey,
         },
         trial_period_days: plan.trialDays > 0 ? plan.trialDays : undefined,
-        // Si hay setup fee, agregarlo como un item adicional
-        add_invoice_items: plan.setupPrice > 0 ? [
+      };
+
+      // Si hay setup fee, agregarlo como un item adicional
+      if (plan.setupPrice > 0) {
+        subscriptionParams.add_invoice_items = [
           {
             price_data: {
               currency: plan.currency.toLowerCase(),
@@ -391,19 +424,41 @@ export async function createSubscriptionAndReturnClientSecret(
               unit_amount: eurosToCents(plan.setupPrice),
             },
           },
-        ] : undefined,
+        ];
+      }
+
+      console.log('[createSubscriptionAndReturnClientSecret] Parámetros de suscripción:', {
+        customer: subscriptionParams.customer,
+        priceId: plan.stripePriceId,
+        trial_period_days: subscriptionParams.trial_period_days,
+        hasSetupFee: plan.setupPrice > 0
+      });
+
+      const subscription = await stripe.subscriptions.create(subscriptionParams);
+      
+      console.log('[createSubscriptionAndReturnClientSecret] Suscripción creada:', {
+        id: subscription.id,
+        status: subscription.status,
+        hasLatestInvoice: !!subscription.latest_invoice
       });
 
       const invoice = subscription.latest_invoice as Stripe.Invoice;
       const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
 
+      if (!paymentIntent?.client_secret) {
+        throw new Error('No se pudo obtener el client_secret del payment_intent');
+      }
+
+      console.log('[createSubscriptionAndReturnClientSecret] ✅ Suscripción creada exitosamente');
+
       return {
-        clientSecret: paymentIntent.client_secret!,
+        clientSecret: paymentIntent.client_secret,
         subscriptionId: subscription.id,
         customerId,
       };
     } else {
       // Para pagos únicos, crear un Payment Intent simple
+      console.log('[createSubscriptionAndReturnClientSecret] Creando pago único...');
       const totalAmount = eurosToCents(plan.recurringPrice + (plan.setupPrice || 0));
       
       const paymentIntent = await stripe.paymentIntents.create({
@@ -416,16 +471,26 @@ export async function createSubscriptionAndReturnClientSecret(
         },
         automatic_payment_methods: {
           enabled: true,
+          allow_redirects: 'always' // Permite métodos que requieren redirección
         },
       });
+
+      console.log('[createSubscriptionAndReturnClientSecret] ✅ Payment Intent creado exitosamente');
 
       return {
         clientSecret: paymentIntent.client_secret!,
         customerId,
       };
     }
-  } catch (error) {
-    console.error('Error creando payment intent:', error);
+  } catch (error: any) {
+    console.error('[createSubscriptionAndReturnClientSecret] ❌ Error detallado:', {
+      message: error?.message,
+      type: error?.type,
+      code: error?.code,
+      statusCode: error?.statusCode,
+      param: error?.param,
+      raw: error?.raw
+    });
     throw error;
   }
 }
