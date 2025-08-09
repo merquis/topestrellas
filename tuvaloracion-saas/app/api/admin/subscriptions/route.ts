@@ -217,7 +217,7 @@ export async function POST(request: Request) {
 
     // Crear suscripción y obtener client secret para pago embebido
     try {
-      const { clientSecret, subscriptionId, customerId } = await createSubscriptionAndReturnClientSecret(
+      const { clientSecret, subscriptionId, customerId, mode } = await createSubscriptionAndReturnClientSecret(
         businessId,
         planKey,
         userEmail,
@@ -243,6 +243,7 @@ export async function POST(request: Request) {
         clientSecret,
         subscriptionId,
         customerId,
+        mode, // Enviar el modo al frontend
         plan: {
           name: plan.name,
           price: plan.recurringPrice,
