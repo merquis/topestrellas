@@ -104,6 +104,46 @@ export default function AdminDashboard() {
     setLoading(false);
   }, []);
 
+  // Verificar si hay mensaje de éxito del pago cuando se muestra el login
+  useEffect(() => {
+    if (currentView === 'login') {
+      const paymentSuccess = localStorage.getItem('paymentSuccess');
+      if (paymentSuccess === 'true') {
+        const message = localStorage.getItem('successMessage');
+        // Mostrar el mensaje como información positiva, no como error
+        setLoginError(''); // Limpiar errores previos
+        // Crear un mensaje temporal de éxito
+        const successDiv = document.createElement('div');
+        successDiv.className = 'bg-green-50 text-green-600 px-4 py-3 rounded-xl text-sm border border-green-200 mb-4';
+        successDiv.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-green-500">✅</span>
+            <span>${message || '¡Registro completado! Inicia sesión para acceder.'}</span>
+          </div>
+        `;
+        
+        // Insertar el mensaje antes del formulario
+        setTimeout(() => {
+          const loginForm = document.querySelector('form');
+          if (loginForm && loginForm.parentNode) {
+            loginForm.parentNode.insertBefore(successDiv, loginForm);
+            
+            // Eliminar el mensaje después de 10 segundos
+            setTimeout(() => {
+              if (successDiv.parentNode) {
+                successDiv.remove();
+              }
+            }, 10000);
+          }
+        }, 100);
+        
+        // Limpiar localStorage
+        localStorage.removeItem('paymentSuccess');
+        localStorage.removeItem('successMessage');
+      }
+    }
+  }, [currentView]);
+
   const loadDashboardData = async (authUser: AuthUser) => {
     try {
       const businessesResponse = await fetch('/api/admin/businesses');
@@ -472,32 +512,46 @@ export default function AdminDashboard() {
     );
   }
 
-  // Si estamos mostrando el formulario de pago
-  if (showPaymentForm && clientSecret && !user) {
+  // Si estamos mostrando el formulario de pago (sin importar si hay usuario o no)
+  if (showPaymentForm && clientSecret) {
     return (
-      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-        <StripePaymentForm
-          businessId={pendingBusinessId}
-          businessName={selectedBusiness?.name || 'Tu Negocio'}
-          plan={pendingPlanKey as 'basic' | 'premium'}
-          clientSecret={clientSecret}
-          onSuccess={() => {
-            setShowPaymentForm(false);
-            setClientSecret('');
-            // Redirigir al login después del pago exitoso
-            setCurrentView('login');
-            setRegisterError('');
-            alert('¡Pago procesado con éxito! Por favor, inicia sesión con tu email y contraseña.');
-            resetForms();
-          }}
-          onCancel={() => {
-            setShowPaymentForm(false);
-            setClientSecret('');
-            setPendingBusinessId('');
-            setPendingPlanKey('');
-            setRegisterError('Pago cancelado. Puedes intentarlo de nuevo.');
-          }}
-        />
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="my-8">
+          <StripePaymentForm
+            businessId={pendingBusinessId}
+            businessName={selectedBusiness?.name || 'Tu Negocio'}
+            plan={pendingPlanKey as 'basic' | 'premium'}
+            clientSecret={clientSecret}
+            onSuccess={() => {
+              // Limpiar estados
+              setShowPaymentForm(false);
+              setClientSecret('');
+              setPendingBusinessId('');
+              setPendingPlanKey('');
+              
+              // Guardar mensaje de éxito en localStorage
+              localStorage.setItem('paymentSuccess', 'true');
+              localStorage.setItem('successMessage', '¡Pago procesado con éxito! Tu suscripción está activa. Por favor, inicia sesión con tu email y contraseña.');
+              
+              // Si hay un usuario guardado, limpiarlo para forzar nuevo login
+              if (user) {
+                localStorage.removeItem('authUser');
+                setUser(null);
+              }
+              
+              // Resetear formularios y volver al login
+              resetForms();
+              setCurrentView('login');
+            }}
+            onCancel={() => {
+              setShowPaymentForm(false);
+              setClientSecret('');
+              setPendingBusinessId('');
+              setPendingPlanKey('');
+              setRegisterError('Pago cancelado. Puedes intentarlo de nuevo.');
+            }}
+          />
+        </div>
       </div>
     );
   }
