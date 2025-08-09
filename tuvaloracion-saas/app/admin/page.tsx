@@ -8,6 +8,13 @@ import { AuthUser, authenticateUser, checkAuth, saveAuth } from '@/lib/auth';
 import { GooglePlacesUltraSeparated } from '@/components/GooglePlacesUltraSeparated';
 import { GooglePlaceData } from '@/lib/types';
 import PlanCard from '@/components/PlanCard';
+import dynamic from 'next/dynamic';
+
+// Importar dinámicamente el componente de Stripe para evitar problemas de SSR
+const StripePaymentForm = dynamic(
+  () => import('@/components/StripePaymentForm'),
+  { ssr: false }
+);
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -35,6 +42,12 @@ export default function AdminDashboard() {
   const [registerError, setRegisterError] = useState('');
   const [isCreatingBusiness, setIsCreatingBusiness] = useState(false);
   const [tempUserData, setTempUserData] = useState<any>(null);
+  
+  // Payment states
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [clientSecret, setClientSecret] = useState('');
+  const [pendingBusinessId, setPendingBusinessId] = useState('');
+  const [pendingPlanKey, setPendingPlanKey] = useState('');
   
   // Dashboard states
   const [businesses, setBusinesses] = useState([]);
@@ -415,25 +428,12 @@ export default function AdminDashboard() {
         clientSecret
       }));
 
-      // TODO: Aquí deberías mostrar el modal de pago con Stripe Elements
-      // Por ahora, mostrar mensaje de éxito temporal
+      // Mostrar el formulario de pago de Stripe
+      setClientSecret(clientSecret);
+      setPendingBusinessId(businessId);
+      setPendingPlanKey(plan.key);
+      setShowPaymentForm(true);
       setRegisterError('');
-      
-      // Mensaje temporal - en producción aquí iría el modal de Stripe
-      alert(`¡Casi listo! Ahora deberías ver el formulario de pago de Stripe.\n\nClient Secret: ${clientSecret.substring(0, 20)}...`);
-      
-      // Simular éxito del pago después de 3 segundos
-      setTimeout(() => {
-        if (newUser) {
-          setUser(newUser);
-          loadDashboardData(newUser);
-        } else {
-          // Si no tenemos usuario, redirigir al login
-          setCurrentView('login');
-          setRegisterError('');
-          alert('¡Registro completado! Por favor, inicia sesión con tu email y contraseña.');
-        }
-      }, 3000);
       
     } catch (error: any) {
       console.error('Error en el proceso de registro:', error);
@@ -468,6 +468,36 @@ export default function AdminDashboard() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Si estamos mostrando el formulario de pago
+  if (showPaymentForm && clientSecret && !user) {
+    return (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <StripePaymentForm
+          businessId={pendingBusinessId}
+          businessName={selectedBusiness?.name || 'Tu Negocio'}
+          plan={pendingPlanKey as 'basic' | 'premium'}
+          clientSecret={clientSecret}
+          onSuccess={() => {
+            setShowPaymentForm(false);
+            setClientSecret('');
+            // Redirigir al login después del pago exitoso
+            setCurrentView('login');
+            setRegisterError('');
+            alert('¡Pago procesado con éxito! Por favor, inicia sesión con tu email y contraseña.');
+            resetForms();
+          }}
+          onCancel={() => {
+            setShowPaymentForm(false);
+            setClientSecret('');
+            setPendingBusinessId('');
+            setPendingPlanKey('');
+            setRegisterError('Pago cancelado. Puedes intentarlo de nuevo.');
+          }}
+        />
       </div>
     );
   }
