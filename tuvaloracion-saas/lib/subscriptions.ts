@@ -342,8 +342,9 @@ export async function createSubscriptionAndReturnClientSecret(
         payment_behavior: 'default_incomplete',
         payment_settings: { 
           save_default_payment_method: 'on_subscription',
-          // Permitir tarjeta y wallets (PayPal, Apple Pay, Google Pay)
-          payment_method_types: ['card', 'paypal', 'link'],
+        },
+        automatic_payment_methods: {
+          enabled: true, // Esto habilitará automáticamente todos los métodos configurados en Dashboard
         },
         expand: ['latest_invoice.payment_intent'],
         metadata: {

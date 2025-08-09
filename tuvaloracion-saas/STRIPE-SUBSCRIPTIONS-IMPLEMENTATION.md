@@ -36,7 +36,7 @@ Se ha implementado un sistema completo de suscripciones con Stripe siguiendo las
 
 #### `/api/admin/subscriptions`
 - **GET**: Obtener información de suscripción actual
-- **POST**: Crear Payment Intent para nueva suscripción
+- **POST**: Crear Subscription con `payment_behavior='default_incomplete'` y devolver `client_secret` del `latest_invoice.payment_intent`
 - **PUT**: Actualizar suscripción (pausar/reanudar)
 - **DELETE**: Cancelar suscripción
 

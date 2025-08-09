@@ -205,6 +205,7 @@ function PaymentForm({
               googlePay: 'black',
               paypal: 'gold'
             }
+            // No usar mode: 'subscription' - ese es para Checkout Sessions, no para Elements
           }}
           onClick={handleExpressCheckoutClick}
           onConfirm={handleExpressCheckoutConfirm}
