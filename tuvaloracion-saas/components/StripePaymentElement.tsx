@@ -59,7 +59,7 @@ function PaymentForm({
 
   // Confirmar el pago después del Express Checkout
   const handleExpressCheckoutConfirm = async (event: any) => {
-    if (!stripe) return;
+    if (!stripe || !elements) return;
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
