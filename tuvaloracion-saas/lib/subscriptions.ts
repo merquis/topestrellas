@@ -12,7 +12,7 @@ export interface SubscriptionPlan {
   _id?: ObjectId | string;
   key: string;
   name: string;
-  description: string;
+  description?: string;
   setupPrice: number; // En euros
   recurringPrice: number; // En euros
   currency: string;
