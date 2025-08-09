@@ -329,6 +329,7 @@ export async function createSubscriptionAndReturnClientSecret(
   clientSecret: string;
   subscriptionId?: string;
   customerId: string;
+  mode?: 'payment' | 'setup';
 }> {
   try {
     console.log('[createSubscriptionAndReturnClientSecret] Iniciando con:', {
@@ -436,23 +437,54 @@ export async function createSubscriptionAndReturnClientSecret(
       console.log('[createSubscriptionAndReturnClientSecret] Suscripción creada:', {
         id: subscription.id,
         status: subscription.status,
-        hasLatestInvoice: !!subscription.latest_invoice
+        hasLatestInvoice: !!subscription.latest_invoice,
+        hasPendingSetupIntent: !!subscription.pending_setup_intent
       });
 
-      const invoice = subscription.latest_invoice as Stripe.Invoice;
-      // payment_intent puede estar en el objeto invoice expandido
-      const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
+      // Puede haber PaymentIntent (sin trial o pago inmediato) o SetupIntent (con trial)
+      let mode: 'payment' | 'setup' = 'payment';
+      let clientSecret: string | undefined;
 
-      if (!paymentIntent?.client_secret) {
-        throw new Error('No se pudo obtener el client_secret del payment_intent');
+      // 1) Intento con PaymentIntent (cuando se cobra ahora)
+      const invoice = subscription.latest_invoice as Stripe.Invoice | null;
+      const paymentIntent = (invoice as any)?.payment_intent as Stripe.PaymentIntent | null;
+      
+      if (paymentIntent && paymentIntent.client_secret) {
+        clientSecret = paymentIntent.client_secret;
+        mode = 'payment';
+        console.log('[createSubscriptionAndReturnClientSecret] Usando PaymentIntent');
       }
 
-      console.log('[createSubscriptionAndReturnClientSecret] ✅ Suscripción creada exitosamente');
+      // 2) Si no hay PaymentIntent (trial o setup), uso el SetupIntent pendiente
+      if (!clientSecret && subscription.pending_setup_intent) {
+        console.log('[createSubscriptionAndReturnClientSecret] No hay PaymentIntent, buscando SetupIntent...');
+        
+        if (typeof subscription.pending_setup_intent === 'string') {
+          // Si es un string, necesitamos recuperar el SetupIntent
+          const setupIntent = await stripe.setupIntents.retrieve(subscription.pending_setup_intent);
+          clientSecret = setupIntent.client_secret ?? undefined;
+        } else {
+          // Si ya está expandido
+          clientSecret = (subscription.pending_setup_intent as any).client_secret ?? undefined;
+        }
+        
+        if (clientSecret) {
+          mode = 'setup';
+          console.log('[createSubscriptionAndReturnClientSecret] Usando SetupIntent');
+        }
+      }
+
+      if (!clientSecret) {
+        throw new Error('No se pudo obtener un client_secret (ni PaymentIntent ni SetupIntent)');
+      }
+
+      console.log('[createSubscriptionAndReturnClientSecret] ✅ Suscripción creada exitosamente con modo:', mode);
 
       return {
-        clientSecret: paymentIntent.client_secret,
+        clientSecret,
         subscriptionId: subscription.id,
         customerId,
+        mode, // Devolvemos el modo para que el frontend sepa cómo procesar
       };
     } else {
       // Para pagos únicos, crear un Payment Intent simple
