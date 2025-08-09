@@ -954,6 +954,183 @@ export default function AdminDashboard() {
                 </div>
               )}
 
+              {/* Step 4: Payment */}
+              {registrationStep === 4 && clientSecret && selectedPlanData && (
+                <div className="space-y-6">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      Completa tu suscripción
+                    </h3>
+                    <p className="text-lg text-gray-600">
+                      Último paso: Añade tu método de pago
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Columna Izquierda - Resumen del pedido */}
+                    <div className="space-y-6">
+                      {/* Información del negocio */}
+                      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span>🏢</span>
+                          <span>Tu Negocio</span>
+                        </h4>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-sm text-gray-600">Nombre</p>
+                            <p className="font-semibold text-gray-900">{selectedBusiness?.name || 'Tu Negocio'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Dirección</p>
+                            <p className="text-gray-700">{selectedBusiness?.formatted_address || 'Dirección del negocio'}</p>
+                          </div>
+                          {selectedBusiness?.rating && (
+                            <div>
+                              <p className="text-sm text-gray-600">Rating actual</p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-yellow-500">⭐</span>
+                                <span className="font-semibold">{selectedBusiness.rating}</span>
+                                <span className="text-gray-500">({selectedBusiness.user_ratings_total || 0} reseñas)</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Plan seleccionado */}
+                      <div className="bg-gradient-to-br from-green-50 to-blue-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span>📦</span>
+                          <span>Plan Seleccionado</span>
+                        </h4>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-2xl font-bold text-gray-900">{selectedPlanData?.name}</p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {selectedPlanData?.trialDays > 0 
+                                  ? `${selectedPlanData.trialDays} días de prueba gratis`
+                                  : 'Sin periodo de prueba'
+                                }
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-3xl font-bold text-green-600">
+                                {selectedPlanData?.recurringPrice} €
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                /{selectedPlanData?.interval === 'month' ? 'mes' : 'año'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Features del plan */}
+                          {selectedPlanData?.features && selectedPlanData.features.length > 0 && (
+                            <div className="pt-4 border-t border-gray-200">
+                              <p className="text-sm font-semibold text-gray-700 mb-2">Incluye:</p>
+                              <ul className="space-y-1">
+                                {selectedPlanData.features.slice(0, 3).map((feature: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                                    <span className="text-green-500 mt-0.5">✓</span>
+                                    <span>{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Información de facturación */}
+                      <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                        <h5 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                          <span>💳</span>
+                          <span>Información importante</span>
+                        </h5>
+                        <ul className="space-y-2 text-sm text-blue-800">
+                          {selectedPlanData?.trialDays > 0 && (
+                            <li className="flex items-start gap-2">
+                              <span>📅</span>
+                              <span>
+                                Primer cobro: {(() => {
+                                  const date = new Date();
+                                  date.setDate(date.getDate() + selectedPlanData.trialDays);
+                                  return date.toLocaleDateString('es-ES', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  });
+                                })()}
+                              </span>
+                            </li>
+                          )}
+                          <li className="flex items-start gap-2">
+                            <span>🔄</span>
+                            <span>Renovación automática {selectedPlanData?.interval === 'month' ? 'mensual' : 'anual'}</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span>❌</span>
+                            <span>Cancela cuando quieras sin penalización</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span>🔒</span>
+                            <span>Pago seguro procesado por Stripe</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Columna Derecha - Formulario de pago */}
+                    <div>
+                      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 className="text-lg font-bold text-gray-900 mb-6">
+                          Método de pago
+                        </h4>
+                        
+                        {/* Componente de Stripe */}
+                        <StripePaymentForm
+                          businessId={pendingBusinessId}
+                          businessName={selectedBusiness?.name || 'Tu Negocio'}
+                          plan={selectedPlanData?.key}
+                          clientSecret={clientSecret}
+                          onSuccess={() => {
+                            // Guardar mensaje de éxito
+                            localStorage.setItem('paymentSuccess', 'true');
+                            localStorage.setItem('successMessage', '¡Pago procesado con éxito! Tu cuenta ha sido creada.');
+                            // Resetear formularios
+                            resetForms();
+                            // Redirigir al login
+                            setCurrentView('login');
+                          }}
+                          onCancel={() => {
+                            // Volver al paso 3
+                            setRegistrationStep(3);
+                            setClientSecret('');
+                            setIsLoadingPayment(false);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer con garantías */}
+                  <div className="flex justify-center gap-6 mt-8 pt-6 border-t border-gray-200">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span>🛡️</span>
+                      <span className="text-sm">Garantía de satisfacción</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span>🔒</span>
+                      <span className="text-sm">Pago 100% seguro</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span>📧</span>
+                      <span className="text-sm">Soporte 24/7</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Step 3: Plan Selection */}
               {registrationStep === 3 && (
                 <div className="space-y-6">
