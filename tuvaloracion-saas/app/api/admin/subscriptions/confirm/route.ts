@@ -55,7 +55,7 @@ export async function POST(request: Request) {
           status: subscription.status,
           stripeSubscriptionId: subscription.id,
           stripePriceId: subscription.items.data[0]?.price.id,
-          validUntil: new Date(subscription.current_period_end * 1000),
+          validUntil: new Date((subscription as any).current_period_end * 1000),
           active: subscription.status === 'active' || subscription.status === 'trialing',
         });
 
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
           subscription: {
             id: subscription.id,
             status: subscription.status,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
           }
         });
       } catch (error) {
