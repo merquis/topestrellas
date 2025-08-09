@@ -73,21 +73,21 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
     setMessage(null);
 
     // Confirmar el método de pago (SetupIntent)
-    const { error, setupIntent } = await stripe.confirmSetup({
+    const result = await stripe.confirmSetup({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/admin/subscriptions/payment-success`,
       },
     });
 
-    if (error) {
+    if (result.error) {
       // Mostrar error al cliente
-      if (error.type === 'card_error' || error.type === 'validation_error') {
-        setMessage(error.message || 'Error en el pago');
+      if (result.error.type === 'card_error' || result.error.type === 'validation_error') {
+        setMessage(result.error.message || 'Error en el pago');
       } else {
         setMessage('Ha ocurrido un error inesperado.');
       }
-    } else if (setupIntent && setupIntent.status === 'succeeded') {
+    } else if (result.setupIntent && result.setupIntent.status === 'succeeded') {
       // Configuración exitosa
       setMessage('¡Pago procesado con éxito!');
       
