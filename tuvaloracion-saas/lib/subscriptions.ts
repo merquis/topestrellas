@@ -440,7 +440,8 @@ export async function createSubscriptionAndReturnClientSecret(
       });
 
       const invoice = subscription.latest_invoice as Stripe.Invoice;
-      const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
+      // payment_intent puede estar en el objeto invoice expandido
+      const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
 
       if (!paymentIntent?.client_secret) {
         throw new Error('No se pudo obtener el client_secret del payment_intent');
