@@ -342,9 +342,7 @@ export async function createSubscriptionAndReturnClientSecret(
         payment_behavior: 'default_incomplete',
         payment_settings: { 
           save_default_payment_method: 'on_subscription',
-        },
-        automatic_payment_methods: {
-          enabled: true, // Esto habilitará automáticamente todos los métodos configurados en Dashboard
+          payment_method_types: ['card', 'paypal'], // Especificar métodos de pago permitidos
         },
         expand: ['latest_invoice.payment_intent'],
         metadata: {
