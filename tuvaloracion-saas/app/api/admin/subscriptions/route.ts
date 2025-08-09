@@ -13,10 +13,14 @@ import {
   validateBusinessAccess
 } from '@/lib/subscriptions';
 import Stripe from 'stripe';
+import type { Subscription } from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 });
+
+const toDate = (secs?: number | null) =>
+  typeof secs === 'number' ? new Date(secs * 1000) : null;
 
 export async function GET(request: Request) {
   try {
@@ -86,11 +90,9 @@ export async function GET(request: Request) {
           currentPlan,
           stripeDetails: stripeSubscription ? {
             status: stripeSubscription.status,
-            // @ts-ignore
-            currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+            currentPeriodEnd: toDate(stripeSubscription.current_period_end),
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-            // @ts-ignore
-            trialEnd: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000) : null,
+            trialEnd: toDate(stripeSubscription.trial_end),
           } : null,
           paymentHistory,
         }
@@ -133,11 +135,9 @@ export async function GET(request: Request) {
             currentPlan,
             stripeDetails: stripeSubscription ? {
               status: stripeSubscription.status,
-              // @ts-ignore
-              currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+              currentPeriodEnd: toDate(stripeSubscription.current_period_end),
               cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-              // @ts-ignore
-              trialEnd: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000) : null,
+              trialEnd: toDate(stripeSubscription.trial_end),
             } : null,
           };
         })
