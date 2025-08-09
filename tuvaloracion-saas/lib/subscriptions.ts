@@ -360,7 +360,6 @@ export async function createSubscriptionAndReturnClientSecret(
               product: plan.stripeProductId!,
               unit_amount: eurosToCents(plan.setupPrice),
             },
-            description: 'Configuración inicial',
           },
         ] : undefined,
       });
