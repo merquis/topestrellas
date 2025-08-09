@@ -82,8 +82,8 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
           active: plan.active,
           metadata: {
             planKey: plan.key,
-            icon: plan.icon,
-            color: plan.color,
+            icon: plan.icon || '',
+            color: plan.color || '',
             popular: plan.popular ? 'true' : 'false',
           },
         });
@@ -94,12 +94,12 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
           name: plan.name,
           description: plan.description || undefined,
           active: plan.active,
-          metadata: {
-            planKey: plan.key,
-            icon: plan.icon,
-            color: plan.color,
-            popular: plan.popular ? 'true' : 'false',
-          },
+        metadata: {
+          planKey: plan.key,
+          icon: plan.icon || '',
+          color: plan.color || '',
+          popular: plan.popular ? 'true' : 'false',
+        },
         });
       }
     } else {
@@ -110,8 +110,8 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
         active: plan.active,
         metadata: {
           planKey: plan.key,
-          icon: plan.icon,
-          color: plan.color,
+          icon: plan.icon || '',
+          color: plan.color || '',
           popular: plan.popular ? 'true' : 'false',
         },
       });
