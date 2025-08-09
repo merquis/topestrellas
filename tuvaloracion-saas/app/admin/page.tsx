@@ -205,6 +205,13 @@ export default function AdminDashboard() {
   };
 
   const handleBusinessSelected = (place: GooglePlaceData, placeId: string, photoUrl?: string) => {
+    // Capturar los datos esenciales del negocio de Google Places
+    console.log('Datos del negocio seleccionado:', {
+      nombre: place?.name,
+      puntuacion: place?.rating,
+      numeroReseñas: place?.user_ratings_total,
+      direccion: place?.formatted_address
+    });
     setSelectedBusiness(place);
     setBusinessPlaceId(placeId);
     setBusinessPhotoUrl(photoUrl || '');
