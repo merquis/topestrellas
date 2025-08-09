@@ -321,7 +321,7 @@ export async function POST(request: Request) {
         
         return NextResponse.json({
           success: true,
-          businessId: result.insertedId,
+          businessId: result.insertedId.toString(),
           subdomain: newBusiness.subdomain,
           user: {
             id: userResult.insertedId.toString(),
@@ -348,7 +348,7 @@ export async function POST(request: Request) {
         
         return NextResponse.json({
           success: true,
-          businessId: result.insertedId,
+          businessId: result.insertedId.toString(),
           subdomain: newBusiness.subdomain,
           user: {
             id: existingUser._id.toString(),
@@ -365,7 +365,7 @@ export async function POST(request: Request) {
     // Fallback si no se proporcionaron datos de usuario
     return NextResponse.json({
       success: true,
-      businessId: result.insertedId,
+      businessId: result.insertedId.toString(),
       subdomain: newBusiness.subdomain,
       message: 'Negocio creado exitosamente'
     });
