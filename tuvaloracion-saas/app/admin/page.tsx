@@ -72,7 +72,7 @@ export default function AdminDashboard() {
         const response = await fetch(`/api/admin/subscription-plans?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
-          setSubscriptionPlans(data);
+          setSubscriptionPlans(data.plans || []);
         }
       } catch (err) {
         console.error('Error al cargar los planes:', err);
@@ -620,9 +620,9 @@ export default function AdminDashboard() {
                     <div style={{ display: 'none' }}>
                       {(() => {
                         // Cargar planes si aún no están cargados
-                        fetch('/api/admin/subscription-plans?public=true')
+                        fetch('/api/admin/subscription-plans?active=true')
                           .then(res => res.json())
-                          .then(data => setSubscriptionPlans(data))
+                          .then(data => setSubscriptionPlans(data.plans || []))
                           .catch(err => console.error('Error al cargar planes:', err));
                         return null;
                       })()}
