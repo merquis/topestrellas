@@ -8,7 +8,7 @@ import {
 import { z } from 'zod';
 import { ObjectId } from 'mongodb';
 
-// Schema de validación para crear/actualizar planes
+// Schema de validaciรณn para crear/actualizar planes
 const PlanSchema = z.object({
   key: z.string().min(1),
   name: z.string().min(1),
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       );
     }
     
-    // Crear el plan en la DB (MongoDB generará el _id automáticamente)
+    // Crear el plan en la DB (MongoDB generarรก el _id automรกticamente)
     const newPlan = {
       ...validatedData,
       interval: validatedData.interval || 'month',
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     
     const result = await db.collection('subscriptionplans').insertOne(newPlan);
     
-    // Sincronizar con Stripe si está activo
+    // Sincronizar con Stripe si estรก activo
     if (newPlan.active) {
       try {
         const { productId, priceId } = await syncPlanToStripe({
@@ -104,24 +104,28 @@ export async function POST(request: Request) {
           }
         );
         
-        newPlan.stripeProductId = productId;
-        newPlan.stripePriceId = priceId;
+        // No asignar directamente, usar el objeto actualizado de la DB
       } catch (stripeError) {
         console.error('Error sincronizando con Stripe:', stripeError);
-        // No fallar la creación del plan, pero registrar el error
+        // No fallar la creaciรณn del plan, pero registrar el error
       }
     }
     
+    // Obtener el plan actualizado de la DB para incluir los IDs de Stripe
+    const finalPlan = await db.collection('subscriptionplans').findOne({ 
+      _id: result.insertedId 
+    });
+    
     return NextResponse.json({ 
       success: true, 
-      plan: { ...newPlan, _id: result.insertedId }
+      plan: finalPlan
     });
   } catch (error) {
     console.error('Error creando plan:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Datos inválidos', details: error.errors },
+        { success: false, error: 'Datos invรกlidos', details: error.errors },
         { status: 400 }
       );
     }
@@ -163,7 +167,7 @@ export async function PUT(request: Request) {
       );
     }
     
-    // Si se está cambiando la key, verificar que no exista otra con esa key
+    // Si se estรก cambiando la key, verificar que no exista otra con esa key
     if (validatedData.key && validatedData.key !== currentPlan.key) {
       const existingPlan = await db.collection('subscriptionplans').findOne({ 
         key: validatedData.key,
@@ -178,14 +182,14 @@ export async function PUT(request: Request) {
       }
     }
     
-    // Preparar datos de actualización
+    // Preparar datos de actualizaciรณn
     const updatedPlan = {
       ...currentPlan,
       ...validatedData,
       updatedAt: new Date(),
     };
     
-    // Si el plan está activo y cambió el precio o características, sincronizar con Stripe
+    // Si el plan estรก activo y cambiรณ el precio o caracterรญsticas, sincronizar con Stripe
     if (updatedPlan.active && (
       validatedData.recurringPrice !== undefined ||
       validatedData.setupPrice !== undefined ||
@@ -201,7 +205,7 @@ export async function PUT(request: Request) {
         updatedPlan.stripePriceId = priceId;
       } catch (stripeError) {
         console.error('Error sincronizando con Stripe:', stripeError);
-        // No fallar la actualización, pero registrar el error
+        // No fallar la actualizaciรณn, pero registrar el error
       }
     }
     
@@ -220,7 +224,7 @@ export async function PUT(request: Request) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Datos inválidos', details: error.errors },
+        { success: false, error: 'Datos invรกlidos', details: error.errors },
         { status: 400 }
       );
     }
