@@ -43,11 +43,11 @@ export default function AdminDashboard() {
   const [isCreatingBusiness, setIsCreatingBusiness] = useState(false);
   const [tempUserData, setTempUserData] = useState<any>(null);
   
-  // Payment states
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  // Payment states - Refactorizado para el Paso 4
+  const [selectedPlanData, setSelectedPlanData] = useState<any>(null);
   const [clientSecret, setClientSecret] = useState('');
   const [pendingBusinessId, setPendingBusinessId] = useState('');
-  const [pendingPlanKey, setPendingPlanKey] = useState('');
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   
   // Dashboard states
   const [businesses, setBusinesses] = useState([]);
@@ -363,19 +363,21 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSelectPlanAndPay = async (plan: any) => {
+  // Nueva función para seleccionar plan (Paso 3)
+  const handleSelectPlan = async (plan: any) => {
     if (!selectedBusiness || !tempUserData) {
       setRegisterError('Error: Datos incompletos');
       return;
     }
 
+    // Guardar el plan seleccionado
+    setSelectedPlanData(plan);
     setIsCreatingBusiness(true);
     setRegisterError('');
     
     try {
       // Si ya tenemos un businessId del paso 2, usarlo
       let businessId = tempUserData.businessId;
-      let newUser = null;
       
       // Si no tenemos businessId (por si el guardado parcial falló), crear el negocio ahora
       if (!businessId) {
@@ -395,7 +397,7 @@ export default function AdminDashboard() {
           plan: plan.key,
           type: tempUserData.businessType,
           country: 'España',
-          registrationStatus: 'completing', // Marcando como en proceso de completar
+          registrationStatus: 'plan_selected', // Plan seleccionado pero no pagado
           skipSubscription: true // No crear suscripción aún
         };
         
@@ -409,9 +411,7 @@ export default function AdminDashboard() {
 
         if (!businessResponse.ok) {
           const errorData = await businessResponse.json();
-          // Si el error es porque ya existe, intentar obtener el businessId
           if (errorData.error && errorData.error.includes('ya existe')) {
-            // Por ahora continuar sin businessId
             throw new Error('El email ya está registrado. Por favor, inicia sesión.');
           }
           throw new Error(errorData.error || 'Error al crear el negocio');
@@ -419,26 +419,37 @@ export default function AdminDashboard() {
 
         const responseData = await businessResponse.json();
         businessId = responseData.businessId;
-        newUser = responseData.user;
         
-        // Guardar el usuario temporalmente
-        if (newUser) {
-          saveAuth(newUser);
-        }
+        // Actualizar tempUserData con el businessId
+        setTempUserData({
+          ...tempUserData,
+          businessId
+        });
       }
 
-      // Verificar que tenemos businessId antes de continuar
-      if (!businessId) {
-        throw new Error('No se pudo obtener el ID del negocio');
-      }
+      // Guardar el businessId para el paso 4
+      setPendingBusinessId(businessId);
+      
+      // Avanzar al paso 4 (pago)
+      setRegistrationStep(4);
+      setRegisterError('');
+      
+      // Preparar el pago
+      await preparePayment(businessId, plan);
+      
+    } catch (error: any) {
+      console.error('Error al seleccionar plan:', error);
+      setRegisterError(error.message || 'Error al procesar la selección del plan');
+    } finally {
+      setIsCreatingBusiness(false);
+    }
+  };
 
-      // Crear sesión de pago con Stripe
-      console.log('Creando sesión de pago para:', {
-        businessId,
-        planKey: plan.key,
-        userEmail: tempUserData.email
-      });
-
+  // Nueva función para preparar el pago (Paso 4)
+  const preparePayment = async (businessId: string, plan: any) => {
+    setIsLoadingPayment(true);
+    
+    try {
       const subscriptionResponse = await fetch('/api/admin/subscriptions', {
         method: 'POST',
         headers: {
@@ -455,7 +466,6 @@ export default function AdminDashboard() {
       const subscriptionData = await subscriptionResponse.json();
 
       if (!subscriptionResponse.ok) {
-        console.error('Error de suscripción:', subscriptionData);
         throw new Error(subscriptionData.error || 'Error al crear la sesión de pago');
       }
 
@@ -475,18 +485,14 @@ export default function AdminDashboard() {
         clientSecret
       }));
 
-      // Mostrar el formulario de pago de Stripe
+      // Establecer el clientSecret para el formulario de pago
       setClientSecret(clientSecret);
-      setPendingBusinessId(businessId);
-      setPendingPlanKey(plan.key);
-      setShowPaymentForm(true);
-      setRegisterError('');
       
     } catch (error: any) {
-      console.error('Error en el proceso de registro:', error);
-      setRegisterError(error.message || 'Error al procesar el registro');
+      console.error('Error preparando el pago:', error);
+      setRegisterError(error.message || 'Error al preparar el pago');
     } finally {
-      setIsCreatingBusiness(false);
+      setIsLoadingPayment(false);
     }
   };
 
@@ -514,50 +520,6 @@ export default function AdminDashboard() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si estamos mostrando el formulario de pago (sin importar si hay usuario o no)
-  if (showPaymentForm && clientSecret) {
-    return (
-      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-        <div className="my-8">
-          <StripePaymentForm
-            businessId={pendingBusinessId}
-            businessName={selectedBusiness?.name || 'Tu Negocio'}
-            plan={pendingPlanKey as 'basic' | 'premium'}
-            clientSecret={clientSecret}
-            onSuccess={() => {
-              // Limpiar estados
-              setShowPaymentForm(false);
-              setClientSecret('');
-              setPendingBusinessId('');
-              setPendingPlanKey('');
-              
-              // Guardar mensaje de éxito en localStorage
-              localStorage.setItem('paymentSuccess', 'true');
-              localStorage.setItem('successMessage', '¡Pago procesado con éxito! Tu suscripción está activa. Por favor, inicia sesión con tu email y contraseña.');
-              
-              // Si hay un usuario guardado, limpiarlo para forzar nuevo login
-              if (user) {
-                localStorage.removeItem('authUser');
-                setUser(null);
-              }
-              
-              // Resetear formularios y volver al login
-              resetForms();
-              setCurrentView('login');
-            }}
-            onCancel={() => {
-              setShowPaymentForm(false);
-              setClientSecret('');
-              setPendingBusinessId('');
-              setPendingPlanKey('');
-              setRegisterError('Pago cancelado. Puedes intentarlo de nuevo.');
-            }}
-          />
         </div>
       </div>
     );
@@ -1105,7 +1067,7 @@ export default function AdminDashboard() {
                               {/* Botón CTA individual para cada plan */}
                               <button
                                 type="button"
-                                onClick={() => handleSelectPlanAndPay(plan)}
+                                onClick={() => handleSelectPlan(plan)}
                                 disabled={isCreatingBusiness}
                                 className={`w-full py-3.5 px-6 rounded-full font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg ${
                                   isGreen 
