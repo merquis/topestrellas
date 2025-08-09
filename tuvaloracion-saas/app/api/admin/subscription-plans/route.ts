@@ -25,14 +25,25 @@ const PlanSchema = z.object({
   popular: z.boolean().default(false),
 });
 
-// GET - Obtener todos los planes
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('active') === 'true';
+    const userEmail = searchParams.get('userEmail');
+    const userRole = searchParams.get('userRole');
     
     const db = await getDatabase();
-    const query = activeOnly ? { active: true } : {};
+    let query = activeOnly ? { active: true } : {};
+    
+    if (userRole === 'admin' && userEmail) {
+      // Encontrar el userId por email
+      const user = await db.collection('users').findOne({ email: userEmail });
+      if (user) {
+        query = { ...query, assignedTo: { $in: [user._id.toString()] } };
+      } else {
+        return NextResponse.json({ success: false, error: 'Usuario no encontrado' }, { status: 404 });
+      }
+    }
     
     const plans = await db.collection('subscriptionplans')
       .find(query)
@@ -52,7 +63,6 @@ export async function GET(request: Request) {
   }
 }
 
-// POST - Crear un nuevo plan
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -74,17 +84,27 @@ export async function POST(request: Request) {
       );
     }
     
-    // Crear el plan en la DB (MongoDB generarรก el _id automรกticamente)
+    // Obtener creatorId de userEmail si se proporciona
+    let assignedTo = [];
+    if (body.userEmail) {
+      const creator = await db.collection('users').findOne({ email: body.userEmail });
+      if (creator && creator.role !== 'super_admin') {
+        assignedTo = [creator._id.toString()];
+      }
+    }
+    
+    // Crear el plan
     const newPlan = {
       ...validatedData,
       interval: validatedData.interval || 'month',
+      assignedTo,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     
     const result = await db.collection('subscriptionplans').insertOne(newPlan);
     
-    // Sincronizar con Stripe si estรก activo
+    // Sincronizar con Stripe si está activo
     if (newPlan.active) {
       try {
         const { productId, priceId } = await syncPlanToStripe({
@@ -92,7 +112,6 @@ export async function POST(request: Request) {
           _id: result.insertedId,
         });
         
-        // Actualizar el plan con los IDs de Stripe
         await db.collection('subscriptionplans').updateOne(
           { _id: result.insertedId },
           { 
@@ -103,15 +122,11 @@ export async function POST(request: Request) {
             } 
           }
         );
-        
-        // No asignar directamente, usar el objeto actualizado de la DB
       } catch (stripeError) {
         console.error('Error sincronizando con Stripe:', stripeError);
-        // No fallar la creaciรณn del plan, pero registrar el error
       }
     }
     
-    // Obtener el plan actualizado de la DB para incluir los IDs de Stripe
     const finalPlan = await db.collection('subscriptionplans').findOne({ 
       _id: result.insertedId 
     });
@@ -125,7 +140,7 @@ export async function POST(request: Request) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Datos invรกlidos', details: error.errors },
+        { success: false, error: 'Datos inválidos', details: error.errors },
         { status: 400 }
       );
     }
@@ -137,7 +152,6 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT - Actualizar un plan existente
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
@@ -150,12 +164,10 @@ export async function PUT(request: Request) {
       );
     }
     
-    // Validar datos (parcial, no todos los campos son requeridos)
     const validatedData = PlanSchema.partial().parse(updateData);
     
     const db = await getDatabase();
     
-    // Obtener el plan actual
     const currentPlan = await db.collection('subscriptionplans').findOne({ 
       _id: new ObjectId(id) 
     });
@@ -167,7 +179,6 @@ export async function PUT(request: Request) {
       );
     }
     
-    // Si se estรก cambiando la key, verificar que no exista otra con esa key
     if (validatedData.key && validatedData.key !== currentPlan.key) {
       const existingPlan = await db.collection('subscriptionplans').findOne({ 
         key: validatedData.key,
@@ -182,14 +193,19 @@ export async function PUT(request: Request) {
       }
     }
     
-    // Preparar datos de actualizaciรณn
+    // Si se actualiza assignedTo, mergear o reemplazar
+    let updatedAssignedTo = currentPlan.assignedTo || [];
+    if (updateData.assignedTo) {
+      updatedAssignedTo = updateData.assignedTo;
+    }
+    
     const updatedPlan = {
       ...currentPlan,
       ...validatedData,
+      assignedTo: updatedAssignedTo,
       updatedAt: new Date(),
     };
     
-    // Si el plan estรก activo y cambiรณ el precio o caracterรญsticas, sincronizar con Stripe
     if (updatedPlan.active && (
       validatedData.recurringPrice !== undefined ||
       validatedData.setupPrice !== undefined ||
@@ -201,18 +217,15 @@ export async function PUT(request: Request) {
       try {
         const { productId, priceId } = await syncPlanToStripe(updatedPlan as SubscriptionPlan);
         
-        // Actualizar los IDs de Stripe en el objeto
         Object.assign(updatedPlan, {
           stripeProductId: productId,
           stripePriceId: priceId
         });
       } catch (stripeError) {
         console.error('Error sincronizando con Stripe:', stripeError);
-        // No fallar la actualizaciรณn, pero registrar el error
       }
     }
     
-    // Actualizar en la DB
     await db.collection('subscriptionplans').updateOne(
       { _id: new ObjectId(id) },
       { $set: updatedPlan }
@@ -227,7 +240,7 @@ export async function PUT(request: Request) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Datos invรกlidos', details: error.errors },
+        { success: false, error: 'Datos inválidos', details: error.errors },
         { status: 400 }
       );
     }

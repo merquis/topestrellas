@@ -147,22 +147,23 @@ export default function SubscriptionsPage() {
     }
   }, [user]);
 
-  const fetchPlans = async () => {
-    try {
-      // Construir URL con parámetros del usuario para filtrado
-      const params = new URLSearchParams();
-      if (user?.email) params.append('userEmail', user.email);
-      if (user?.role) params.append('userRole', user.role);
-      
-      const res = await fetch(`/api/admin/subscription-plans?${params.toString()}`);
-      if (!res.ok) throw new Error('Error al cargar los planes');
-      const data = await res.json();
-      setSubscriptionPlans(data);
-    } catch (err) {
-      console.error('Error al cargar los planes:', err);
-      setToast({ message: 'Error al cargar los planes', type: 'error' });
-    }
-  };
+const fetchPlans = async () => {
+  try {
+    // Construir URL con parámetros del usuario para filtrado
+    const params = new URLSearchParams();
+    if (user?.email) params.append('userEmail', user.email);
+    if (user?.role) params.append('userRole', user.role);
+    params.append('active', 'true'); // Solo planes activos
+    
+    const res = await fetch(`/api/admin/subscription-plans?${params.toString()}`);
+    if (!res.ok) throw new Error('Error al cargar los planes');
+    const data = await res.json();
+    setSubscriptionPlans(data.plans || []);
+  } catch (err) {
+    console.error('Error al cargar los planes:', err);
+    setToast({ message: 'Error al cargar los planes', type: 'error' });
+  }
+};
 
   const loadSubscriptions = async () => {
     if (!user) return;
@@ -1157,25 +1158,30 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
                             GRATIS
                           </p>
                         ) : (
-                          <p className="text-2xl font-bold text-gray-900">
-                            {(() => {
-                              const planDb = subscriptionPlans.find(p => p.key === subscription.plan);
-                              if (planDb) {
-                                return (
-                                  <>
-                                    €{planDb.recurringPrice ?? 0}
-                                    <span className="text-sm text-gray-500 font-normal">/{planDb.interval === 'year' ? 'año' : 'mes'}</span>
-                                  </>
-                                );
-                              }
-                              return (
-                                <>
-                                  €{PLANS[subscription.plan].price}
-                                  <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan].duration}</span>
-                                </>
-                              );
-                            })()}
-                          </p>
+<p className="text-2xl font-bold text-gray-900">
+  {(() => {
+    const planDb = subscriptionPlans.find(p => p.key === subscription.plan);
+    const getIntervalDisplay = (interval) => {
+      if (interval === 'year' || interval === 'anual') return 'año';
+      if (interval === 'month' || interval === 'mensual') return 'mes';
+      return interval;
+    };
+    if (planDb) {
+      return (
+        <>
+          €{planDb.recurringPrice ?? 0}
+          <span className="text-sm text-gray-500 font-normal">/{getIntervalDisplay(planDb.interval)}</span>
+        </>
+      );
+    }
+    return (
+      <>
+        €{PLANS[subscription.plan].price}
+        <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan].duration}</span>
+      </>
+    );
+  })()}
+</p>
                         )}
                       </div>
                     </div>
@@ -1323,81 +1329,82 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
       </div>
 
       {/* Upgrade Plan Modal */}
-      {showUpgradeModal && selectedSubscription && (
+{showUpgradeModal && selectedSubscription && (
 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-5xl w-full p-6 my-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-              Elige tu nuevo plan
-            </h3>
-            <p className="text-gray-600 text-center mb-6">
-              Selecciona el plan que mejor se adapte a tu negocio
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              {subscriptionPlans.length > 0 ? (
-                subscriptionPlans.map((plan) => {
-                  const isCurrentPlan = selectedSubscription.plan === plan.key;
-                  const planWithDefaults = {
-                    ...plan,
-                    icon: plan.icon || '📦',
-                    color: plan.color || 'blue',
-                    interval: plan.interval || 'month'
-                  };
-                  
-                  return (
-                    <PlanCard
-                      key={plan.key}
-                      plan={planWithDefaults}
-                      isCurrentPlan={isCurrentPlan}
-                      actionButton={
-                        isCurrentPlan ? (
-                          <button
-                            disabled
-                            className="w-full px-4 py-3 rounded-xl font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
-                          >
-                            Plan Actual
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setShowUpgradeModal(false);
-                              setSelectedPlan(plan.key);
-                              setShowPaymentModal(true);
-                            }}
-                            className={`w-full px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
-                              plan.color === 'blue' 
-                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
-                                : plan.color === 'purple'
-                                ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700'
-                                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
-                            }`}
-                          >
-                            Elegir {plan.name}
-                          </button>
-                        )
-                      }
-                    />
-                  );
-                })
-              ) : (
-                <div className="col-span-3 text-center py-8">
-                  <div className="text-4xl mb-4">⏳</div>
-                  <p className="text-gray-600">Cargando planes disponibles...</p>
-                </div>
-              )}
-            </div>
-            
-            <div className="text-center mt-6">
-              <button
-                onClick={() => setShowUpgradeModal(false)}
-                className="text-gray-600 hover:text-gray-800 font-semibold"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+  <div className="bg-white rounded-2xl max-w-5xl w-full p-6 my-8">
+    <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+      Elige tu nuevo plan
+    </h3>
+    <p className="text-gray-600 text-center mb-6">
+      Selecciona el plan que mejor se adapte a tu negocio
+    </p>
+    
+    <div className="grid md:grid-cols-3 gap-6">
+      {subscriptionPlans.length > 0 ? (
+        subscriptionPlans.map((plan) => {
+          const isCurrentPlan = selectedSubscription.plan === plan.key;
+          const planWithDefaults = {
+            ...plan,
+            icon: plan.icon || '📦',
+            color: plan.color || 'blue',
+            interval: plan.interval || 'month'
+          };
+          
+          return (
+            <PlanCard
+              key={plan.key}
+              plan={planWithDefaults}
+              isCurrentPlan={isCurrentPlan}
+              actionButton={
+                isCurrentPlan ? (
+                  <button
+                    disabled
+                    className="w-full px-4 py-3 rounded-xl font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
+                  >
+                    Plan Actual
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setShowUpgradeModal(false);
+                      setSelectedPlan(plan.key);
+                      setShowPaymentModal(true);
+                    }}
+                    className={`w-full px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                      plan.color === 'blue' 
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+                        : plan.color === 'purple'
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700'
+                        : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                    }`}
+                  >
+                    Elegir {plan.name}
+                  </button>
+                )
+              }
+            />
+          );
+        })
+      ) : (
+        <div className="col-span-3 text-center py-8">
+          <div className="text-4xl mb-4">📭</div>
+          <p className="text-gray-600 mb-2">No hay planes disponibles para upgrade</p>
+          <p className="text-sm text-gray-500">Contacta al administrador para más opciones.</p>
         </div>
       )}
+    </div>
+    
+    <div className="text-center mt-6">
+      <button
+        onClick={() => setShowUpgradeModal(false)}
+        className="text-gray-600 hover:text-gray-800 font-semibold"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+)}
 
       {/* Payment Modal - Stripe Elements Integration */}
       {showPaymentModal && selectedSubscription && selectedPlan && paymentMethod === 'stripe' && stripeClientSecret && (
@@ -1443,15 +1450,20 @@ function CreatePlanModal({ onClose, onSave }: { onClose: () => void; onSave: (pl
                     <p className="font-bold text-lg">{PLANS[selectedPlan].name}</p>
                     <p className="text-sm text-gray-500">Facturación mensual</p>
                   </div>
-                  <p className="text-2xl font-bold">
-                    {(() => {
-                      const planDb = subscriptionPlans.find(p => p.key === selectedPlan);
-                      if (planDb) {
-                        return `€${planDb.recurringPrice ?? 0}`;
-                      }
-                      return `€${PLANS[selectedPlan].price}`;
-                    })()}
-                  </p>
+<p className="text-2xl font-bold">
+  {(() => {
+    const planDb = subscriptionPlans.find(p => p.key === selectedPlan);
+    const getIntervalDisplay = (interval) => {
+      if (interval === 'year' || interval === 'anual') return 'año';
+      if (interval === 'month' || interval === 'mensual') return 'mes';
+      return interval;
+    };
+    if (planDb) {
+      return `€${planDb.recurringPrice ?? 0}`;
+    }
+    return `€${PLANS[selectedPlan].price}`;
+  })()}
+</p>
                 </div>
               </div>
             </div>
