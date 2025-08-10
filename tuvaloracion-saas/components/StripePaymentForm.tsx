@@ -108,7 +108,8 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
               email: userEmail,
               businessId,
               newRole: 'admin',
-              paymentCompleted: true
+              paymentCompleted: true,
+              registrationStatus: 'complete'
             }),
           });
         }
@@ -116,9 +117,8 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
         console.error('Error actualizando rol del usuario:', error);
       }
       
-      setTimeout(() => {
-        onSuccess();
-      }, 1500);
+      // Redirigir directamente al panel con sesión iniciada
+      window.location.href = '/admin';
     }
 
     setIsProcessing(false);
