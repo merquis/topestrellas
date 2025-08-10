@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
 // Importar dinámicamente el componente de Stripe para evitar problemas de SSR
@@ -31,6 +31,7 @@ export default function ChangePlanModal({
   userEmail
 }: ChangePlanModalProps) {
   const [selectedPlan, setSelectedPlan] = useState(currentPlan);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showCustomDate, setShowCustomDate] = useState(false);
@@ -38,39 +39,25 @@ export default function ChangePlanModal({
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
 
-  if (!isOpen) return null;
-
-  const plans = [
-    {
-      id: 'trial',
-      name: 'Prueba',
-      description: '7 días gratis para probar el servicio',
-      icon: '🎁',
-      features: ['Funciones básicas', '7 días de prueba', 'Soporte por email']
-    },
-    {
-      id: 'basic',
-      name: 'Básico',
-      description: 'Plan ideal para negocios pequeños',
-      icon: '⭐',
-      features: ['Todas las funciones', 'Soporte prioritario', 'Estadísticas básicas']
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      description: 'Plan completo para negocios en crecimiento',
-      icon: '💎',
-      features: ['Funciones avanzadas', 'Soporte 24/7', 'Estadísticas completas', 'API access']
-    },
-    {
-      id: 'lifetime',
-      name: 'Vitalicio',
-      description: 'Acceso de por vida sin pagos recurrentes',
-      icon: '👑',
-      features: ['Todas las funciones Premium', 'Sin fecha de expiración', 'Soporte VIP', 'Acceso a futuras funciones'],
-      special: true
+  useEffect(() => {
+    if (isOpen) {
+      const fetchPlans = async () => {
+        try {
+          const response = await fetch('/api/admin/subscription-plans?active=true');
+          if (response.ok) {
+            const data = await response.json();
+            setSubscriptionPlans(data.plans || []);
+          }
+        } catch (err) {
+          console.error("Error fetching subscription plans:", err);
+          setError("No se pudieron cargar los planes.");
+        }
+      };
+      fetchPlans();
     }
-  ];
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const handleChangePlan = async () => {
     if (!showCustomDate && selectedPlan === currentPlan) {
@@ -149,12 +136,20 @@ export default function ChangePlanModal({
 
   // Si estamos mostrando el formulario de pago
   if (showPaymentForm && clientSecret) {
+    const selectedPlanObject = subscriptionPlans.find(p => p.key === selectedPlan);
+    if (!selectedPlanObject) {
+      // Manejar el caso en que el plan no se encuentra, aunque no debería ocurrir.
+      setError("El plan seleccionado no es válido.");
+      setShowPaymentForm(false);
+      setClientSecret('');
+      return null;
+    }
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
         <StripePaymentForm
           businessId={businessId}
           businessName={businessName}
-          plan={selectedPlan as 'basic' | 'premium'}
+          planData={selectedPlanObject}
           clientSecret={clientSecret}
           onSuccess={() => {
             setShowPaymentForm(false);
@@ -200,38 +195,38 @@ export default function ChangePlanModal({
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {plans.map((plan) => (
+            {subscriptionPlans.map((plan) => (
               <div
-                key={plan.id}
+                key={plan.key}
                 onClick={() => {
-                  setSelectedPlan(plan.id);
+                  setSelectedPlan(plan.key);
                   setShowCustomDate(false);
                 }}
                 className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                  selectedPlan === plan.id && !showCustomDate
+                  selectedPlan === plan.key && !showCustomDate
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
-                } ${currentPlan === plan.id ? 'ring-2 ring-green-500' : ''} ${
-                  plan.special ? 'bg-gradient-to-br from-yellow-50 to-amber-50' : ''
+                } ${currentPlan === plan.key ? 'ring-2 ring-green-500' : ''} ${
+                  plan.popular ? 'bg-gradient-to-br from-yellow-50 to-amber-50' : ''
                 }`}
               >
                 <div className="text-center mb-3">
                   <span className="text-3xl">{plan.icon}</span>
                   <h3 className="text-lg font-semibold mt-2">{plan.name}</h3>
-                  {currentPlan === plan.id && (
+                  {currentPlan === plan.key && (
                     <span className="inline-block mt-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                       Plan Actual
                     </span>
                   )}
-                  {plan.special && (
+                  {plan.popular && (
                     <span className="inline-block mt-1 ml-1 px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full">
-                      Especial
+                      Popular
                     </span>
                   )}
                 </div>
                 <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
                 <ul className="space-y-1">
-                  {plan.features.map((feature, index) => (
+                  {plan.features.map((feature: string, index: number) => (
                     <li key={index} className="text-xs text-gray-500 flex items-start">
                       <span className="text-green-500 mr-1">✓</span>
                       {feature}
