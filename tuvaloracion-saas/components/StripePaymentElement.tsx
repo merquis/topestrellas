@@ -24,6 +24,7 @@ interface PaymentFormProps {
     setupFee?: number;
     currency: string;
     interval?: string;
+    trialDays?: number; // Añadido para detectar prueba
   };
   onSuccess: () => void;
   onError: (error: string) => void;
@@ -132,7 +133,7 @@ function PaymentForm({
     onSuccess();
   };
 
-  // Calcular el total
+  const hasTrial = planDetails.trialDays && planDetails.trialDays > 0;
   const total = planDetails.price + (planDetails.setupFee || 0);
 
   return (
@@ -164,15 +165,24 @@ function PaymentForm({
               <span className="font-medium">{planDetails.setupFee}€</span>
             </div>
           )}
+
+          {hasTrial && (
+            <div className="flex justify-between text-green-600">
+              <span className="font-semibold">Período de prueba:</span>
+              <span className="font-semibold">{planDetails.trialDays} días gratis</span>
+            </div>
+          )}
           
           <div className="border-t pt-2 mt-2">
             <div className="flex justify-between text-lg font-semibold">
-              <span>Total hoy:</span>
+              <span>Total a pagar hoy:</span>
               <span className="text-blue-600">0,00€</span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Se guardará tu método de pago sin coste. La suscripción de {planDetails.price}€/{planDetails.interval === 'month' ? 'mes' : 'año'} comenzará después del periodo de prueba.
-            </p>
+            {hasTrial && (
+              <p className="text-xs text-gray-500 mt-1">
+                Se guardará tu método de pago sin coste. El primer cobro de {planDetails.price}€ se realizará después de los {planDetails.trialDays} días de prueba.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -253,7 +263,7 @@ function PaymentForm({
           ) : (
             <span className="flex items-center justify-center">
               <CreditCard className="mr-2 h-5 w-5" />
-              Guardar método de pago
+              {hasTrial ? `Iniciar prueba de ${planDetails.trialDays} días` : 'Guardar método de pago'}
             </span>
           )}
         </button>
@@ -278,6 +288,7 @@ interface StripePaymentElementProps {
     setupFee?: number;
     currency: string;
     interval?: string;
+    trialDays?: number; // Añadido para detectar prueba
   };
   onSuccess: () => void;
   onError: (error: string) => void;

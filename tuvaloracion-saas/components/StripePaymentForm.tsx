@@ -18,49 +18,24 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 interface PaymentFormProps {
   businessId: string;
   businessName: string;
-  plan: 'basic' | 'premium';
+  planData: {
+    key: string;
+    name: string;
+    recurringPrice: number;
+    trialDays?: number;
+    interval?: 'month' | 'year';
+  };
   clientSecret: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess, onCancel }: PaymentFormProps) {
+function CheckoutForm({ businessId, businessName, planData, clientSecret, onSuccess, onCancel }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-
-  const [planData, setPlanData] = useState<{name: string, price: number} | null>(null);
-
-  useEffect(() => {
-    // Obtener datos del plan desde la base de datos
-    const fetchPlanData = async () => {
-      try {
-        const response = await fetch('/api/admin/subscription-plans');
-        if (response.ok) {
-          const plans = await response.json();
-          const currentPlan = plans && Array.isArray(plans.plans)
-            ? plans.plans.find((p: any) => p.key === plan)
-            : null;
-          if (currentPlan) {
-            setPlanData({
-              name: currentPlan.name,
-              price: currentPlan.recurringPrice
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching plan data:', error);
-        // Fallback a valores por defecto
-        setPlanData({
-          name: plan === 'basic' ? 'Plan Básico' : 'Plan Premium',
-          price: plan === 'basic' ? 1 : 90
-        });
-      }
-    };
-
-    fetchPlanData();
-  }, [plan]);
+  const hasTrial = planData.trialDays && planData.trialDays > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,8 +108,17 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
           Actualizando <strong>{businessName}</strong> al {planData?.name || 'Plan'}
         </p>
         <div className="mt-4 flex items-baseline gap-2">
-          <span className="text-4xl font-bold">€{planData?.price || 0}</span>
-          <span className="text-blue-100">/mes</span>
+          {hasTrial ? (
+            <>
+              <span className="text-4xl font-bold">0€</span>
+              <span className="text-blue-100">hoy, después {planData.recurringPrice}€/{planData.interval === 'month' ? 'mes' : 'año'}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-4xl font-bold">{planData.recurringPrice}€</span>
+              <span className="text-blue-100">/{planData.interval === 'month' ? 'mes' : 'año'}</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -200,8 +184,10 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     Procesando...
                   </span>
+                ) : hasTrial ? (
+                  `Iniciar prueba de ${planData.trialDays} días`
                 ) : (
-                  `Pagar €${planData?.price || 0}/mes`
+                  `Pagar ${planData.recurringPrice}€/${planData.interval === 'month' ? 'mes' : 'año'}`
                 )}
               </button>
             </div>
@@ -224,7 +210,7 @@ function CheckoutForm({ businessId, businessName, plan, clientSecret, onSuccess,
   );
 }
 
-export default function StripePaymentForm({ clientSecret, ...props }: PaymentFormProps) {
+export default function StripePaymentForm({ clientSecret, planData, ...props }: PaymentFormProps) {
   const appearance = {
     theme: 'stripe' as const,
     variables: {
@@ -255,7 +241,7 @@ export default function StripePaymentForm({ clientSecret, ...props }: PaymentFor
 
   return (
     <Elements stripe={stripePromise} options={options}>
-      <CheckoutForm {...props} clientSecret={clientSecret} />
+      <CheckoutForm {...props} clientSecret={clientSecret} planData={planData} />
     </Elements>
   );
 }

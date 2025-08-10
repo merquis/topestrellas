@@ -1138,7 +1138,7 @@ export default function AdminDashboard() {
                         <StripePaymentForm
                           businessId={pendingBusinessId}
                           businessName={selectedBusiness?.name || 'Tu Negocio'}
-                          plan={selectedPlanData?.key}
+                          planData={selectedPlanData}
                           clientSecret={clientSecret}
                           onSuccess={() => {
                             // Guardar mensaje de éxito
