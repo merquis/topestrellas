@@ -91,6 +91,19 @@ export async function POST(request: Request) {
           await resetPaymentFailures(businessId);
         }
 
+        // También actualizar el usuario asociado al negocio
+        await db.collection('users').updateOne(
+          { businessId },
+          {
+            $set: {
+              role: 'admin',
+              paymentCompleted: true,
+              registrationStatus: 'complete',
+              updatedAt: new Date()
+            }
+          }
+        );
+
         console.log(`Suscripción ${event.type} para negocio ${businessId}, estado: ${subscription.status}`);
         break;
       }
