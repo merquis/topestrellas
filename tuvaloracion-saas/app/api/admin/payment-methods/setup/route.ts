@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
   try {
-    const headersList = headers();
+    const headersList = await headers();
     const authHeader = headersList.get('authorization');
 
     const user = verifyAuth(authHeader || ''); // Pasamos el header de autorización
