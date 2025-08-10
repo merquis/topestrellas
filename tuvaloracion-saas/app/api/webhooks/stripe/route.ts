@@ -80,8 +80,14 @@ export async function POST(request: Request) {
 
         // IDEMPOTENCIA: Verificar si el negocio ya tiene una suscripción activa
         const business = await db.collection('businesses').findOne({ _id: new ObjectId(businessId) });
-        if (business?.subscription?.stripeSubscriptionId && business?.subscription?.status === 'active') {
-          console.log(`[Webhook] El negocio ${businessId} ya tiene una suscripción activa. Se ignora el evento.`);
+        
+        if (!business) {
+          console.error(`[Webhook] No se encontró el negocio con ID: ${businessId}`);
+          break;
+        }
+
+        if (business?.subscription?.stripeSubscriptionId && (business?.subscription?.status === 'active' || business?.subscription?.status === 'trialing')) {
+          console.log(`[Webhook] El negocio ${businessId} ya tiene una suscripción activa o en prueba. Se ignora el evento.`);
           break;
         }
 
@@ -94,11 +100,13 @@ export async function POST(request: Request) {
         });
         console.log(`[Webhook] Método de pago ${paymentMethodId} asignado al cliente ${customerId}`);
 
-        // 2. Crear la suscripción
-        // Asumimos que el plan se selecciona en el frontend y se guarda en algún lugar.
-        // Por ahora, usaremos un plan por defecto o el último seleccionado.
-        // En una implementación real, podrías pasar el planKey en la metadata del SetupIntent.
-        const planKey = business.selectedPlanKey || 'plan_profesional'; // fallback
+        // 2. Crear la suscripción usando el plan guardado dinámicamente
+        const planKey = business.selectedPlanKey;
+        if (!planKey) {
+          console.error(`[Webhook] No se encontró 'selectedPlanKey' en el negocio ${businessId}. No se puede crear la suscripción.`);
+          break;
+        }
+        
         const plan = await getPlanFromDB(planKey);
 
         if (!plan || !plan.stripePriceId) {
