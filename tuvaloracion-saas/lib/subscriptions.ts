@@ -336,7 +336,7 @@ export async function createSetupIntentAndReturnClientSecret(
     // 2. Crear un SetupIntent para validar y guardar el método de pago
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
-      payment_method_types: ['card', 'paypal', 'link'],
+      payment_method_types: ['card', 'link'], // Se elimina PayPal temporalmente
       metadata: {
         businessId,
         userEmail,

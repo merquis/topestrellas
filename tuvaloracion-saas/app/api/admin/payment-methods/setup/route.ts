@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     // 2. Crear un SetupIntent
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
-      payment_method_types: ['card', 'paypal', 'link'],
+      payment_method_types: ['card', 'link'], // Se elimina PayPal temporalmente
       metadata: {
         businessId,
         userEmail, // Guardamos el email para referencia
