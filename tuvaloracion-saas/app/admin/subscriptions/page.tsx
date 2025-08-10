@@ -55,6 +55,7 @@ interface Subscription {
     amount: number;
     method: string;
   };
+  color?: string; // Añadir la propiedad color
 }
 
 const PLANS = {
@@ -919,7 +920,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
           {subscriptions.map((subscription: Subscription) => (
             <div key={subscription.businessId} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
               {/* Header con gradiente según el plan */}
-              <div className={`h-2 bg-gradient-to-r ${PLANS[subscription.plan].color}`}></div>
+              <div className={`h-2 bg-gradient-to-r ${subscription.color || PLANS[subscription.plan]?.color || 'from-gray-400 to-gray-500'}`}></div>
               
               <div className="p-6">
                 {/* Business Info */}
@@ -945,9 +946,9 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{PLANS[subscription.plan].icon}</span>
+                      <span className="text-3xl">{PLANS[subscription.plan]?.icon || '📦'}</span>
                       <div>
-                        <p className="font-bold text-lg text-gray-900">{PLANS[subscription.plan].name}</p>
+                        <p className="font-bold text-lg text-gray-900">{PLANS[subscription.plan]?.name || 'Plan Desconocido'}</p>
                         {subscription.plan === 'trial' ? (
                           <p className="text-2xl font-bold text-green-600">
                             GRATIS
@@ -969,10 +970,11 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
         </>
       );
     }
+    // Fallback si el plan no se encuentra en subscriptionPlans ni en PLANS
     return (
       <>
-        €{PLANS[subscription.plan].price}
-        <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan].duration}</span>
+        €{PLANS[subscription.plan]?.price ?? 'N/A'}
+        <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan]?.duration || 'N/A'}</span>
       </>
     );
   })()}
