@@ -63,6 +63,83 @@ export async function POST(request: Request) {
 
     // Manejar solo los eventos esenciales para suscripciones con Payment Elements
     switch (event.type) {
+      // ========== EVENTOS DE SETUP INTENT (NUEVO FLUJO) ==========
+      case 'setup_intent.succeeded': {
+        const setupIntent = event.data.object as Stripe.SetupIntent;
+        const { businessId, userEmail } = setupIntent.metadata!;
+
+        if (!businessId) {
+          console.error('[Webhook] Falta businessId en metadata de setup_intent.succeeded');
+          break;
+        }
+
+        console.log(`[Webhook] SetupIntent exitoso para businessId: ${businessId}`);
+
+        const customerId = setupIntent.customer as string;
+        const paymentMethodId = setupIntent.payment_method as string;
+
+        // IDEMPOTENCIA: Verificar si el negocio ya tiene una suscripción activa
+        const business = await db.collection('businesses').findOne({ _id: new ObjectId(businessId) });
+        if (business?.subscription?.stripeSubscriptionId && business?.subscription?.status === 'active') {
+          console.log(`[Webhook] El negocio ${businessId} ya tiene una suscripción activa. Se ignora el evento.`);
+          break;
+        }
+
+        // 1. Adjuntar el método de pago al cliente y establecerlo como predeterminado
+        await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
+        await stripe.customers.update(customerId, {
+          invoice_settings: {
+            default_payment_method: paymentMethodId,
+          },
+        });
+        console.log(`[Webhook] Método de pago ${paymentMethodId} asignado al cliente ${customerId}`);
+
+        // 2. Crear la suscripción
+        // Asumimos que el plan se selecciona en el frontend y se guarda en algún lugar.
+        // Por ahora, usaremos un plan por defecto o el último seleccionado.
+        // En una implementación real, podrías pasar el planKey en la metadata del SetupIntent.
+        const planKey = business.selectedPlanKey || 'plan_profesional'; // fallback
+        const plan = await getPlanFromDB(planKey);
+
+        if (!plan || !plan.stripePriceId) {
+          console.error(`[Webhook] No se pudo encontrar un plan válido ('${planKey}') para crear la suscripción.`);
+          break;
+        }
+
+        const subscription = await stripe.subscriptions.create({
+          customer: customerId,
+          items: [{ price: plan.stripePriceId }],
+          collection_method: 'charge_automatically',
+          trial_period_days: plan.trialDays > 0 ? plan.trialDays : undefined,
+          metadata: {
+            businessId,
+            planKey,
+          },
+        });
+
+        console.log(`[Webhook] Suscripción ${subscription.id} creada para el negocio ${businessId}`);
+        
+        // La actualización de la DB se manejará en el evento 'customer.subscription.created'
+        // para mantener la lógica centralizada. Stripe enviará ese evento inmediatamente.
+
+        break;
+      }
+
+      case 'setup_intent.setup_failed': {
+        const setupIntent = event.data.object as Stripe.SetupIntent;
+        const { businessId } = setupIntent.metadata!;
+        
+        console.error(`[Webhook] Falló el SetupIntent para businessId: ${businessId}. Razón: ${setupIntent.last_setup_error?.message}`);
+
+        // Aquí podrías marcar el negocio en la DB para notificar al usuario
+        await db.collection('businesses').updateOne(
+          { _id: new ObjectId(businessId) },
+          { $set: { 'subscription.status': 'payment_failed' } }
+        );
+        
+        break;
+      }
+
       // ========== EVENTOS DE SUSCRIPCIÓN (los más importantes) ==========
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
@@ -388,6 +465,11 @@ export async function POST(request: Request) {
 
         break;
       }
+
+      // Eliminar la lógica de payment_intent.* que dependía de default_incomplete
+      // Los eventos de payment_intent seguirán ocurriendo para los pagos de facturas,
+      // pero ya no son el desencadenante principal de la activación de la suscripción.
+      // La lógica actual que solo registra logs es correcta y puede permanecer.
 
       default:
         // Solo loguear eventos no manejados en desarrollo

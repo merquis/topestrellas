@@ -57,25 +57,25 @@ function PaymentForm({
     setPaymentMethod('express');
   };
 
-  // Confirmar el pago después del Express Checkout
+  // Confirmar el setup después del Express Checkout
   const handleExpressCheckoutConfirm = async (event: any) => {
     if (!stripe || !elements) return;
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
+    const { error, setupIntent } = await stripe.confirmSetup({
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `${window.location.origin}/admin/subscriptions/payment-success`,
+        return_url: `${window.location.origin}/admin/subscriptions/payment-success?setup_intent_client_secret=${clientSecret}`,
       },
       redirect: 'if_required',
     });
 
     if (error) {
-      setMessage(error.message || 'Error en el pago');
-      onError(error.message || 'Error en el pago');
+      setMessage(error.message || 'Error al guardar el método de pago');
+      onError(error.message || 'Error al guardar el método de pago');
       setIsProcessing(false);
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      await handlePaymentSuccess(paymentIntent.id);
+    } else if (setupIntent && setupIntent.status === 'succeeded') {
+      await handlePaymentSuccess(setupIntent.id);
     }
   };
 
@@ -91,11 +91,11 @@ function PaymentForm({
     setMessage(null);
 
     try {
-      // Confirmar el pago con tarjeta
-      const { error, paymentIntent } = await stripe.confirmPayment({
+      // Confirmar el SetupIntent con tarjeta
+      const { error, setupIntent } = await stripe.confirmSetup({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/admin/subscriptions/payment-success`,
+          return_url: `${window.location.origin}/admin/subscriptions/payment-success?setup_intent_client_secret=${clientSecret}`,
         },
         redirect: 'if_required',
       });
@@ -103,50 +103,32 @@ function PaymentForm({
       if (error) {
         // Mostrar error al cliente
         if (error.type === 'card_error' || error.type === 'validation_error') {
-          setMessage(error.message || 'Error en el pago');
+          setMessage(error.message || 'Error al guardar el método de pago');
         } else {
           setMessage('Ha ocurrido un error inesperado.');
         }
-        onError(error.message || 'Error en el pago');
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        await handlePaymentSuccess(paymentIntent.id);
+        onError(error.message || 'Error al guardar el método de pago');
+      } else if (setupIntent && setupIntent.status === 'succeeded') {
+        await handlePaymentSuccess(setupIntent.id);
       }
     } catch (error) {
-      console.error('Error procesando pago:', error);
-      setMessage('Error procesando el pago');
-      onError('Error procesando el pago');
+      console.error('Error procesando el método de pago:', error);
+      setMessage('Error procesando el método de pago');
+      onError('Error procesando el método de pago');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Manejar el éxito del pago
-  const handlePaymentSuccess = async (paymentIntentId: string) => {
-    setMessage('¡Pago procesado exitosamente!');
+  // Manejar el éxito del guardado del método de pago
+  const handlePaymentSuccess = async (setupIntentId: string) => {
+    setMessage('¡Método de pago guardado exitosamente! Creando su suscripción...');
     
-    // Si hay un subscriptionId, confirmar la suscripción
-    if (subscriptionId) {
-      try {
-        const response = await fetch('/api/admin/subscriptions/confirm', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            subscriptionId,
-            businessId,
-            paymentIntentId,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Error confirmando suscripción');
-        }
-      } catch (error) {
-        console.error('Error confirmando suscripción:', error);
-      }
-    }
-
+    // La creación de la suscripción ahora es manejada por el webhook.
+    // El frontend solo necesita esperar y luego redirigir.
+    // La página de éxito puede mostrar un mensaje de "procesando"
+    // y luego redirigir al dashboard cuando la suscripción esté activa.
+    
     onSuccess();
   };
 
@@ -186,8 +168,11 @@ function PaymentForm({
           <div className="border-t pt-2 mt-2">
             <div className="flex justify-between text-lg font-semibold">
               <span>Total hoy:</span>
-              <span className="text-blue-600">{total}€</span>
+              <span className="text-blue-600">0,00€</span>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Se guardará tu método de pago sin coste. La suscripción de {planDetails.price}€/{planDetails.interval === 'month' ? 'mes' : 'año'} comenzará después del periodo de prueba.
+            </p>
           </div>
         </div>
       </div>
@@ -263,12 +248,12 @@ function PaymentForm({
           {isProcessing ? (
             <span className="flex items-center justify-center">
               <Loader2 className="animate-spin mr-2 h-5 w-5" />
-              Procesando pago...
+              Guardando método de pago...
             </span>
           ) : (
             <span className="flex items-center justify-center">
               <CreditCard className="mr-2 h-5 w-5" />
-              Pagar {total}€ con tarjeta
+              Guardar método de pago
             </span>
           )}
         </button>
