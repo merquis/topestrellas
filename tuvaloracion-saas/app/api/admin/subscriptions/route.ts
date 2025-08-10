@@ -215,35 +215,32 @@ export async function POST(request: Request) {
       }
     }
 
-    // Crear suscripción y obtener client secret para pago embebido
+    // Crear un SetupIntent para el nuevo flujo de suscripción
     try {
-      const { clientSecret, subscriptionId, customerId, mode } = await createSubscriptionAndReturnClientSecret(
+      const { clientSecret, customerId, mode } = await createSubscriptionAndReturnClientSecret(
         businessId,
         planKey,
         userEmail,
         business.name
       );
 
-      // Guardar el ID de suscripción temporal en la DB si es una suscripción recurrente
-      if (subscriptionId) {
-        await db.collection('businesses').updateOne(
-          { _id: new ObjectId(businessId) },
-          { 
-            $set: { 
-              'subscription.pendingSubscriptionId': subscriptionId,
-              'subscription.stripeCustomerId': customerId,
-              updatedAt: new Date()
-            } 
-          }
-        );
-      }
+      // Guardar el ID de cliente de Stripe y el plan seleccionado para usarlo en el webhook
+      await db.collection('businesses').updateOne(
+        { _id: new ObjectId(businessId) },
+        { 
+          $set: { 
+            'subscription.stripeCustomerId': customerId,
+            'selectedPlanKey': planKey, // Guardamos el plan que el usuario quiere
+            updatedAt: new Date()
+          } 
+        }
+      );
 
       return NextResponse.json({
         success: true,
         clientSecret,
-        subscriptionId,
         customerId,
-        mode, // Enviar el modo al frontend
+        mode, // Enviar el modo 'setup' al frontend
         plan: {
           name: plan.name,
           price: plan.recurringPrice,
