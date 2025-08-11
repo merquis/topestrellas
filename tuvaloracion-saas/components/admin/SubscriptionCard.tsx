@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CancelSubscriptionModal from './CancelSubscriptionModal';
 import ChangePlanModal from './ChangePlanModal';
 
+const MotionButton = motion.button as any;
+
 interface GoogleStats {
   rating: number;
   totalReviews: number;
@@ -333,7 +335,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
           <div className="grid grid-cols-2 gap-3">
             {isActive && (
               <>
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowChangePlanModal(true)}
@@ -341,8 +343,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                 >
                   <span>🔄</span>
                   Cambiar Plan
-                </motion.button>
-                <motion.button
+                </MotionButton>
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleCancelClick}
@@ -357,13 +359,13 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                       Cancelar
                     </>
                   )}
-                </motion.button>
+                </MotionButton>
               </>
             )}
 
             {isPaused && (
               <>
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleResume}
@@ -378,13 +380,13 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                       Reanudar Suscripción
                     </>
                   )}
-                </motion.button>
+                </MotionButton>
               </>
             )}
 
             {isCanceled && (
               <>
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleReactivate}
@@ -399,8 +401,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                       Reactivar
                     </>
                   )}
-                </motion.button>
-                <motion.button
+                </MotionButton>
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowChangePlanModal(true)}
@@ -408,7 +410,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                 >
                   <span>🚀</span>
                   Cambiar Plan
-                </motion.button>
+                </MotionButton>
               </>
             )}
           </div>
