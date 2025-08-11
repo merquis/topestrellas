@@ -14,6 +14,8 @@ interface Business {
   _id: string;
   name: string;
   subdomain: string;
+  businessId?: string;
+  businessName?: string;
   googlePlaces?: {
     placeId?: string;
     rating?: number;
@@ -58,6 +60,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const [currentStats, setCurrentStats] = useState<GoogleStats | null>(null);
   const [initialStats, setInitialStats] = useState<GoogleStats | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const bizId = (business as any).businessId || (business as any)._id;
+  const bizName = (business as any).businessName || business.name;
 
   const currentPlan = plans.find(p => p.key === business.subscription?.plan);
   const isActive = business.subscription?.status === 'active' || business.subscription?.status === 'trialing';
@@ -84,7 +88,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          businessId: business._id,
+          businessId: bizId,
           placeId: business.googlePlaces.placeId 
         })
       });
@@ -111,7 +115,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const handleReactivate = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/subscriptions/${business._id}/renew`, {
+      const response = await fetch(`/api/admin/subscriptions/${bizId}/renew`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -129,7 +133,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const handleResume = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/subscriptions/${business._id}/resume`, {
+      const response = await fetch(`/api/admin/subscriptions/${bizId}/resume`, {
         method: 'POST'
       });
 
@@ -210,7 +214,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
           {/* Información del negocio */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <h3 className="text-2xl font-bold text-gray-900 mb-1">{business.name}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-1">{bizName}</h3>
               <p className="text-sm text-gray-500 flex items-center gap-2">
                 <span>🌐</span>
                 <a 
@@ -422,7 +426,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
       {/* Modal de cancelación */}
       {showCancelModal && (
         <CancelSubscriptionModal
-          businessId={business.businessId}
+          businessId={bizId}
           initialStats={initialStats}
           currentStats={currentStats}
           onClose={() => setShowCancelModal(false)}
