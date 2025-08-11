@@ -314,11 +314,11 @@ export default function ChangePlanModal({
                           ? 'border-blue-500 bg-blue-50 shadow-lg'
                           : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                       }`}
+                      onClick={() => setSelectedPlan(plan)}
                     >
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedPlan(plan)}
                       >
                       {/* Badge popular */}
                       {plan.popular && (
