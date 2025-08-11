@@ -59,11 +59,11 @@ export default function ChangePlanModal({
     setError('');
 
     try {
-      const response = await fetch(`/api/admin/subscriptions/${business._id}/change-plan`, {
+      const response = await fetch(`/api/admin/subscriptions/${business.businessId}/change-plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          businessId: business._id,
+          businessId: business.businessId,
           newPlanKey: selectedPlan.key,
           currentPlanKey: currentPlan?.key
         })
@@ -120,8 +120,8 @@ export default function ChangePlanModal({
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
         <StripePaymentForm
-          businessId={business._id}
-          businessName={business.name}
+          businessId={business.businessId}
+          businessName={business.businessName}
           planData={{
             key: selectedPlan.key,
             name: selectedPlan.name,
@@ -156,7 +156,7 @@ export default function ChangePlanModal({
                   🔄 Cambiar Plan de Suscripción
                 </h2>
                 <p className="text-gray-600 mt-1">
-                  Selecciona el plan que mejor se adapte a {business.name}
+                  Selecciona el plan que mejor se adapte a {business.businessName}
                 </p>
               </div>
               <button
