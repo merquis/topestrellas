@@ -119,9 +119,9 @@ export async function POST(
       businessId: new ObjectId(businessId),
       userId: user.email,
       action: 'cancelled',
-      previousPlan: business.plan,
-      newPlan: 'trial',
-      reason: 'User requested',
+      previousPlan: (business as any)?.subscription?.plan || null,
+      newPlan: null,
+      reason,
       createdAt: now
     });
 
