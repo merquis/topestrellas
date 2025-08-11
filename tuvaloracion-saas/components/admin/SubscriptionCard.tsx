@@ -115,9 +115,16 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const handleReactivate = async () => {
     setIsLoading(true);
     try {
+      const authData = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
+      const authUser = authData ? JSON.parse(authData) : null;
+
       const response = await fetch(`/api/admin/subscriptions/${bizId}/renew`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail: authUser?.email,
+          userRole: authUser?.role
+        })
       });
 
       if (response.ok) {
