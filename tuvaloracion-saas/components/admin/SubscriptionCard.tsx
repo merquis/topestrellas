@@ -60,7 +60,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const [showDetails, setShowDetails] = useState(false);
 
   const currentPlan = plans.find(p => p.key === business.subscription?.plan);
-  const isActive = business.subscription?.status === 'active';
+  const isActive = business.subscription?.status === 'active' || business.subscription?.status === 'trialing';
   const isCanceled = business.subscription?.status === 'canceled';
   const isPaused = business.subscription?.status === 'paused' || business.subscription?.status === 'suspended';
 
