@@ -60,7 +60,46 @@ export async function POST(
       );
     }
 
+    // Verificar permisos
+    const effectiveRole = (requestRole as any) || user.role;
+    const effectiveEmail = requestEmail || user.email;
+
+    if (effectiveRole !== 'super_admin') {
+      const usersCollection = db.collection('users');
+      const userData = await usersCollection.findOne({ email: effectiveEmail });
+
+      const candidateIds = [
+        ...(Array.isArray((userData as any)?.businessIds) ? (userData as any).businessIds : []),
+        (userData as any)?.businessId
+      ]
+        .filter(Boolean)
+        .map((x: any) => (typeof x === 'string' ? x : x.toString()));
+
+      const isOwnerById = candidateIds.includes(businessId.toString());
+      const isOwnerByEmail = (business as any)?.contact?.email === effectiveEmail;
+
+      if (!isOwnerById && !isOwnerByEmail) {
+        await client.close();
+        return NextResponse.json(
+          { error: 'No tienes permisos para este negocio' },
+          { status: 403 }
+        );
+      }
+    }
+
     const stripe = require('stripe')(STRIPE_SECRET_KEY);
+
+    // Obtener el item de la suscripción desde Stripe
+    const existingSubscription = await stripe.subscriptions.retrieve(
+      business.subscription.stripeSubscriptionId
+    );
+
+    if (!existingSubscription || !existingSubscription.items || existingSubscription.items.data.length === 0) {
+      await client.close();
+      return NextResponse.json({ error: 'No se encontró la suscripción en Stripe' }, { status: 404 });
+    }
+
+    const subscriptionItemId = existingSubscription.items.data[0].id;
 
     // 1. Re-activar la suscripción en Stripe
     const stripeSubscription = await stripe.subscriptions.update(
@@ -69,7 +108,7 @@ export async function POST(
         cancel_at_period_end: false,
         proration_behavior: 'create_prorations',
         items: [{
-          id: business.subscription.stripeSubscriptionItemId,
+          id: subscriptionItemId,
           price: business.subscription.stripePriceId,
         }],
       }
