@@ -1051,18 +1051,19 @@ export default function EditBusinessPage({ params }: { params: Promise<{ id: str
       {/* Modal de Cambio de Plan */}
       {showChangePlanModal && (
         <ChangePlanModal
-          isOpen={showChangePlanModal}
+          business={{
+            _id: businessId,
+            name: formData.name,
+            subdomain: formData.subdomain
+          }}
+          currentPlan={undefined} // Se puede pasar undefined ya que es opcional
+          plans={[]} // Se cargarán dentro del modal
           onClose={() => setShowChangePlanModal(false)}
-          currentPlan={formData.plan}
-          businessId={businessId}
-          businessName={formData.name}
-          onPlanChanged={() => {
+          onSuccess={() => {
             setToast({ message: 'Plan cambiado exitosamente', type: 'success' });
             loadBusiness(); // Recargar datos
             setShowChangePlanModal(false);
           }}
-          userRole={user?.role || ''}
-          userEmail={user?.email || ''}
         />
       )}
     </AdminLayout>
