@@ -38,12 +38,17 @@ export default function CancelSubscriptionModal({
   const handleCancel = async () => {
     setIsLoading(true);
     try {
+      const authData = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
+      const authUser = authData ? JSON.parse(authData) : null;
+
       const response = await fetch(`/api/admin/subscriptions/${businessId}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reason: selectedReason,
-          feedback
+          feedback,
+          userEmail: authUser?.email,
+          userRole: authUser?.role
         })
       });
 

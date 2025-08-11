@@ -21,10 +21,14 @@ export async function POST(
     // Intentar leer el cuerpo para registrar motivo/feedback (no requerido)
     let reason = 'User requested';
     let feedback = '';
+    let requestEmail: string | undefined;
+    let requestRole: string | undefined;
     try {
       const body = await request.json();
       reason = body?.reason || reason;
       feedback = body?.feedback || feedback;
+      requestEmail = body?.userEmail;
+      requestRole = body?.userRole;
     } catch {}
     
     if (!user) {
@@ -57,18 +61,23 @@ export async function POST(
       );
     }
 
-    // Verificar permisos
-    if (user.role === 'admin') {
+    // Verificar permisos (aceptando email/rol del body como respaldo)
+    const effectiveRole = (requestRole as any) || user.role;
+    const effectiveEmail = requestEmail || user.email;
+
+    if (effectiveRole !== 'super_admin') {
       const usersCollection = db.collection('users');
-      const userData = await usersCollection.findOne({ email: user.email });
+      const userData = await usersCollection.findOne({ email: effectiveEmail });
 
       const candidateIds = [
         ...(Array.isArray((userData as any)?.businessIds) ? (userData as any).businessIds : []),
         (userData as any)?.businessId
-      ].filter(Boolean).map((x: any) => (typeof x === 'string' ? x : x.toString()));
+      ]
+        .filter(Boolean)
+        .map((x: any) => (typeof x === 'string' ? x : x.toString()));
 
       const isOwnerById = candidateIds.includes(businessId.toString());
-      const isOwnerByEmail = (business as any)?.contact?.email === user.email;
+      const isOwnerByEmail = (business as any)?.contact?.email === effectiveEmail;
 
       if (!isOwnerById && !isOwnerByEmail) {
         await client.close();
