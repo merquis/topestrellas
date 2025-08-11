@@ -198,11 +198,11 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300"
-      >
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
         {/* Header con gradiente */}
         <div className={`h-3 bg-gradient-to-r ${currentPlan ? getPlanGradient(currentPlan.color) : 'from-gray-400 to-gray-500'}`} />
         
@@ -425,7 +425,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
             </div>
           )}
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
 
       {/* Modal de cancelación */}
       {showCancelModal && (
