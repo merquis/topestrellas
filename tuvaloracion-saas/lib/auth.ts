@@ -62,7 +62,9 @@ export const verifyAuth = (cookieHeader: string): AuthUser | null => {
   try {
     const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
       const [key, value] = cookie.trim().split('=');
-      acc[key] = value;
+      if (key && value) {
+        acc[key] = decodeURIComponent(value);
+      }
       return acc;
     }, {} as Record<string, string>);
 
