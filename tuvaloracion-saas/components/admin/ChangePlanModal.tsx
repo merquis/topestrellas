@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 
+const MotionDiv = motion.div as any;
+const MotionButton = motion.button as any;
+
 // Importar dinámicamente el componente de Stripe para evitar problemas de SSR
 const StripePaymentForm = dynamic(
   () => import('../StripePaymentForm'),
@@ -146,7 +149,7 @@ export default function ChangePlanModal({
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-5xl w-full my-8">
-        <motion.div
+                  <MotionDiv
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
         >
@@ -181,7 +184,7 @@ export default function ChangePlanModal({
                 animate={{ opacity: 1, y: 0 }}
               >
                 {error}
-              </motion.div>
+                  </MotionDiv>
             </div>
           )}
 
@@ -425,7 +428,7 @@ export default function ChangePlanModal({
           >
             Cancelar
           </button>
-          <motion.button
+          <MotionButton
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleChangePlan}
@@ -444,7 +447,7 @@ export default function ChangePlanModal({
             ) : (
               `Cambiar a ${selectedPlan?.name || 'plan'}`
             )}
-          </motion.button>
+          </MotionButton>
         </div>
         </motion.div>
       </div>
