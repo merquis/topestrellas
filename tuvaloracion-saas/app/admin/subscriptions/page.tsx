@@ -8,6 +8,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import Toast from '@/components/Toast';
 import { checkAuth } from '@/lib/auth';
 import PlanCard from '@/components/PlanCard';
+import SubscriptionCard from '@/components/admin/SubscriptionCard';
 
 // Cargar componentes dinámicamente para evitar errores de SSR
 const StripePaymentForm = dynamic(
@@ -903,207 +904,28 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
               <div className="text-right">
                 <p className="text-sm text-gray-500">Total mensual</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  €{subscriptions.reduce((acc: number, sub: Subscription) => {
-                    if (sub.status === 'active' && sub.plan !== 'trial') {
-                      return acc + PLANS[sub.plan].price;
+                  €{subscriptions.reduce((acc: number, sub: any) => {
+                    const plan = subscriptionPlans.find(p => p.key === sub.subscription?.plan);
+                    if (sub.subscription?.status === 'active' && plan) {
+                      return acc + (plan.recurringPrice || 0);
                     }
                     return acc;
-                  }, 0)}
+                  }, 0).toFixed(2)}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Active Subscriptions */}
+        {/* Subscriptions Grid usando el nuevo componente */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {subscriptions.map((subscription: Subscription) => (
-            <div key={subscription.businessId} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-              {/* Header con gradiente según el plan */}
-              <div className={`h-2 bg-gradient-to-r ${subscription.color || PLANS[subscription.plan]?.color || 'from-gray-400 to-gray-500'}`}></div>
-              
-              <div className="p-6">
-                {/* Business Info */}
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{subscription.businessName}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{subscription.subdomain}.topestrellas.com</p>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    subscription.status === 'active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : subscription.status === 'suspended'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {subscription.status === 'active' && <><span className="mr-1.5">●</span> Activo</>}
-                    {subscription.status === 'suspended' && <><span className="mr-1.5">⚠</span> Suspendido</>}
-                    {subscription.status === 'inactive' && <><span className="text-red-500 mr-1.5">●</span> Inactivo</>}
-                  </span>
-                </div>
-
-                {/* Plan Details */}
-                <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{PLANS[subscription.plan]?.icon || '📦'}</span>
-                      <div>
-                        <p className="font-bold text-lg text-gray-900">{PLANS[subscription.plan]?.name || 'Plan Desconocido'}</p>
-                        {subscription.plan === 'trial' ? (
-                          <p className="text-2xl font-bold text-green-600">
-                            GRATIS
-                          </p>
-                        ) : (
-<p className="text-2xl font-bold text-gray-900">
-  {(() => {
-    const planDb = subscriptionPlans.find(p => p.key === subscription.plan);
-    const getIntervalDisplay = (interval) => {
-      if (interval === 'year' || interval === 'anual') return 'año';
-      if (interval === 'month' || interval === 'mensual') return 'mes';
-      return interval;
-    };
-    if (planDb) {
-      return (
-        <>
-          €{planDb.recurringPrice ?? 0}
-          <span className="text-sm text-gray-500 font-normal">/{getIntervalDisplay(planDb.interval)}</span>
-        </>
-      );
-    }
-    // Fallback si el plan no se encuentra en subscriptionPlans ni en PLANS
-    return (
-      <>
-        €{PLANS[subscription.plan]?.price ?? 'N/A'}
-        <span className="text-sm text-gray-500 font-normal">/{PLANS[subscription.plan]?.duration || 'N/A'}</span>
-      </>
-    );
-  })()}
-</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Trial Warning */}
-                  {subscription.plan === 'trial' && subscription.trialEndsAt && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-yellow-600">⏰</span>
-                        <p className="text-sm text-yellow-800">
-                          <strong>Periodo de prueba termina en {getDaysRemaining(subscription.trialEndsAt)} días</strong>
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Features */}
-                  <div className="space-y-2 mb-4">
-                    {(PLANS[subscription.plan]?.features || []).slice(0, 3).map((feature: string, index: number) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-sm text-gray-600">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Payment Info */}
-                  {subscription.paymentMethod && (
-                    <div className="border-t pt-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Método de pago:</span>
-                        <div className="flex items-center gap-2">
-                          {subscription.paymentMethod === 'paypal' ? (
-                            <>
-                              <span className="text-blue-600 font-bold">PayPal</span>
-                              <span className="text-xl">💳</span>
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-purple-600 font-bold">Stripe</span>
-                              <span className="text-xl">💳</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      {subscription.autoRenew && (
-                        <div className="flex items-center gap-1 mt-2">
-                          <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                          </svg>
-                          <span className="text-xs text-green-600">Renovación automática activa</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 flex-wrap">
-                  {subscription.plan === 'trial' ? (
-                    <>
-                      <button
-                        onClick={() => handleCancelSubscription(subscription.businessId)}
-                        className="flex-1 border-2 border-gray-300 text-gray-700 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold"
-                      >
-                        Cancelar Suscripción
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedSubscription(subscription);
-                          setShowUpgradeModal(true);
-                        }}
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                      >
-                        Actualizar Plan
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {/* Botón de actualizar a Premium solo para plan básico */}
-                      {subscription.plan === 'basic' && (
-                        <button
-                          onClick={() => handleUpgrade(subscription, 'premium')}
-                          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-3 rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                          Actualizar a Premium
-                        </button>
-                      )}
-                      
-                      {/* Botones de pausar/reanudar según el estado */}
-                      {subscription.paymentMethod === 'stripe' && (
-                        <>
-                          {subscription.status === 'active' ? (
-                            <button
-                              onClick={() => handlePauseSubscription(subscription.businessId)}
-                              className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-3 rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                            >
-                              ⏸️ Pausar
-                            </button>
-                          ) : subscription.status === 'suspended' || subscription.status === 'paused' ? (
-                            <button
-                              onClick={() => handleResumeSubscription(subscription.businessId)}
-                              className="flex-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-3 rounded-xl hover:from-green-500 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                            >
-                              ▶️ Reanudar
-                            </button>
-                          ) : null}
-                        </>
-                      )}
-                      
-                      {/* Botón de cancelar siempre disponible */}
-                      <button
-                        onClick={() => handleCancelSubscription(subscription.businessId)}
-                        className="flex-1 border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl hover:bg-red-50 transition-all duration-200 font-semibold"
-                      >
-                        Cancelar
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+          {subscriptions.map((business: any) => (
+            <SubscriptionCard
+              key={business._id}
+              business={business}
+              plans={subscriptionPlans}
+              onUpdate={loadSubscriptions}
+            />
           ))}
         </div>
 
