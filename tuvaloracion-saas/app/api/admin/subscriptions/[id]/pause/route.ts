@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import Stripe from 'stripe';
 import { verifyAuth } from '@/lib/auth';
@@ -13,10 +13,9 @@ const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = 'tuvaloracion';
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: Request,
+  context: any
 ) {
-  const resolvedParams = await params;
   try {
     // Verificar autenticación
     const authHeader = request.headers.get('cookie');
@@ -26,7 +25,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const businessId = resolvedParams.id;
+    const businessId = context?.params?.id;
 
     const client = new MongoClient(uri);
     await client.connect();
@@ -46,11 +45,21 @@ export async function POST(
     }
 
     // Verificar permisos
-    if (user.role === 'admin') {
+    if (user.role !== 'super_admin') {
       const usersCollection = db.collection('users');
       const userData = await usersCollection.findOne({ email: user.email });
       
-      if (!userData?.businessIds?.includes(businessId)) {
+      const candidateIds = [
+        ...(Array.isArray((userData as any)?.businessIds) ? (userData as any).businessIds : []),
+        (userData as any)?.businessId
+      ]
+        .filter(Boolean)
+        .map((x: any) => (typeof x === 'string' ? x : x.toString()));
+
+      const isOwnerById = candidateIds.includes(businessId.toString());
+      const isOwnerByEmail = (business as any)?.contact?.email === user.email;
+
+      if (!isOwnerById && !isOwnerByEmail) {
         await client.close();
         return NextResponse.json(
           { error: 'No tienes permisos para este negocio' },

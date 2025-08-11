@@ -56,24 +56,26 @@ export const clearAuth = () => {
 };
 
 // Función para verificar autenticación en rutas API (server-side)
-export const verifyAuth = (authHeader: string): AuthUser | null => {
-  // Por ahora, implementación básica
-  // En producción, deberías usar JWT o sesiones seguras
+export const verifyAuth = (cookieHeader: string): AuthUser | null => {
+  if (!cookieHeader) return null;
+
   try {
-    // Extraer el token o datos de autenticación del header
-    // Este es un ejemplo simplificado
-    if (!authHeader) return null;
-    
-    // Aquí deberías verificar el token JWT o la sesión
-    // Por ahora, retornamos un usuario de prueba para que funcione
-    return {
-      id: '1',
-      email: 'admin@topestrellas.com',
-      name: 'Admin',
-      role: 'admin'
-    };
+    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split('=');
+      acc[key] = value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    const token = cookies['auth-token'];
+    if (!token) return null;
+
+    // Asumimos que el token es el objeto AuthUser en base64
+    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+    const user: AuthUser = JSON.parse(decodedToken);
+
+    return user;
   } catch (error) {
-    console.error('Error verifying auth:', error);
+    console.error('Error verifying auth token:', error);
     return null;
   }
 };
