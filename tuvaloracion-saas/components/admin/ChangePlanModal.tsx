@@ -175,13 +175,14 @@ export default function ChangePlanModal({
         {/* Content */}
         <div className="p-6">
           {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
-            >
-              {error}
-            </motion.div>
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {error}
+              </motion.div>
+            </div>
           )}
 
           {/* Plan actual */}
@@ -398,20 +399,21 @@ export default function ChangePlanModal({
 
           {/* Mensaje informativo */}
           {selectedPlan && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg"
-            >
-              <p className="text-sm text-blue-800">
-                <strong>📌 Has seleccionado:</strong> {selectedPlan.name} - €{selectedPlan.recurringPrice}/{selectedPlan.interval === 'year' ? 'año' : 'mes'}
-              </p>
-              {currentPlan && selectedPlan.recurringPrice < currentPlan.recurringPrice && (
-                <p className="text-sm text-green-600 mt-1">
-                  ¡Excelente elección! Ahorrarás €{currentPlan.recurringPrice - selectedPlan.recurringPrice} cada {selectedPlan.interval === 'year' ? 'año' : 'mes'}.
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-sm text-blue-800">
+                  <strong>📌 Has seleccionado:</strong> {selectedPlan.name} - €{selectedPlan.recurringPrice}/{selectedPlan.interval === 'year' ? 'año' : 'mes'}
                 </p>
-              )}
-            </motion.div>
+                {currentPlan && selectedPlan.recurringPrice < currentPlan.recurringPrice && (
+                  <p className="text-sm text-green-600 mt-1">
+                    ¡Excelente elección! Ahorrarás €{currentPlan.recurringPrice - selectedPlan.recurringPrice} cada {selectedPlan.interval === 'year' ? 'año' : 'mes'}.
+                  </p>
+                )}
+              </motion.div>
+            </div>
           )}
         </div>
 
