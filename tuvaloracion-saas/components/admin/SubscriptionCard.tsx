@@ -274,13 +274,13 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
 
             <AnimatePresence>
               {showDetails && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
+                <div className="overflow-hidden">
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
                   <div className="pt-3 space-y-2">
                     {currentPlan?.features.map((feature, index) => (
                       <div key={index} className="flex items-start gap-2">
@@ -292,6 +292,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                     ))}
                   </div>
                 </motion.div>
+              </div>
               )}
             </AnimatePresence>
           </div>
