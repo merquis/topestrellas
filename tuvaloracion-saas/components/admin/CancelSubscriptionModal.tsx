@@ -306,47 +306,50 @@ export default function CancelSubscriptionModal({
 
               {/* Feedback adicional */}
               {selectedReason && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mb-6"
-                >
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ¿Algo más que quieras compartir? (opcional)
-                  </label>
-                  <textarea
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows={3}
-                    placeholder="Tu opinión es muy importante para nosotros..."
-                  />
-                </motion.div>
+                <div className="mb-6">
+                <div>
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                  >
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ¿Algo más que quieras compartir? (opcional)
+                    </label>
+                    <textarea
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows={3}
+                      placeholder="Tu opinión es muy importante para nosotros..."
+                    />
+                  </motion.div>
+                </div>
               )}
 
               {/* Oferta especial */}
               {selectedReason === 'expensive' && !showOffer && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-6 mb-6"
-                >
-                  <h3 className="text-xl font-bold mb-2">
-                    🎁 ¡Espera! Tenemos una oferta especial para ti
-                  </h3>
-                  <p className="mb-4">
-                    Quédate con nosotros y obtén un 30% de descuento durante los próximos 3 meses
-                  </p>
-                  <button
-                    onClick={() => {
-                      setShowOffer(true);
-                      onClose();
-                    }}
-                    className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition"
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-6 mb-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                   >
-                    ¡Aplicar descuento!
-                  </button>
-                </motion.div>
+                    <h3 className="text-xl font-bold mb-2">
+                      🎁 ¡Espera! Tenemos una oferta especial para ti
+                    </h3>
+                    <p className="mb-4">
+                      Quédate con nosotros y obtén un 30% de descuento durante los próximos 3 meses
+                    </p>
+                    <button
+                      onClick={() => {
+                        setShowOffer(true);
+                        onClose();
+                      }}
+                      className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition"
+                    >
+                      ¡Aplicar descuento!
+                    </button>
+                  </motion.div>
+                </div>
               )}
 
               {/* Botones finales */}
