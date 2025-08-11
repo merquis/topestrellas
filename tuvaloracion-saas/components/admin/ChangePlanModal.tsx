@@ -179,7 +179,7 @@ export default function ChangePlanModal({
         <div className="p-6">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              <motion.div
+              <MotionDiv
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
@@ -449,7 +449,7 @@ export default function ChangePlanModal({
             )}
           </MotionButton>
         </div>
-        </motion.div>
+        </MotionDiv>
       </div>
     </div>
   );
