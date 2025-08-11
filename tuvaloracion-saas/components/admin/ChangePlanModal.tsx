@@ -122,7 +122,13 @@ export default function ChangePlanModal({
         <StripePaymentForm
           businessId={business._id}
           businessName={business.name}
-          planData={selectedPlan}
+          planData={{
+            key: selectedPlan.key,
+            name: selectedPlan.name,
+            recurringPrice: selectedPlan.recurringPrice,
+            trialDays: selectedPlan.trialDays,
+            interval: selectedPlan.interval === 'year' ? 'year' : 'month'
+          }}
           clientSecret={clientSecret}
           onSuccess={() => {
             setShowPaymentForm(false);
