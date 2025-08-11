@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import { verifyAuth } from '@/lib/auth';
 
@@ -11,8 +11,8 @@ const dbName = 'tuvaloracion';
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: any
 ) {
   try {
     // Verificar autenticación
@@ -35,7 +35,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const businessId = params.id;
+    const businessId = context?.params?.id;
 
     if (!businessId) {
       return NextResponse.json(
