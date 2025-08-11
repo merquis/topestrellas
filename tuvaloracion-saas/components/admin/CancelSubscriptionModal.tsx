@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MotionButton = motion.button as any;
 
 interface CancelSubscriptionModalProps {
-  business: any;
+  businessId: string;
   initialStats: { rating: number; totalReviews: number } | null;
   currentStats: { rating: number; totalReviews: number } | null;
   onClose: () => void;
@@ -15,7 +15,7 @@ interface CancelSubscriptionModalProps {
 }
 
 export default function CancelSubscriptionModal({
-  business,
+  businessId,
   initialStats,
   currentStats,
   onClose,
@@ -38,7 +38,7 @@ export default function CancelSubscriptionModal({
   const handleCancel = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/subscriptions/${business._id}/cancel`, {
+      const response = await fetch(`/api/admin/subscriptions/${businessId}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

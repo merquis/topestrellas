@@ -422,7 +422,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
       {/* Modal de cancelación */}
       {showCancelModal && (
         <CancelSubscriptionModal
-          business={business}
+          businessId={business.businessId}
           initialStats={initialStats}
           currentStats={currentStats}
           onClose={() => setShowCancelModal(false)}
