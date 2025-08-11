@@ -446,5 +446,6 @@ export default function ChangePlanModal({
         </div>
         </motion.div>
       </div>
+    </div>
   );
 }
