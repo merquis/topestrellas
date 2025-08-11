@@ -12,19 +12,26 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const resolvedParams = await params;
   try {
     // Verificar autenticación
     const authHeader = request.headers.get('cookie');
     const user = verifyAuth(authHeader || '');
+    // Intentar leer el cuerpo para registrar motivo/feedback (no requerido)
+    let reason = 'User requested';
+    let feedback = '';
+    try {
+      const body = await request.json();
+      reason = body?.reason || reason;
+      feedback = body?.feedback || feedback;
+    } catch {}
     
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const businessId = resolvedParams.id;
+    const businessId = params.id;
 
     if (!businessId) {
       return NextResponse.json(
@@ -54,8 +61,16 @@ export async function POST(
     if (user.role === 'admin') {
       const usersCollection = db.collection('users');
       const userData = await usersCollection.findOne({ email: user.email });
-      
-      if (!userData?.businessIds?.includes(businessId)) {
+
+      const candidateIds = [
+        ...(Array.isArray((userData as any)?.businessIds) ? (userData as any).businessIds : []),
+        (userData as any)?.businessId
+      ].filter(Boolean).map((x: any) => (typeof x === 'string' ? x : x.toString()));
+
+      const isOwnerById = candidateIds.includes(businessId.toString());
+      const isOwnerByEmail = (business as any)?.contact?.email === user.email;
+
+      if (!isOwnerById && !isOwnerByEmail) {
         await client.close();
         return NextResponse.json(
           { error: 'No tienes permisos para este negocio' },
@@ -80,11 +95,11 @@ export async function POST(
       { _id: new ObjectId(businessId) },
       {
         $set: {
-          plan: 'trial',
-          'subscription.status': 'cancelled',
+          'subscription.status': 'canceled',
           'subscription.cancelledAt': now,
           'subscription.autoRenew': false,
-          'subscription.cancellationReason': 'User requested',
+          'subscription.cancellationReason': reason,
+          'subscription.cancellationFeedback': feedback,
           updatedAt: now
         }
       }
