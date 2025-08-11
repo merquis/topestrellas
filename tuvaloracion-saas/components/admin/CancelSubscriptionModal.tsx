@@ -76,7 +76,7 @@ export default function CancelSubscriptionModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full my-8">
+      <div className="bg-white rounded-2xl max-w-2xl w-full my-8 p-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -88,7 +88,6 @@ export default function CancelSubscriptionModal({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="p-8"
             >
               {/* Header con estadísticas */}
               <div className="text-center mb-8">
@@ -269,7 +268,6 @@ export default function CancelSubscriptionModal({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="p-8"
             >
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
