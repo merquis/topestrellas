@@ -76,12 +76,12 @@ export default function CancelSubscriptionModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl max-w-2xl w-full my-8"
-      >
-        <AnimatePresence mode="wait">
+      <div className="bg-white rounded-2xl max-w-2xl w-full my-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
               key="step1"
@@ -375,8 +375,9 @@ export default function CancelSubscriptionModal({
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
-      </motion.div>
+          </AnimatePresence>
+        </motion.div>
+      </div>
     </div>
   );
 }
