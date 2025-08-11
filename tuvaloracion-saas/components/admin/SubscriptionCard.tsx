@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CancelSubscriptionModal from './CancelSubscriptionModal';
 import ChangePlanModal from './ChangePlanModal';
 
-const MotionButton = motion.button as any;
-
 interface GoogleStats {
   rating: number;
   totalReviews: number;
@@ -335,82 +333,72 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
           <div className="grid grid-cols-2 gap-3">
             {isActive && (
               <>
-                <MotionButton
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={() => setShowChangePlanModal(true)}
                   className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <span>🔄</span>
-                  Cambiar Plan
-                </MotionButton>
-                <MotionButton
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                    <span>🔄</span>
+                    Cambiar Plan
+                </button>
+                <button
                   onClick={handleCancelClick}
                   disabled={isLoading}
                   className="border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  {isLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-700" />
-                  ) : (
-                    <>
-                      <span>✕</span>
-                      Cancelar
-                    </>
-                  )}
-                </MotionButton>
+                    {isLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-700" />
+                    ) : (
+                      <>
+                        <span>✕</span>
+                        Cancelar
+                      </>
+                    )}
+                </button>
               </>
             )}
 
             {isPaused && (
               <>
-                <MotionButton
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={handleResume}
                   disabled={isLoading}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 col-span-2"
                 >
-                  {isLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                  ) : (
-                    <>
-                      <span>▶️</span>
-                      Reanudar Suscripción
-                    </>
-                  )}
-                </MotionButton>
+                    {isLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                    ) : (
+                      <>
+                        <span>▶️</span>
+                        Reanudar Suscripción
+                      </>
+                    )}
+                </button>
               </>
             )}
 
             {isCanceled && (
               <>
-                <MotionButton
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={handleReactivate}
                   disabled={isLoading}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  {isLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                  ) : (
-                    <>
-                      <span>🔄</span>
-                      Reactivar
-                    </>
-                  )}
-                </MotionButton>
-                <MotionButton
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                    {isLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                    ) : (
+                      <>
+                        <span>🔄</span>
+                        Reactivar
+                      </>
+                    )}
+                </button>
+                <button
                   onClick={() => setShowChangePlanModal(true)}
                   className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <span>🚀</span>
-                  Cambiar Plan
-                </MotionButton>
+                    <span>🚀</span>
+                    Cambiar Plan
+                </button>
               </>
             )}
           </div>

@@ -919,10 +919,10 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
 
         {/* Subscriptions Grid usando el nuevo componente */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {subscriptions.map((business: any) => (
+          {subscriptions.map((subscription: any) => (
             <SubscriptionCard
-              key={business._id}
-              business={business}
+              key={subscription.businessId}
+              business={subscription}
               plans={subscriptionPlans}
               onUpdate={loadSubscriptions}
             />

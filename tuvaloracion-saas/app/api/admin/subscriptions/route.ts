@@ -124,6 +124,7 @@ export async function GET(request: Request) {
             businessId: business._id.toString(),
             businessName: business.name,
             subdomain: business.subdomain,
+            subscription: business.subscription,
             plan: business.subscription?.plan || 'trial',
             status: business.subscription?.status || 'active',
             startDate: business.createdAt,
