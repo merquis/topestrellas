@@ -145,11 +145,11 @@ export default function ChangePlanModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl max-w-5xl w-full my-8"
-      >
+      <div className="bg-white rounded-2xl max-w-5xl w-full my-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -444,7 +444,7 @@ export default function ChangePlanModal({
             )}
           </motion.button>
         </div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
   );
 }
