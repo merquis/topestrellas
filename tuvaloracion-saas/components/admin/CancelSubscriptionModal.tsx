@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Tipos de framer-motion con cast seguro para evitar conflictos de typings con React 19
+const MotionButton = motion.button as any;
+
 interface CancelSubscriptionModalProps {
   business: any;
   initialStats: { rating: number; totalReviews: number } | null;
@@ -244,14 +247,14 @@ export default function CancelSubscriptionModal({
 
               {/* Botones */}
               <div className="flex gap-3">
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={onClose}
                   className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
                 >
                   <span className="text-lg">🎉</span> Mantener mi suscripción
-                </motion.button>
+                </MotionButton>
                 <button
                   onClick={() => setStep(2)}
                   className="flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all"
@@ -281,7 +284,7 @@ export default function CancelSubscriptionModal({
               {/* Razones */}
               <div className="space-y-3 mb-6">
                 {reasons.map((reason) => (
-                  <motion.button
+                  <MotionButton
                     key={reason.id}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -297,7 +300,7 @@ export default function CancelSubscriptionModal({
                     {selectedReason === reason.id && (
                       <span className="ml-auto text-blue-500">✓</span>
                     )}
-                  </motion.button>
+                  </MotionButton>
                 ))}
               </div>
 
@@ -354,7 +357,7 @@ export default function CancelSubscriptionModal({
                 >
                   ← Volver
                 </button>
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleCancel}
@@ -369,7 +372,7 @@ export default function CancelSubscriptionModal({
                   ) : (
                     'Confirmar cancelación'
                   )}
-                </motion.button>
+                </MotionButton>
               </div>
             </motion.div>
           )}
