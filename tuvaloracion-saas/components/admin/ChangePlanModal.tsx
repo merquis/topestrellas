@@ -307,17 +307,19 @@ export default function ChangePlanModal({
                   const savings = calculateSavings(plan);
 
                   return (
-                    <motion.div
+                    <div
                       key={plan._id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setSelectedPlan(plan)}
                       className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all ${
                         isSelected
                           ? 'border-blue-500 bg-blue-50 shadow-lg'
                           : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                       }`}
                     >
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedPlan(plan)}
+                      >
                       {/* Badge popular */}
                       {plan.popular && (
                         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -387,6 +389,7 @@ export default function ChangePlanModal({
                         </div>
                       )}
                     </motion.div>
+                    </div>
                   );
                 })}
               </div>
