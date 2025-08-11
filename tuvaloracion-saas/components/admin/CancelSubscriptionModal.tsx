@@ -38,10 +38,11 @@ export default function CancelSubscriptionModal({
   const handleCancel = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/subscriptions/${business._id}/cancel`, {
+      const response = await fetch(`/api/admin/subscriptions/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          businessId: business._id,
           reason: selectedReason,
           feedback
         })
