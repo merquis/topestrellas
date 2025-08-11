@@ -35,20 +35,15 @@ export default function CancelSubscriptionModal({
     { id: 'other', label: 'Otro motivo', icon: '💭' }
   ];
 
-  const handleCancel = async () => {
+  const handlePause = async () => {
     setIsLoading(true);
     try {
-      const authData = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
-      const authUser = authData ? JSON.parse(authData) : null;
-
-      const response = await fetch(`/api/admin/subscriptions/${businessId}/cancel`, {
+      const response = await fetch(`/api/admin/subscriptions/${businessId}/pause`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reason: selectedReason,
-          feedback,
-          userEmail: authUser?.email,
-          userRole: authUser?.role
+          feedback
         })
       });
 
@@ -56,7 +51,7 @@ export default function CancelSubscriptionModal({
         onConfirm();
       }
     } catch (error) {
-      console.error('Error canceling subscription:', error);
+      console.error('Error pausing subscription:', error);
     } finally {
       setIsLoading(false);
     }
@@ -103,10 +98,10 @@ export default function CancelSubscriptionModal({
                   <span className="text-4xl">😢</span>
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  ¿Estás seguro de cancelar?
+                  ¿Pausar tu suscripción?
                 </h2>
                 <p className="text-gray-600">
-                  Mira todo lo que has conseguido con nosotros
+                  Tu suscripción y tus pagos se detendrán indefinidamente. No se te cobrará nada más a menos que decidas reanudarla. Podrás volver a activar tu plan con un solo clic en cualquier momento.
                 </p>
               </div>
 
@@ -217,38 +212,6 @@ export default function CancelSubscriptionModal({
                 </div>
               )}
 
-              {/* Beneficios que perderás */}
-              <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
-                <h3 className="text-lg font-bold text-red-900 mb-3">
-                  ⚠️ Si cancelas, perderás:
-                </h3>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-0.5">✕</span>
-                    <span className="text-sm text-gray-700">
-                      Acceso al sistema de reseñas automatizado
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-0.5">✕</span>
-                    <span className="text-sm text-gray-700">
-                      Estadísticas y análisis de tu negocio
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-0.5">✕</span>
-                    <span className="text-sm text-gray-700">
-                      Sistema de premios para clientes
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-0.5">✕</span>
-                    <span className="text-sm text-gray-700">
-                      Todo el progreso y configuración actual
-                    </span>
-                  </li>
-                </ul>
-              </div>
 
               {/* Botones */}
               <div className="flex gap-3">
@@ -264,7 +227,7 @@ export default function CancelSubscriptionModal({
                   onClick={() => setStep(2)}
                   className="flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all"
                 >
-                  Continuar con la cancelación
+                  Continuar para pausar
                 </button>
               </div>
             </motion.div>
@@ -282,7 +245,7 @@ export default function CancelSubscriptionModal({
                   Ayúdanos a mejorar
                 </h2>
                 <p className="text-gray-600">
-                  ¿Por qué quieres cancelar tu suscripción?
+                  ¿Por qué quieres pausar tu suscripción?
                 </p>
               </div>
 
@@ -367,17 +330,17 @@ export default function CancelSubscriptionModal({
                 <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={handleCancel}
+                  onClick={handlePause}
                   disabled={!selectedReason || isLoading}
                   className="flex-1 bg-red-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                      Cancelando...
+                      Pausando...
                     </div>
                   ) : (
-                    'Confirmar cancelación'
+                    'Confirmar Pausa'
                   )}
                 </MotionButton>
               </div>

@@ -107,34 +107,9 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
     }
   };
 
-  const handleCancelClick = async () => {
+  const handlePauseClick = async () => {
     await fetchCurrentStats();
-    setShowCancelModal(true);
-  };
-
-  const handleReactivate = async () => {
-    setIsLoading(true);
-    try {
-      const authData = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
-      const authUser = authData ? JSON.parse(authData) : null;
-
-      const response = await fetch(`/api/admin/subscriptions/${bizId}/renew`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userEmail: authUser?.email,
-          userRole: authUser?.role
-        })
-      });
-
-      if (response.ok) {
-        onUpdate();
-      }
-    } catch (error) {
-      console.error('Error reactivating subscription:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    setShowCancelModal(true); // Reutilizamos el modal de cancelación
   };
 
   const handleResume = async () => {
@@ -352,7 +327,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                     Cambiar Plan
                 </button>
                 <button
-                  onClick={handleCancelClick}
+                  onClick={handlePauseClick}
                   disabled={isLoading}
                   className="border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -360,37 +335,18 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-700" />
                     ) : (
                       <>
-                        <span>✕</span>
-                        Cancelar
+                        <span>⏸️</span>
+                        Pausar Suscripción
                       </>
                     )}
                 </button>
               </>
             )}
 
-            {isPaused && (
+            {(isPaused || isCanceled) && (
               <>
                 <button
                   onClick={handleResume}
-                  disabled={isLoading}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 col-span-2"
-                >
-                    {isLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                    ) : (
-                      <>
-                        <span>▶️</span>
-                        Reanudar Suscripción
-                      </>
-                    )}
-                </button>
-              </>
-            )}
-
-            {isCanceled && (
-              <>
-                <button
-                  onClick={handleReactivate}
                   disabled={isLoading}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -398,8 +354,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
                     ) : (
                       <>
-                        <span>🔄</span>
-                        Reactivar
+                        <span>▶️</span>
+                        Reanudar Suscripción
                       </>
                     )}
                 </button>
