@@ -31,7 +31,7 @@ export async function POST(
     const db = client.db(dbName);
     
     // Obtener el negocio actual
-    const business = await db.collection('businesses').findOne({ _id: businessId });
+    const business = await db.collection('businesses').findOne({ _id: new ObjectId(businessId) });
     
     if (!business) {
       await client.close();
@@ -50,7 +50,7 @@ export async function POST(
         cancel_at_period_end: false,
         proration_behavior: 'create_prorations',
         items: [{
-          id: business.subscription.stripeItemId, // Asumiendo que guardas el item id
+          id: business.subscription.stripeSubscriptionItemId,
           price: business.subscription.stripePriceId,
         }],
       }
