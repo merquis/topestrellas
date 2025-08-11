@@ -59,7 +59,7 @@ export default function ChangePlanModal({
     setError('');
 
     try {
-      const response = await fetch('/api/admin/subscriptions/change-plan', {
+      const response = await fetch(`/api/admin/subscriptions/${business._id}/change-plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
