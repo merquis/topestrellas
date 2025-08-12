@@ -75,17 +75,20 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   // Cargar estadísticas iniciales desde stats (valores cuando se creó el negocio)
   useEffect(() => {
     // stats contiene los valores INICIALES guardados cuando se creó el negocio
-    setInitialStats({
-      rating: business.stats?.googleRating ?? 0,
-      totalReviews: business.stats?.googleReviews ?? 0
-    });
+    // Estos valores NUNCA cambian, son los que había cuando se dio de alta
+    if (business.stats) {
+      setInitialStats({
+        rating: business.stats.googleRating || 0,
+        totalReviews: business.stats.googleReviews || 0
+      });
+    }
     
     // googlePlaces contiene los valores ACTUALES de Google
-    // Los establecemos como currentStats por defecto
+    // Estos se actualizan cada vez que se llama a la API
     if (business.googlePlaces) {
       setCurrentStats({
-        rating: business.googlePlaces.rating ?? 0,
-        totalReviews: business.googlePlaces.totalReviews ?? 0
+        rating: business.googlePlaces.rating || 0,
+        totalReviews: business.googlePlaces.totalReviews || 0
       });
     }
   }, [business]);
@@ -124,7 +127,23 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
     if (business.googlePlaces?.placeId) {
       await fetchCurrentStats();
     }
-    // Si no se pudieron obtener o no hay placeId, currentStats ya tiene los valores de googlePlaces
+    
+    // Debug: Verificar qué valores se están pasando al modal
+    console.log('=== DEBUG MODAL CANCELACIÓN ===');
+    console.log('Business completo:', business);
+    console.log('Stats iniciales (cuando se creó):', {
+      rating: business.stats?.googleRating,
+      totalReviews: business.stats?.googleReviews
+    });
+    console.log('Google Places actuales:', {
+      rating: business.googlePlaces?.rating,
+      totalReviews: business.googlePlaces?.totalReviews
+    });
+    console.log('initialStats state:', initialStats);
+    console.log('currentStats state:', currentStats);
+    console.log('createdAt:', business.createdAt);
+    console.log('===============================');
+    
     setShowCancelModal(true);
   };
 
@@ -439,15 +458,15 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         <CancelSubscriptionModal
           businessId={bizId}
           businessName={bizName}
-          initialStats={{
-            rating: business.stats?.googleRating ?? business.googlePlaces?.rating ?? 4.4,
-            totalReviews: business.stats?.googleReviews ?? business.googlePlaces?.totalReviews ?? 2069
+          initialStats={initialStats || {
+            rating: business.stats?.googleRating || 0,
+            totalReviews: business.stats?.googleReviews || 0
           }}
-          currentStats={{
-            rating: business.googlePlaces?.rating ?? business.stats?.googleRating ?? 4.4,
-            totalReviews: business.googlePlaces?.totalReviews ?? business.stats?.googleReviews ?? 2069
+          currentStats={currentStats || {
+            rating: business.googlePlaces?.rating || 0,
+            totalReviews: business.googlePlaces?.totalReviews || 0
           }}
-          createdAt={business.createdAt || business.stats?.createdAt}
+          createdAt={business.createdAt}
           onClose={() => setShowCancelModal(false)}
           onConfirm={() => {
             setShowCancelModal(false);
