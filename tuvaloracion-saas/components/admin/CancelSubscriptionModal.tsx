@@ -197,33 +197,64 @@ export default function CancelSubscriptionModal({
       return {
         icon: '⚠️',
         title: '¡Espera, acabas de empezar!',
-        message: `Llevas solo ${totalDays} ${totalDays === 1 ? 'día' : 'días'} con TopEstrellas. El 92% de los negocios que esperan al menos 3 semanas ven resultados significativos. Dale una oportunidad real a tu negocio: los primeros resultados están a punto de llegar. ¡No te rindas antes de ver el potencial!`
+        message: (
+          <>
+            Llevas solo <strong>{totalDays} {totalDays === 1 ? 'día' : 'días'}</strong> con TopEstrellas. 
+            El <strong>92% de los negocios</strong> que esperan al menos <strong>3 semanas ven resultados significativos</strong>. 
+            Dale una oportunidad real a tu negocio: <strong>los primeros resultados están a punto de llegar</strong>. 
+            ¡No te rindas antes de ver el potencial!
+          </>
+        )
       };
     } else if (totalDays <= 30) {
       return {
         icon: '🌱',
         title: 'Tu inversión está empezando a dar frutos',
-        message: `Has invertido ${totalDays} días construyendo tu reputación online. Los datos muestran que los negocios que cancelan antes del mes pierden una media de 25 reseñas potenciales. ¡Estás a punto de ver el despegue real!`
+        message: (
+          <>
+            Has invertido <strong>{totalDays} días</strong> construyendo tu reputación online. 
+            Los datos muestran que los negocios que cancelan antes del mes <strong>pierden una media de 25 reseñas potenciales</strong>. 
+            ¡Estás <strong>a punto de ver el despegue real</strong>!
+          </>
+        )
       };
     } else if (totalDays <= 90) { // 1-3 meses
       const months = Math.floor(totalDays / 30);
       return {
         icon: '🚀',
         title: 'Estás en el mejor momento para crecer',
-        message: `Después de ${months} ${months === 1 ? 'mes' : 'meses'}, tu sistema ya está rodando. El 78% de los negocios duplican sus reseñas entre el mes 2 y 3. Cancelar ahora sería como parar el coche justo cuando empieza a coger velocidad.`
+        message: (
+          <>
+            Después de <strong>{months} {months === 1 ? 'mes' : 'meses'}</strong>, tu sistema ya está rodando. 
+            El <strong>78% de los negocios duplican sus reseñas</strong> entre el mes 2 y 3. 
+            Cancelar ahora sería como <strong>parar el coche justo cuando empieza a coger velocidad</strong>.
+          </>
+        )
       };
     } else if (totalDays <= 180) { // 3-6 meses
       const months = Math.floor(totalDays / 30);
       return {
         icon: '💎',
         title: 'Has construido algo valioso',
-        message: `En ${months} meses has generado un activo digital valorado en más de ${monetaryValue}€. Los negocios que continúan después de los 3 meses aumentan sus ventas un 15% de media. ¿Realmente quieres perder este impulso?`
+        message: (
+          <>
+            En <strong>{months} meses</strong> has generado un activo digital valorado en más de <strong>{monetaryValue}€</strong>. 
+            Los negocios que continúan después de los 3 meses <strong>aumentan sus ventas un 15% de media</strong>. 
+            ¿Realmente quieres <strong>perder este impulso</strong>?
+          </>
+        )
       };
     } else { // Más de 6 meses
       return {
         icon: '👑',
         title: 'Eres parte del top 20% de negocios exitosos',
-        message: `Después de ${timeWithService}, has construido una ventaja competitiva que tus competidores tardarían meses en alcanzar. Tu reputación online vale más de ${monetaryValue}€. ¿Seguro que quieres regalar esta ventaja a tu competencia?`
+        message: (
+          <>
+            Después de <strong>{timeWithService}</strong>, has construido una <strong>ventaja competitiva</strong> que 
+            tus competidores tardarían meses en alcanzar. Tu reputación online vale más de <strong>{monetaryValue}€</strong>. 
+            ¿Seguro que quieres <strong>regalar esta ventaja a tu competencia</strong>?
+          </>
+        )
       };
     }
   };
