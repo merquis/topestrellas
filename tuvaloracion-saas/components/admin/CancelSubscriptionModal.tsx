@@ -80,6 +80,7 @@ export default function CancelSubscriptionModal({
       const response = await fetch(`/api/admin/subscriptions/${businessId}/pause`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Incluir cookies para autenticación
         body: JSON.stringify({
           reason: selectedReason,
           feedback,
