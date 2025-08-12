@@ -417,6 +417,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
           businessName={bizName}
           initialStats={initialStats}
           currentStats={currentStats}
+          createdAt={business.createdAt || business.stats?.createdAt}
           onClose={() => setShowCancelModal(false)}
           onConfirm={() => {
             setShowCancelModal(false);
