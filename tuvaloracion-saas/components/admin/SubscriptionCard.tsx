@@ -64,7 +64,9 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const [currentStats, setCurrentStats] = useState<GoogleStats | null>(null);
   const [initialStats, setInitialStats] = useState<GoogleStats | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [businessPhotoUrl, setBusinessPhotoUrl] = useState<string | null>(null);
+  const [businessPhotoUrl, setBusinessPhotoUrl] = useState<string | null>(
+    business.googlePlaces?.photoUrl || null
+  );
   const bizId = business._id || (business as any).businessId;
   const bizName = business.name || (business as any).businessName;
 

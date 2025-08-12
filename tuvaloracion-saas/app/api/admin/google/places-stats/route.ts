@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
         $set: {
           'googlePlaces.rating': rating,
           'googlePlaces.totalReviews': totalReviews,
+          'googlePlaces.photoUrl': photoUrl,  // Actualizar también la URL de la foto
           'updatedAt': new Date()
           // NO actualizamos stats.googleRating ni stats.googleReviews
           // para preservar los valores iniciales
