@@ -538,7 +538,7 @@ export default function CancelSubscriptionModal({
                       Procesando...
                     </div>
                   ) : (
-                    'Confirmar decisión'
+                    'Suspender suscripción'
                   )}
                 </MotionButton>
               </div>

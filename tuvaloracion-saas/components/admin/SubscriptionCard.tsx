@@ -350,7 +350,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                       ) : (
                         <>
                           <span>⏸️</span>
-                          Pausar Suscripción
+                          Suspender Suscripción
                         </>
                       )}
                   </button>
