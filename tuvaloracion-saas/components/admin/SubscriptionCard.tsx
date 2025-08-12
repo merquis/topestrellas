@@ -106,6 +106,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
       const response = await fetch('/api/admin/google/places-stats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Incluir cookies para autenticación
         body: JSON.stringify({ 
           businessId: bizId,
           placeId: business.googlePlaces.placeId 
