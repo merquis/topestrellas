@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener datos actuales de Google Places
-    const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=rating,user_ratings_total&key=${GOOGLE_PLACES_API_KEY}`;
+    // Obtener datos actuales de Google Places incluyendo fotos
+    const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=rating,user_ratings_total,photos&key=${GOOGLE_PLACES_API_KEY}`;
     
     const response = await fetch(placeDetailsUrl);
     const data = await response.json();
@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
 
     const rating = data.result.rating || 0;
     const totalReviews = data.result.user_ratings_total || 0;
+    
+    // Obtener la URL de la primera foto si existe
+    let photoUrl = null;
+    if (data.result.photos && data.result.photos.length > 0) {
+      const photoReference = data.result.photos[0].photo_reference;
+      photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_PLACES_API_KEY}`;
+    }
 
     // Actualizar en la base de datos
     // IMPORTANTE: Solo actualizamos googlePlaces y updatedAt
@@ -69,6 +76,7 @@ export async function POST(request: NextRequest) {
       success: true,
       rating,
       totalReviews,
+      photoUrl,
       message: 'Estadísticas actualizadas correctamente'
     });
   } catch (error) {

@@ -64,6 +64,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const [currentStats, setCurrentStats] = useState<GoogleStats | null>(null);
   const [initialStats, setInitialStats] = useState<GoogleStats | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [businessPhotoUrl, setBusinessPhotoUrl] = useState<string | null>(null);
   const bizId = business._id || (business as any).businessId;
   const bizName = business.name || (business as any).businessName;
 
@@ -114,6 +115,10 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
           rating: data.rating,
           totalReviews: data.totalReviews
         });
+        // Guardar la URL de la foto si viene en la respuesta
+        if (data.photoUrl) {
+          setBusinessPhotoUrl(data.photoUrl);
+        }
       }
     } catch (error) {
       console.error('Error fetching Google stats:', error);
@@ -458,6 +463,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         <CancelSubscriptionModal
           businessId={bizId}
           businessName={bizName}
+          businessPhotoUrl={businessPhotoUrl}
           initialStats={initialStats || {
             rating: business.stats?.googleRating || 0,
             totalReviews: business.stats?.googleReviews || 0
