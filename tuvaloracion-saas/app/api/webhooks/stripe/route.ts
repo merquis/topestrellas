@@ -66,28 +66,23 @@ export async function POST(request: Request) {
       // ========== EVENTOS DE SETUP INTENT (NUEVO FLUJO) ==========
       case 'setup_intent.succeeded': {
         const setupIntent = event.data.object as Stripe.SetupIntent;
-        const { businessId, userEmail } = setupIntent.metadata!;
+        const { businessId, userEmail, action } = setupIntent.metadata!;
 
         if (!businessId) {
           console.error('[Webhook] Falta businessId en metadata de setup_intent.succeeded');
           break;
         }
 
-        console.log(`[Webhook] SetupIntent exitoso para businessId: ${businessId}`);
+        console.log(`[Webhook] SetupIntent exitoso para businessId: ${businessId}, action: ${action}`);
 
         const customerId = setupIntent.customer as string;
         const paymentMethodId = setupIntent.payment_method as string;
 
-        // IDEMPOTENCIA: Verificar si el negocio ya tiene una suscripción activa
+        // Buscar el negocio
         const business = await db.collection('businesses').findOne({ _id: new ObjectId(businessId) });
         
         if (!business) {
           console.error(`[Webhook] No se encontró el negocio con ID: ${businessId}`);
-          break;
-        }
-
-        if (business?.subscription?.stripeSubscriptionId && (business?.subscription?.status === 'active' || business?.subscription?.status === 'trialing')) {
-          console.log(`[Webhook] El negocio ${businessId} ya tiene una suscripción activa o en prueba. Se ignora el evento.`);
           break;
         }
 
@@ -100,7 +95,32 @@ export async function POST(request: Request) {
         });
         console.log(`[Webhook] Método de pago ${paymentMethodId} asignado al cliente ${customerId}`);
 
-        // 2. Crear la suscripción usando el plan guardado dinámicamente
+        // 2. Si es una actualización de método de pago, solo actualizar el método predeterminado
+        if (action === 'update_payment_method') {
+          console.log(`[Webhook] Método de pago actualizado exitosamente para negocio ${businessId}`);
+          
+          // Registrar el evento
+          await db.collection('activity_logs').insertOne({
+            businessId,
+            type: 'payment_method_updated',
+            description: 'Método de pago actualizado exitosamente',
+            metadata: {
+              paymentMethodId,
+              customerId,
+            },
+            createdAt: new Date(),
+          });
+          
+          break;
+        }
+
+        // 3. Si es una nueva suscripción, verificar idempotencia
+        if (business?.subscription?.stripeSubscriptionId && (business?.subscription?.status === 'active' || business?.subscription?.status === 'trialing')) {
+          console.log(`[Webhook] El negocio ${businessId} ya tiene una suscripción activa o en prueba. Se ignora el evento.`);
+          break;
+        }
+
+        // 4. Crear la suscripción usando el plan guardado dinámicamente
         const planKey = business.selectedPlanKey;
         if (!planKey) {
           console.error(`[Webhook] No se encontró 'selectedPlanKey' en el negocio ${businessId}. No se puede crear la suscripción.`);

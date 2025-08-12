@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CancelSubscriptionModal from './CancelSubscriptionModal';
 import ChangePlanModal from './ChangePlanModal';
+import UpdatePaymentMethodModal from '../UpdatePaymentMethodModal';
 
 interface GoogleStats {
   rating: number;
@@ -56,6 +57,7 @@ interface SubscriptionCardProps {
 export default function SubscriptionCard({ business, plans, onUpdate }: SubscriptionCardProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showChangePlanModal, setShowChangePlanModal] = useState(false);
+  const [showUpdatePaymentModal, setShowUpdatePaymentModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentStats, setCurrentStats] = useState<GoogleStats | null>(null);
   const [initialStats, setInitialStats] = useState<GoogleStats | null>(null);
@@ -180,6 +182,12 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
     const diffTime = validUntil.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? diffDays : 0;
+  };
+
+  // Validar si se puede actualizar el método de pago
+  const canUpdatePaymentMethod = () => {
+    return business.subscription?.stripeSubscriptionId && 
+           ['active', 'paused', 'suspended', 'past_due', 'trialing'].includes(business.subscription.status);
   };
 
   return (
@@ -316,57 +324,70 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
           )}
 
           {/* Botones de acción mejorados */}
-          <div className="grid grid-cols-2 gap-3">
-            {isActive && (
-              <>
-                <button
-                  onClick={() => setShowChangePlanModal(true)}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                    <span>🔄</span>
-                    Cambiar Plan
-                </button>
-                <button
-                  onClick={handlePauseClick}
-                  disabled={isLoading}
-                  className="border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                    {isLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-700" />
-                    ) : (
-                      <>
-                        <span>⏸️</span>
-                        Pausar Suscripción
-                      </>
-                    )}
-                </button>
-              </>
-            )}
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              {isActive && (
+                <>
+                  <button
+                    onClick={() => setShowChangePlanModal(true)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      <span>🔄</span>
+                      Cambiar Plan
+                  </button>
+                  <button
+                    onClick={handlePauseClick}
+                    disabled={isLoading}
+                    className="border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      {isLoading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-700" />
+                      ) : (
+                        <>
+                          <span>⏸️</span>
+                          Pausar Suscripción
+                        </>
+                      )}
+                  </button>
+                </>
+              )}
 
-            {(isPaused || isCanceled) && (
-              <>
-                <button
-                  onClick={handleResume}
-                  disabled={isLoading}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                    {isLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                    ) : (
-                      <>
-                        <span>▶️</span>
-                        Reanudar Suscripción
-                      </>
-                    )}
-                </button>
-                <button
-                  onClick={() => setShowChangePlanModal(true)}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                    <span>🚀</span>
-                    Cambiar Plan
-                </button>
-              </>
+              {(isPaused || isCanceled) && (
+                <>
+                  <button
+                    onClick={handleResume}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      {isLoading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                      ) : (
+                        <>
+                          <span>▶️</span>
+                          Reanudar Suscripción
+                        </>
+                      )}
+                  </button>
+                  <button
+                    onClick={() => setShowChangePlanModal(true)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      <span>🚀</span>
+                      Cambiar Plan
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Botón de Método de Pago - Solo si se puede actualizar */}
+            {canUpdatePaymentMethod() && (
+              <button
+                onClick={() => setShowUpdatePaymentModal(true)}
+                className="w-full border-2 border-gray-300 text-gray-700 px-4 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <span>💳</span>
+                Método de Pago
+              </button>
             )}
           </div>
 
@@ -409,6 +430,19 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
           onClose={() => setShowChangePlanModal(false)}
           onSuccess={() => {
             setShowChangePlanModal(false);
+            onUpdate();
+          }}
+        />
+      )}
+
+      {/* Modal de actualización de método de pago */}
+      {showUpdatePaymentModal && (
+        <UpdatePaymentMethodModal
+          businessId={bizId}
+          businessName={bizName}
+          onClose={() => setShowUpdatePaymentModal(false)}
+          onSuccess={() => {
+            setShowUpdatePaymentModal(false);
             onUpdate();
           }}
         />
