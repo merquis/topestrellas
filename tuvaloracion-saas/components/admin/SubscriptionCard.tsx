@@ -99,7 +99,11 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
 
   // Obtener estadísticas actuales de Google Places
   const fetchCurrentStats = async () => {
-    if (!business.googlePlaces?.placeId) return;
+    // Verificar que tenemos placeId antes de hacer la petición
+    if (!business.googlePlaces?.placeId) {
+      console.log('No placeId available for business:', bizName);
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -123,6 +127,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         if (data.photoUrl) {
           setBusinessPhotoUrl(data.photoUrl);
         }
+      } else {
+        console.error('Error response from Google stats API:', response.status);
       }
     } catch (error) {
       console.error('Error fetching Google stats:', error);
@@ -132,9 +138,11 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   };
 
   const handlePauseClick = async () => {
-    // Intentar obtener estadísticas actualizadas de la API
+    // Solo intentar obtener estadísticas si tenemos placeId
     if (business.googlePlaces?.placeId) {
       await fetchCurrentStats();
+    } else {
+      console.log('No Google Places ID configured for:', bizName);
     }
     
     // Debug: Verificar qué valores se están pasando al modal
