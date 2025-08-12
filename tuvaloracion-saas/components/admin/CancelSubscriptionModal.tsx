@@ -198,8 +198,8 @@ export default function CancelSubscriptionModal({
               {(currentStats || initialStats) && (
                 <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl p-6 mb-6 border border-indigo-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                    <span className="text-2xl">📈</span>
-                    Tu evolución con TuValoración
+                    <span className="text-2xl">⭐</span>
+                    Tu evolución con TopEstrellas.com
                   </h3>
                   
                   <div className="grid md:grid-cols-2 gap-6">
