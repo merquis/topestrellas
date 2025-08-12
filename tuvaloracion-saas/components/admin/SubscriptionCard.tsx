@@ -386,7 +386,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                 className="w-full border-2 border-gray-300 text-gray-700 px-4 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <span>💳</span>
-                Método de Pago
+                Cambiar método de pago
               </button>
             )}
           </div>
