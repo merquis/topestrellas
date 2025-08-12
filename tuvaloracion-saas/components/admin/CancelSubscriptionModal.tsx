@@ -161,6 +161,12 @@ export default function CancelSubscriptionModal({
   };
 
   const timeWithService = calculateTimeWithService();
+  
+  // Debug para verificar los datos
+  console.log('=== DEBUG TIEMPO CON TOPESTRELLAS ===');
+  console.log('createdAt recibido:', createdAt);
+  console.log('timeWithService calculado:', timeWithService);
+  console.log('=====================================');
 
   // Calcular el valor monetario estimado
   const calculateMonetaryValue = () => {
