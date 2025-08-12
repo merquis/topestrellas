@@ -181,7 +181,7 @@ export default function CancelSubscriptionModal({
               </div>
 
               {/* Estadísticas de mejora con diseño premium */}
-              {improvement && (currentStats || initialStats) && (
+              {(currentStats || initialStats) && (
                 <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl p-6 mb-6 border border-indigo-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
                     <span className="text-2xl">📈</span>
@@ -198,7 +198,7 @@ export default function CancelSubscriptionModal({
                     >
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-sm font-medium text-gray-600">Valoración media</span>
-                        {improvement.ratingDiff > 0 && (
+                        {improvement && improvement.ratingDiff > 0 && (
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
                             +{improvement.ratingPercentage}%
                           </span>
@@ -237,9 +237,14 @@ export default function CancelSubscriptionModal({
                           </div>
                         </div>
                         
-                        {improvement.ratingDiff > 0 && (
+                        {improvement && improvement.ratingDiff > 0 && (
                           <p className="text-center text-sm text-green-600 font-medium">
                             ¡Has mejorado {improvement.ratingDiff} puntos!
+                          </p>
+                        )}
+                        {(!improvement || improvement.ratingDiff === 0) && (
+                          <p className="text-center text-sm text-gray-600">
+                            Mantén tu valoración estable
                           </p>
                         )}
                       </div>
@@ -254,7 +259,7 @@ export default function CancelSubscriptionModal({
                     >
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-sm font-medium text-gray-600">Total de reseñas</span>
-                        {improvement.reviewsDiff > 0 && (
+                        {improvement && improvement.reviewsDiff > 0 && (
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
                             +{improvement.reviewsPercentage}%
                           </span>
@@ -294,9 +299,14 @@ export default function CancelSubscriptionModal({
                           </div>
                         </div>
                         
-                        {improvement.reviewsDiff > 0 && (
+                        {improvement && improvement.reviewsDiff > 0 && (
                           <p className="text-center text-sm text-green-600 font-medium">
                             ¡{improvement.reviewsDiff} nuevas reseñas conseguidas!
+                          </p>
+                        )}
+                        {(!improvement || improvement.reviewsDiff === 0) && (
+                          <p className="text-center text-sm text-gray-600">
+                            Sigue trabajando para conseguir más reseñas
                           </p>
                         )}
                       </div>
@@ -340,9 +350,10 @@ export default function CancelSubscriptionModal({
                       ¿Sabías que...?
                     </p>
                     <p className="text-sm text-amber-800">
-                      Los negocios que mantienen su suscripción activa consiguen un promedio de 
-                      <strong> 15-20 nuevas reseñas mensuales</strong> y mejoran su valoración en 
-                      <strong> 0.3 puntos cada trimestre</strong>.
+                      Los negocios que mantienen su suscripción activa consiguen 
+                      <strong> más de 100 nuevas reseñas mensuales</strong>. Si tus empleados 
+                      incentivan activamente el uso de la aplicación, puedes 
+                      <strong> multiplicar estos resultados por 3 o más</strong>.
                     </p>
                   </div>
                 </div>
@@ -455,7 +466,7 @@ export default function CancelSubscriptionModal({
                       </h3>
                       <p className="mb-4 opacity-95">
                         Valoramos tu confianza y queremos que sigas creciendo con nosotros. 
-                        Te ofrecemos un <strong>50% de descuento durante los próximos 3 meses</strong>.
+                        Te ofrecemos un <strong>25% de descuento durante los próximos 3 meses</strong>.
                       </p>
                       <div className="flex items-center gap-4 mb-4">
                         <div className="bg-white/20 rounded-lg px-3 py-2">
@@ -465,7 +476,7 @@ export default function CancelSubscriptionModal({
                         <span className="text-2xl">→</span>
                         <div className="bg-white/20 rounded-lg px-3 py-2">
                           <p className="text-xs">Con descuento</p>
-                          <p className="text-2xl font-bold">0.50€/mes</p>
+                          <p className="text-2xl font-bold">0.75€/mes</p>
                         </div>
                       </div>
                       <button
