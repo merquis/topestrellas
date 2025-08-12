@@ -22,6 +22,7 @@ interface Business {
     placeId?: string;
     rating?: number;
     totalReviews?: number;
+    photoUrl?: string;
   };
   subscription?: {
     plan: string;
