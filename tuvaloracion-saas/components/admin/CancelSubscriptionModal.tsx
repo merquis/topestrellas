@@ -77,9 +77,33 @@ export default function CancelSubscriptionModal({
   const handlePause = async () => {
     setIsLoading(true);
     try {
+      // Obtener el usuario autenticado del localStorage
+      const authData = localStorage.getItem('authUser');
+      let authToken = '';
+      
+      if (authData) {
+        try {
+          const authUser = JSON.parse(authData);
+          // Crear el token en formato base64 como espera la API
+          const tokenData = {
+            id: authUser.id,
+            email: authUser.email,
+            name: authUser.name,
+            role: authUser.role,
+            businessId: authUser.businessId
+          };
+          authToken = btoa(JSON.stringify(tokenData));
+        } catch (e) {
+          console.error('Failed to parse auth data:', e);
+        }
+      }
+      
       const response = await fetch(`/api/admin/subscriptions/${businessId}/pause`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+        },
         credentials: 'include', // Incluir cookies para autenticación
         body: JSON.stringify({
           reason: selectedReason,
@@ -91,6 +115,12 @@ export default function CancelSubscriptionModal({
 
       if (response.ok) {
         onConfirm();
+      } else {
+        console.error('Error response:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => null);
+        if (errorData) {
+          console.error('Error details:', errorData);
+        }
       }
     } catch (error) {
       console.error('Error pausing subscription:', error);
