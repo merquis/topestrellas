@@ -122,6 +122,46 @@ export default function CancelSubscriptionModal({
 
   const daysSinceStart = calculateDaysSinceStart();
 
+  // Calcular tiempo con TopEstrellas en formato legible
+  const calculateTimeWithService = () => {
+    if (!createdAt) return null;
+    
+    const start = new Date(createdAt);
+    const now = new Date();
+    const diffTime = now.getTime() - start.getTime();
+    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Calcular años, meses y días
+    const years = Math.floor(totalDays / 365);
+    const remainingDaysAfterYears = totalDays % 365;
+    const months = Math.floor(remainingDaysAfterYears / 30);
+    const days = remainingDaysAfterYears % 30;
+    
+    // Construir el texto según el tiempo transcurrido
+    if (years > 0) {
+      if (months > 0) {
+        return `${years} ${years === 1 ? 'año' : 'años'} y ${months} ${months === 1 ? 'mes' : 'meses'}`;
+      }
+      return `${years} ${years === 1 ? 'año' : 'años'}`;
+    } else if (months > 0) {
+      if (days > 0) {
+        return `${months} ${months === 1 ? 'mes' : 'meses'} y ${days} ${days === 1 ? 'día' : 'días'}`;
+      }
+      return `${months} ${months === 1 ? 'mes' : 'meses'}`;
+    } else if (totalDays >= 7) {
+      const weeks = Math.floor(totalDays / 7);
+      const remainingDays = totalDays % 7;
+      if (remainingDays > 0) {
+        return `${weeks} ${weeks === 1 ? 'semana' : 'semanas'} y ${remainingDays} ${remainingDays === 1 ? 'día' : 'días'}`;
+      }
+      return `${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`;
+    } else {
+      return `${totalDays} ${totalDays === 1 ? 'día' : 'días'}`;
+    }
+  };
+
+  const timeWithService = calculateTimeWithService();
+
   // Calcular el valor monetario estimado
   const calculateMonetaryValue = () => {
     if (!improvement) return 0;
@@ -199,7 +239,7 @@ export default function CancelSubscriptionModal({
                 <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl p-6 mb-6 border border-indigo-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
                     <span className="text-2xl">⭐</span>
-                    Tu evolución con TopEstrellas.com
+                    Tu evolución con TopEstrellas.com{timeWithService ? ` en ${timeWithService}` : ''}
                   </h3>
                   
                   <div className="grid md:grid-cols-2 gap-6">
