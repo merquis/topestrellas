@@ -12,6 +12,7 @@ interface CancelSubscriptionModalProps {
   businessName?: string;
   initialStats: { rating: number; totalReviews: number } | null;
   currentStats: { rating: number; totalReviews: number } | null;
+  createdAt?: string;
   onClose: () => void;
   onConfirm: () => void;
 }
@@ -21,6 +22,7 @@ export default function CancelSubscriptionModal({
   businessName = 'Tu negocio',
   initialStats,
   currentStats,
+  createdAt,
   onClose,
   onConfirm
 }: CancelSubscriptionModalProps) {
@@ -107,6 +109,18 @@ export default function CancelSubscriptionModal({
   };
 
   const improvement = calculateImprovement();
+
+  // Calcular días desde el inicio
+  const calculateDaysSinceStart = () => {
+    if (!createdAt) return 0;
+    const start = new Date(createdAt);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysSinceStart = calculateDaysSinceStart();
 
   // Calcular el valor monetario estimado
   const calculateMonetaryValue = () => {
@@ -242,9 +256,14 @@ export default function CancelSubscriptionModal({
                             ¡Has mejorado {improvement.ratingDiff} puntos!
                           </p>
                         )}
-                        {(!improvement || improvement.ratingDiff === 0) && (
-                          <p className="text-center text-sm text-gray-600">
-                            Mantén tu valoración estable
+                        {(!improvement || improvement.ratingDiff === 0) && daysSinceStart < 7 && (
+                          <p className="text-center text-sm text-amber-600">
+                            Solo han pasado {daysSinceStart} {daysSinceStart === 1 ? 'día' : 'días'} - es muy pronto para ver cambios
+                          </p>
+                        )}
+                        {(!improvement || improvement.ratingDiff === 0) && daysSinceStart >= 7 && (
+                          <p className="text-center text-sm text-blue-600">
+                            Valoración estable tras {daysSinceStart} días - ¡sigue trabajando!
                           </p>
                         )}
                       </div>
@@ -301,12 +320,17 @@ export default function CancelSubscriptionModal({
                         
                         {improvement && improvement.reviewsDiff > 0 && (
                           <p className="text-center text-sm text-green-600 font-medium">
-                            ¡{improvement.reviewsDiff} nuevas reseñas conseguidas!
+                            ¡{improvement.reviewsDiff} nuevas reseñas en {daysSinceStart} {daysSinceStart === 1 ? 'día' : 'días'}!
                           </p>
                         )}
-                        {(!improvement || improvement.reviewsDiff === 0) && (
-                          <p className="text-center text-sm text-gray-600">
-                            Sigue trabajando para conseguir más reseñas
+                        {(!improvement || improvement.reviewsDiff === 0) && daysSinceStart < 7 && (
+                          <p className="text-center text-sm text-amber-600">
+                            Solo {daysSinceStart} {daysSinceStart === 1 ? 'día' : 'días'} activo - las reseñas llegarán pronto
+                          </p>
+                        )}
+                        {(!improvement || improvement.reviewsDiff === 0) && daysSinceStart >= 7 && (
+                          <p className="text-center text-sm text-blue-600">
+                            {daysSinceStart} días activo - incentiva a tu equipo para multiplicar resultados
                           </p>
                         )}
                       </div>
