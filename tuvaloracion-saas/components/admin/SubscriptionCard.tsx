@@ -72,14 +72,16 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const isCanceled = business.subscription?.status === 'canceled';
   const isPaused = business.subscription?.status === 'paused' || business.subscription?.status === 'suspended';
 
-  // Cargar estadísticas iniciales
+  // Cargar estadísticas iniciales - usar stats o googlePlaces como fallback
   useEffect(() => {
-    if (business.stats) {
-      setInitialStats({
-        rating: business.stats.googleRating || 0,
-        totalReviews: business.stats.googleReviews || 0
-      });
-    }
+    // Usar stats como valores iniciales, o googlePlaces si no hay stats
+    const initialRating = business.stats?.googleRating ?? business.googlePlaces?.rating ?? 0;
+    const initialReviews = business.stats?.googleReviews ?? business.googlePlaces?.totalReviews ?? 0;
+    
+    setInitialStats({
+      rating: initialRating,
+      totalReviews: initialReviews
+    });
   }, [business]);
 
   // Obtener estadísticas actuales de Google Places
@@ -115,6 +117,12 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
     // Obtener estadísticas actuales antes de mostrar el modal
     if (business.googlePlaces?.placeId) {
       await fetchCurrentStats();
+    } else {
+      // Si no hay placeId, usar los valores actuales de googlePlaces o stats
+      setCurrentStats({
+        rating: business.googlePlaces?.rating ?? business.stats?.googleRating ?? 0,
+        totalReviews: business.googlePlaces?.totalReviews ?? business.stats?.googleReviews ?? 0
+      });
     }
     setShowCancelModal(true);
   };
@@ -213,12 +221,12 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
               <p className="text-sm text-gray-500 flex items-center gap-2">
                 <span>🌐</span>
                 <a 
-                  href={`https://${business.subdomain}.topestrellas.com`} 
+                  href={`https://${business.subdomain}.tuvaloracion.com`} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 transition-colors"
                 >
-                  {business.subdomain}.topestrellas.com
+                  {business.subdomain}.tuvaloracion.com
                 </a>
               </p>
             </div>
@@ -240,6 +248,16 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                   {currentPlan?.recurringPrice || 0}€
                   <span className="text-sm text-gray-500 font-normal">/{currentPlan?.interval === 'year' ? 'año' : 'mes'}</span>
                 </p>
+                {/* Fecha de próxima renovación */}
+                {isActive && business.subscription?.validUntil && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Renueva: {new Date(business.subscription.validUntil).toLocaleDateString('es-ES', { 
+                      day: 'numeric', 
+                      month: 'short', 
+                      year: 'numeric' 
+                    })}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -417,8 +435,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         <CancelSubscriptionModal
           businessId={bizId}
           businessName={bizName}
-          initialStats={initialStats}
-          currentStats={currentStats}
+          initialStats={initialStats || { rating: 0, totalReviews: 0 }}
+          currentStats={currentStats || initialStats || { rating: 0, totalReviews: 0 }}
           createdAt={business.createdAt || business.stats?.createdAt}
           onClose={() => setShowCancelModal(false)}
           onConfirm={() => {
