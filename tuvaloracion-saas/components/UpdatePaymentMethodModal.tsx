@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
@@ -153,13 +153,11 @@ export default function UpdatePaymentMethodModal({
   onSuccess
 }: UpdatePaymentMethodModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Empezar cargando
   const [error, setError] = useState<string | null>(null);
 
+  // Crear SetupIntent automáticamente al abrir el modal
   const createSetupIntent = async () => {
-    setIsLoading(true);
-    setError(null);
-
     try {
       const authData = localStorage.getItem('authUser');
       const user = authData ? JSON.parse(authData) : null;
@@ -194,6 +192,11 @@ export default function UpdatePaymentMethodModal({
     }
   };
 
+  // Ejecutar automáticamente al montar el componente
+  React.useEffect(() => {
+    createSetupIntent();
+  }, []);
+
   const handleSuccess = () => {
     onSuccess();
     onClose();
@@ -212,27 +215,6 @@ export default function UpdatePaymentMethodModal({
           </button>
         </div>
 
-        {!clientSecret && !isLoading && !error && (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-3xl">💳</span>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                Actualizar método de pago
-              </h4>
-              <p className="text-gray-600 text-sm mb-6">
-                Actualiza la tarjeta de crédito o débito para <strong>{businessName}</strong>
-              </p>
-            </div>
-            <button
-              onClick={createSetupIntent}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition font-semibold"
-            >
-              Continuar
-            </button>
-          </div>
-        )}
 
         {isLoading && (
           <div className="text-center py-8">
