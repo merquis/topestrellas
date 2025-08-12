@@ -466,7 +466,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         <CancelSubscriptionModal
           businessId={bizId}
           businessName={bizName}
-          businessPhotoUrl={businessPhotoUrl}
+          businessPhotoUrl={businessPhotoUrl || undefined}
           initialStats={initialStats || {
             rating: business.stats?.googleRating || 0,
             totalReviews: business.stats?.googleReviews || 0
