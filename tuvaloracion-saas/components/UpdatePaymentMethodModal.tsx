@@ -93,7 +93,7 @@ function UpdatePaymentMethodForm({
               googlePay: 'never'
             },
             fields: {
-              billingDetails: 'never'
+              billingDetails: 'auto'  // Permitir que Stripe recolecte los datos de facturación
             }
           }}
         />
