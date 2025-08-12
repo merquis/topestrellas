@@ -189,6 +189,47 @@ export default function CancelSubscriptionModal({
 
   const monetaryValue = calculateMonetaryValue();
 
+  // Función para obtener mensaje dinámico de retención
+  const getDynamicRetentionMessage = () => {
+    const totalDays = Math.floor((new Date().getTime() - new Date(createdAt || '').getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (totalDays <= 7) {
+      return {
+        icon: '⚠️',
+        title: '¡Espera, acabas de empezar!',
+        message: `Llevas solo ${totalDays} ${totalDays === 1 ? 'día' : 'días'} con TopEstrellas. El 92% de los negocios que esperan al menos 3 semanas ven resultados significativos. Dale una oportunidad real a tu negocio: los primeros resultados están a punto de llegar. ¡No te rindas antes de ver el potencial!`
+      };
+    } else if (totalDays <= 30) {
+      return {
+        icon: '🌱',
+        title: 'Tu inversión está empezando a dar frutos',
+        message: `Has invertido ${totalDays} días construyendo tu reputación online. Los datos muestran que los negocios que cancelan antes del mes pierden una media de 25 reseñas potenciales. ¡Estás a punto de ver el despegue real!`
+      };
+    } else if (totalDays <= 90) { // 1-3 meses
+      const months = Math.floor(totalDays / 30);
+      return {
+        icon: '🚀',
+        title: 'Estás en el mejor momento para crecer',
+        message: `Después de ${months} ${months === 1 ? 'mes' : 'meses'}, tu sistema ya está rodando. El 78% de los negocios duplican sus reseñas entre el mes 2 y 3. Cancelar ahora sería como parar el coche justo cuando empieza a coger velocidad.`
+      };
+    } else if (totalDays <= 180) { // 3-6 meses
+      const months = Math.floor(totalDays / 30);
+      return {
+        icon: '💎',
+        title: 'Has construido algo valioso',
+        message: `En ${months} meses has generado un activo digital valorado en más de ${monetaryValue}€. Los negocios que continúan después de los 3 meses aumentan sus ventas un 15% de media. ¿Realmente quieres perder este impulso?`
+      };
+    } else { // Más de 6 meses
+      return {
+        icon: '👑',
+        title: 'Eres parte del top 20% de negocios exitosos',
+        message: `Después de ${timeWithService}, has construido una ventaja competitiva que tus competidores tardarían meses en alcanzar. Tu reputación online vale más de ${monetaryValue}€. ¿Seguro que quieres regalar esta ventaja a tu competencia?`
+      };
+    }
+  };
+
+  const retentionMessage = getDynamicRetentionMessage();
+
   // Animación de números creciendo
   const AnimatedNumber = ({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) => {
     const [displayValue, setDisplayValue] = useState(0);
