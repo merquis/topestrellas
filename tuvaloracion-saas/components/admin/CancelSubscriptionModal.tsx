@@ -398,7 +398,7 @@ export default function CancelSubscriptionModal({
                   onClick={() => setStep(2)}
                   className="flex-1 bg-gray-100 text-gray-700 px-6 py-4 rounded-xl font-semibold hover:bg-gray-200 transition-all"
                 >
-                  Necesito pausar temporalmente
+                  No quiero continuar
                 </button>
               </div>
             </MotionDiv>
@@ -538,7 +538,7 @@ export default function CancelSubscriptionModal({
                       Procesando...
                     </div>
                   ) : (
-                    'Confirmar pausa temporal'
+                    'Confirmar decisión'
                   )}
                 </MotionButton>
               </div>
