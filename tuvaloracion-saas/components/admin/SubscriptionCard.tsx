@@ -72,16 +72,22 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const isCanceled = business.subscription?.status === 'canceled';
   const isPaused = business.subscription?.status === 'paused' || business.subscription?.status === 'suspended';
 
-  // Cargar estadísticas iniciales - usar stats o googlePlaces como fallback
+  // Cargar estadísticas iniciales desde stats (valores cuando se creó el negocio)
   useEffect(() => {
-    // Usar stats como valores iniciales, o googlePlaces si no hay stats
-    const initialRating = business.stats?.googleRating ?? business.googlePlaces?.rating ?? 0;
-    const initialReviews = business.stats?.googleReviews ?? business.googlePlaces?.totalReviews ?? 0;
-    
+    // stats contiene los valores INICIALES guardados cuando se creó el negocio
     setInitialStats({
-      rating: initialRating,
-      totalReviews: initialReviews
+      rating: business.stats?.googleRating ?? 0,
+      totalReviews: business.stats?.googleReviews ?? 0
     });
+    
+    // googlePlaces contiene los valores ACTUALES de Google
+    // Los establecemos como currentStats por defecto
+    if (business.googlePlaces) {
+      setCurrentStats({
+        rating: business.googlePlaces.rating ?? 0,
+        totalReviews: business.googlePlaces.totalReviews ?? 0
+      });
+    }
   }, [business]);
 
   // Obtener estadísticas actuales de Google Places
@@ -114,16 +120,11 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   };
 
   const handlePauseClick = async () => {
-    // Obtener estadísticas actuales antes de mostrar el modal
+    // Intentar obtener estadísticas actualizadas de la API
     if (business.googlePlaces?.placeId) {
       await fetchCurrentStats();
-    } else {
-      // Si no hay placeId, usar los valores actuales de googlePlaces o stats
-      setCurrentStats({
-        rating: business.googlePlaces?.rating ?? business.stats?.googleRating ?? 0,
-        totalReviews: business.googlePlaces?.totalReviews ?? business.stats?.googleReviews ?? 0
-      });
     }
+    // Si no se pudieron obtener o no hay placeId, currentStats ya tiene los valores de googlePlaces
     setShowCancelModal(true);
   };
 
@@ -435,8 +436,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         <CancelSubscriptionModal
           businessId={bizId}
           businessName={bizName}
-          initialStats={initialStats || { rating: 0, totalReviews: 0 }}
-          currentStats={currentStats || initialStats || { rating: 0, totalReviews: 0 }}
+          initialStats={initialStats || { rating: business.stats?.googleRating ?? 0, totalReviews: business.stats?.googleReviews ?? 0 }}
+          currentStats={currentStats || { rating: business.googlePlaces?.rating ?? 0, totalReviews: business.googlePlaces?.totalReviews ?? 0 }}
           createdAt={business.createdAt || business.stats?.createdAt}
           onClose={() => setShowCancelModal(false)}
           onConfirm={() => {
