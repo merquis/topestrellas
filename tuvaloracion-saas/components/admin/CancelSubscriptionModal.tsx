@@ -177,14 +177,50 @@ export default function CancelSubscriptionModal({
   }
   console.log('=====================================');
 
-  // Calcular el valor monetario estimado
+  // Tabla de precios de competencia (precio medio de comprar reseñas online)
+  const COMPETENCIA_PRICES = {
+    1: 7.19,
+    5: 29.99,
+    10: 55.99,
+    20: 89.99,
+    50: 199.99,
+    100: 349.99
+  };
+
+  // Función para calcular precio de competencia según volumen
+  const getCompetenciaPrice = (numReviews: number): number => {
+    if (numReviews <= 1) return COMPETENCIA_PRICES[1];
+    if (numReviews <= 5) return COMPETENCIA_PRICES[5] / 5;
+    if (numReviews <= 10) return COMPETENCIA_PRICES[10] / 10;
+    if (numReviews <= 20) return COMPETENCIA_PRICES[20] / 20;
+    if (numReviews <= 50) return COMPETENCIA_PRICES[50] / 50;
+    if (numReviews <= 100) return COMPETENCIA_PRICES[100] / 100;
+    return 3.50; // Precio promedio para volúmenes altos
+  };
+
+  // Calcular el valor monetario y ahorro real
   const calculateMonetaryValue = () => {
-    if (!improvement) return 0;
-    // Estimación: cada nueva reseña vale ~12€ en marketing
-    // Cada 0.1 de rating aumenta conversión ~2.5%
-    const reviewValue = improvement.reviewsDiff * 12;
-    const ratingValue = improvement.ratingDiff * 10 * 250; // 0.1 rating = 250€ valor estimado
-    return Math.round(reviewValue + ratingValue);
+    if (!improvement || improvement.reviewsDiff <= 0) return null;
+    
+    // Calcular lo que costaría con la competencia
+    const totalReviews = improvement.reviewsDiff;
+    const pricePerReview = getCompetenciaPrice(totalReviews);
+    const valorCompetencia = Math.round(totalReviews * pricePerReview);
+    
+    // Calcular tu inversión real (89€/mes)
+    const mesesTranscurridos = Math.max(1, Math.ceil(daysSinceStart / 30));
+    const tuInversion = 89 * mesesTranscurridos;
+    
+    // Calcular el ahorro
+    const ahorro = valorCompetencia - tuInversion;
+    
+    return {
+      valorCompetencia,
+      tuInversion,
+      ahorro,
+      mesesTranscurridos,
+      totalReviews
+    };
   };
 
   const monetaryValue = calculateMonetaryValue();
@@ -233,29 +269,62 @@ export default function CancelSubscriptionModal({
       };
     } else if (totalDays <= 180) { // 3-6 meses
       const months = Math.floor(totalDays / 30);
-      return {
-        icon: '💎',
-        title: 'Has construido algo valioso',
-        message: (
-          <>
-            En <strong>{months} meses</strong> has generado un activo digital valorado en más de <strong>{monetaryValue}€</strong>. 
-            Los negocios que continúan después de los 3 meses <strong>aumentan sus ventas un 15% de media</strong>. 
-            ¿Realmente quieres <strong>perder este impulso</strong>?
-          </>
-        )
-      };
+      if (monetaryValue && monetaryValue.ahorro > 0) {
+        return {
+          icon: '💎',
+          title: 'Has construido algo valioso',
+          message: (
+            <>
+              En <strong>{months} meses</strong> has invertido <strong>{monetaryValue.tuInversion}€</strong> 
+              y has conseguido reseñas valoradas en <strong>{monetaryValue.valorCompetencia}€</strong> 
+              (precio medio de comprar reseñas online). 
+              <strong>¡Te has ahorrado {monetaryValue.ahorro}€!</strong> 
+              Los negocios que continúan después de los 3 meses <strong>aumentan sus ventas un 15% de media</strong>. 
+              ¿Realmente quieres <strong>perder este ahorro mensual</strong>?
+            </>
+          )
+        };
+      } else {
+        return {
+          icon: '💎',
+          title: 'Has construido algo valioso',
+          message: (
+            <>
+              En <strong>{months} meses</strong> has generado un activo digital. 
+              Los negocios que continúan después de los 3 meses <strong>aumentan sus ventas un 15% de media</strong>. 
+              ¿Realmente quieres <strong>perder este impulso</strong>?
+            </>
+          )
+        };
+      }
     } else { // Más de 6 meses
-      return {
-        icon: '👑',
-        title: 'Eres parte del top 20% de negocios exitosos',
-        message: (
-          <>
-            Después de <strong>{timeWithService}</strong>, has construido una <strong>ventaja competitiva</strong> que 
-            tus competidores tardarían meses en alcanzar. Tu reputación online vale más de <strong>{monetaryValue}€</strong>. 
-            ¿Seguro que quieres <strong>regalar esta ventaja a tu competencia</strong>?
-          </>
-        )
-      };
+      if (monetaryValue && monetaryValue.ahorro > 0) {
+        return {
+          icon: '👑',
+          title: 'Eres parte del top 20% de negocios exitosos',
+          message: (
+            <>
+              Después de <strong>{timeWithService}</strong>, has construido una <strong>ventaja competitiva</strong> que 
+              tus competidores tardarían meses en alcanzar. 
+              Has conseguido reseñas valoradas en <strong>{monetaryValue.valorCompetencia}€</strong> 
+              ahorrándote <strong>{monetaryValue.ahorro}€</strong> vs comprarlas online. 
+              ¿Seguro que quieres <strong>regalar esta ventaja a tu competencia</strong>?
+            </>
+          )
+        };
+      } else {
+        return {
+          icon: '👑',
+          title: 'Eres parte del top 20% de negocios exitosos',
+          message: (
+            <>
+              Después de <strong>{timeWithService}</strong>, has construido una <strong>ventaja competitiva</strong> que 
+              tus competidores tardarían meses en alcanzar. 
+              ¿Seguro que quieres <strong>regalar esta ventaja a tu competencia</strong>?
+            </>
+          )
+        };
+      }
     }
   };
 
@@ -468,7 +537,7 @@ export default function CancelSubscriptionModal({
                   </div>
 
                   {/* Valor monetario estimado */}
-                  {monetaryValue > 0 && (
+                  {monetaryValue && monetaryValue.ahorro > 0 ? (
                     <MotionDiv
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -479,19 +548,52 @@ export default function CancelSubscriptionModal({
                         <div className="flex items-center gap-3">
                           <span className="text-3xl">💰</span>
                           <div>
-                            <p className="text-sm opacity-90">Valor estimado generado</p>
+                            <p className="text-sm opacity-90">Te has ahorrado</p>
                             <p className="text-2xl font-bold">
-                              <AnimatedNumber value={monetaryValue} prefix="€" />
+                              <AnimatedNumber value={monetaryValue.ahorro} suffix="€" />
+                            </p>
+                            <p className="text-xs opacity-80 mt-1">
+                              vs comprar {monetaryValue.totalReviews} reseñas online
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs opacity-80">Equivalente en</p>
-                          <p className="text-sm font-semibold">marketing digital</p>
+                          <p className="text-xs opacity-80">Precio competencia</p>
+                          <p className="text-sm font-semibold line-through opacity-70">
+                            {monetaryValue.valorCompetencia}€
+                          </p>
+                          <p className="text-xs opacity-80 mt-1">Tu inversión</p>
+                          <p className="text-sm font-semibold">{monetaryValue.tuInversion}€</p>
                         </div>
                       </div>
                     </MotionDiv>
-                  )}
+                  ) : monetaryValue && monetaryValue.valorCompetencia > 0 ? (
+                    <MotionDiv
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className="mt-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl">📈</span>
+                          <div>
+                            <p className="text-sm opacity-90">Valor generado</p>
+                            <p className="text-2xl font-bold">
+                              <AnimatedNumber value={monetaryValue.valorCompetencia} suffix="€" />
+                            </p>
+                            <p className="text-xs opacity-80 mt-1">
+                              {monetaryValue.totalReviews} reseñas conseguidas
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs opacity-80">Precio medio de</p>
+                          <p className="text-sm font-semibold">comprar reseñas online</p>
+                        </div>
+                      </div>
+                    </MotionDiv>
+                  ) : null}
                 </div>
               )}
 
