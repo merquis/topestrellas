@@ -91,6 +91,22 @@ export async function POST(request: Request) {
       }
     }
 
+    // Obtener información del cliente de Stripe para pre-rellenar datos
+    let customerInfo = null;
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (customer && !customer.deleted) {
+        customerInfo = {
+          email: (customer as any).email,
+          name: (customer as any).name,
+          phone: (customer as any).phone,
+          address: (customer as any).address
+        };
+      }
+    } catch (error) {
+      console.log('No se pudo obtener información del cliente:', error);
+    }
+
     // Crear un SetupIntent para capturar el nuevo método de pago
     try {
       const setupIntent = await stripe.setupIntents.create({
@@ -106,13 +122,20 @@ export async function POST(request: Request) {
         automatic_payment_methods: {
           enabled: false, // Deshabilitamos métodos automáticos
         },
+        // Pasar los datos del cliente para pre-rellenar el formulario
+        payment_method_options: {
+          card: {
+            setup_future_usage: 'off_session'
+          }
+        }
       });
 
       return NextResponse.json({
         success: true,
         clientSecret: setupIntent.client_secret,
         customerId: customerId,
-        businessName: business.name
+        businessName: business.name,
+        customerInfo: customerInfo // Enviar info del cliente al frontend
       });
 
     } catch (error: any) {

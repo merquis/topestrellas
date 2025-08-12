@@ -10,11 +10,24 @@ const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || '';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticación
-    const authHeader = request.headers.get('cookie');
-    const user = verifyAuth(authHeader || '');
+    // Verificar autenticación - primero intentar con Bearer token, luego con cookies
+    let user = null;
+    
+    // Intentar con Bearer token
+    const authorizationHeader = request.headers.get('authorization');
+    if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
+      const token = authorizationHeader.substring(7);
+      user = verifyAuth(token);
+    }
+    
+    // Si no hay Bearer token, intentar con cookies
+    if (!user) {
+      const cookieHeader = request.headers.get('cookie');
+      user = verifyAuth(cookieHeader || '');
+    }
     
     if (!user) {
+      console.error('Authentication failed - no valid token or cookie found');
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 

@@ -105,11 +105,29 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
       return;
     }
     
+    // Verificar que tenemos un businessId válido
+    if (!bizId) {
+      console.error('No businessId available for:', bizName);
+      return;
+    }
+    
     setIsLoading(true);
     try {
+      // Obtener el token de autenticación del localStorage
+      const authData = localStorage.getItem('authUser');
+      const token = authData ? JSON.parse(authData).token : null;
+      
+      if (!token) {
+        console.error('No auth token available');
+        return;
+      }
+      
       const response = await fetch('/api/admin/google/places-stats', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         credentials: 'include', // Incluir cookies para autenticación
         body: JSON.stringify({ 
           businessId: bizId,
@@ -129,6 +147,9 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         }
       } else {
         console.error('Error response from Google stats API:', response.status);
+        if (response.status === 401) {
+          console.error('Authentication error - user may need to login again');
+        }
       }
     } catch (error) {
       console.error('Error fetching Google stats:', error);

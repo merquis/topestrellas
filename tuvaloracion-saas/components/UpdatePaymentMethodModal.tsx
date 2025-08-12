@@ -15,6 +15,7 @@ interface UpdatePaymentMethodFormProps {
   businessId: string;
   businessName: string;
   clientSecret: string;
+  customerInfo?: any;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -22,7 +23,8 @@ interface UpdatePaymentMethodFormProps {
 function UpdatePaymentMethodForm({ 
   businessId, 
   businessName, 
-  clientSecret, 
+  clientSecret,
+  customerInfo,
   onSuccess, 
   onCancel 
 }: UpdatePaymentMethodFormProps) {
@@ -42,27 +44,12 @@ function UpdatePaymentMethodForm({
     setErrorMessage(null);
 
     try {
-      // Obtener datos del usuario actual
-      const authData = localStorage.getItem('authUser');
-      const user = authData ? JSON.parse(authData) : null;
-      
-      // Confirmar el SetupIntent con los datos del usuario
-      const billingDetails: any = {
-        name: businessName || user?.name || undefined
-      };
-      
-      // Solo incluir email si está disponible
-      if (user?.email) {
-        billingDetails.email = user.email;
-      }
-      
+      // Confirmar el SetupIntent
+      // Ahora el PaymentElement recoge los datos de facturación automáticamente
       const { error, setupIntent } = await stripe.confirmSetup({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/admin/subscriptions?payment_method_updated=true`,
-          payment_method_data: {
-            billing_details: billingDetails
-          }
+          return_url: `${window.location.origin}/admin/subscriptions?payment_method_updated=true`
         },
         redirect: 'if_required'
       });
@@ -108,8 +95,30 @@ function UpdatePaymentMethodForm({
               applePay: 'never',
               googlePay: 'never'
             },
+            // Configurar para que use los datos de facturación existentes del cliente
+            defaultValues: {
+              billingDetails: customerInfo ? {
+                name: customerInfo.name || undefined,
+                email: customerInfo.email || undefined,
+                phone: customerInfo.phone || undefined,
+                address: customerInfo.address || undefined
+              } : {}
+            },
             fields: {
-              billingDetails: 'never'  // No mostrar campos de facturación, los enviamos manualmente
+              billingDetails: {
+                // Configurar qué campos de facturación mostrar
+                name: 'auto', // 'auto' usa los datos guardados si existen
+                email: 'auto',
+                phone: 'auto',
+                address: {
+                  country: 'auto',
+                  line1: 'auto',
+                  line2: 'auto',
+                  city: 'auto',
+                  state: 'auto',
+                  postalCode: 'auto'
+                }
+              }
             }
           }}
         />
@@ -169,6 +178,7 @@ export default function UpdatePaymentMethodModal({
   onSuccess
 }: UpdatePaymentMethodModalProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true); // Empezar cargando
   const [error, setError] = useState<string | null>(null);
 
@@ -200,6 +210,7 @@ export default function UpdatePaymentMethodModal({
       }
 
       setClientSecret(data.clientSecret);
+      setCustomerInfo(data.customerInfo);
     } catch (error: any) {
       console.error('Error creando SetupIntent:', error);
       setError(error.message || 'Error preparando la actualización del método de pago');
@@ -282,6 +293,7 @@ export default function UpdatePaymentMethodModal({
               businessId={businessId}
               businessName={businessName}
               clientSecret={clientSecret}
+              customerInfo={customerInfo}
               onSuccess={handleSuccess}
               onCancel={onClose}
             />
