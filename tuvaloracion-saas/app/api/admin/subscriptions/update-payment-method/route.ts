@@ -121,12 +121,6 @@ export async function POST(request: Request) {
         payment_method_types: ['card'], // Solo tarjetas de crédito/débito
         automatic_payment_methods: {
           enabled: false, // Deshabilitamos métodos automáticos
-        },
-        // Pasar los datos del cliente para pre-rellenar el formulario
-        payment_method_options: {
-          card: {
-            setup_future_usage: 'off_session'
-          }
         }
       });
 

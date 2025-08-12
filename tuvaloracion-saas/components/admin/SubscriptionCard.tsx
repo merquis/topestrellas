@@ -113,14 +113,32 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
     
     setIsLoading(true);
     try {
-      // Obtener el token de autenticación del localStorage
+      // Obtener el usuario autenticado del localStorage
       const authData = localStorage.getItem('authUser');
-      const token = authData ? JSON.parse(authData).token : null;
-      
-      if (!token) {
-        console.error('No auth token available');
+      if (!authData) {
+        console.error('No auth data available in localStorage');
         return;
       }
+      
+      let authUser;
+      try {
+        authUser = JSON.parse(authData);
+      } catch (e) {
+        console.error('Failed to parse auth data:', e);
+        return;
+      }
+      
+      // Crear el token en formato base64 como espera la API
+      const tokenData = {
+        id: authUser.id,
+        email: authUser.email,
+        name: authUser.name,
+        role: authUser.role,
+        businessId: authUser.businessId
+      };
+      const token = btoa(JSON.stringify(tokenData));
+      
+      console.log('Fetching Google stats for:', bizName, 'with placeId:', business.googlePlaces.placeId);
       
       const response = await fetch('/api/admin/google/places-stats', {
         method: 'POST',

@@ -10,17 +10,25 @@ const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || '';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticación - primero intentar con Bearer token, luego con cookies
+    // Verificar autenticación - aceptar Bearer (token base64) o cookie 'auth-token'
     let user = null;
-    
-    // Intentar con Bearer token
+
+    // Intentar con Bearer token (mismo formato base64 que la cookie 'auth-token')
     const authorizationHeader = request.headers.get('authorization');
     if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
-      const token = authorizationHeader.substring(7);
-      user = verifyAuth(token);
+      const token = authorizationHeader.substring(7).trim();
+      try {
+        const decoded = Buffer.from(token, 'base64').toString('utf-8');
+        const parsed = JSON.parse(decoded);
+        if (parsed && parsed.email) {
+          user = parsed;
+        }
+      } catch {
+        // Ignorar y probar con cookies
+      }
     }
     
-    // Si no hay Bearer token, intentar con cookies
+    // Si no hay Bearer válido, intentar con cookies
     if (!user) {
       const cookieHeader = request.headers.get('cookie');
       user = verifyAuth(cookieHeader || '');
@@ -33,7 +41,10 @@ export async function POST(request: NextRequest) {
 
     const { businessId, placeId } = await request.json();
 
-    if (!businessId || !placeId) {
+    if (
+      !businessId || typeof businessId !== 'string' || businessId.trim().length === 0 ||
+      !placeId || typeof placeId !== 'string' || placeId.trim().length === 0
+    ) {
       return NextResponse.json(
         { error: 'businessId y placeId son requeridos' },
         { status: 400 }
