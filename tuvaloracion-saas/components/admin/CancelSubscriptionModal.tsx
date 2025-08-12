@@ -165,7 +165,16 @@ export default function CancelSubscriptionModal({
   // Debug para verificar los datos
   console.log('=== DEBUG TIEMPO CON TOPESTRELLAS ===');
   console.log('createdAt recibido:', createdAt);
+  console.log('Tipo de createdAt:', typeof createdAt);
   console.log('timeWithService calculado:', timeWithService);
+  if (!createdAt) {
+    console.log('⚠️ createdAt es null o undefined');
+  } else if (!timeWithService) {
+    console.log('⚠️ timeWithService no se pudo calcular');
+    const testDate = new Date(createdAt);
+    console.log('Fecha parseada:', testDate);
+    console.log('Es fecha válida:', !isNaN(testDate.getTime()));
+  }
   console.log('=====================================');
 
   // Calcular el valor monetario estimado
