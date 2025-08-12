@@ -110,8 +110,11 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   };
 
   const handlePauseClick = async () => {
-    await fetchCurrentStats();
-    setShowCancelModal(true); // Reutilizamos el modal de cancelación
+    // Obtener estadísticas actuales antes de mostrar el modal
+    if (business.googlePlaces?.placeId) {
+      await fetchCurrentStats();
+    }
+    setShowCancelModal(true);
   };
 
   const handleResume = async () => {
@@ -407,10 +410,11 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
         </motion.div>
       </div>
 
-      {/* Modal de cancelación */}
+      {/* Modal de cancelación con nombre del negocio */}
       {showCancelModal && (
         <CancelSubscriptionModal
           businessId={bizId}
+          businessName={bizName}
           initialStats={initialStats}
           currentStats={currentStats}
           onClose={() => setShowCancelModal(false)}

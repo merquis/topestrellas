@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
     const totalReviews = data.result.user_ratings_total || 0;
 
     // Actualizar en la base de datos
+    // IMPORTANTE: Solo actualizamos googlePlaces y updatedAt
+    // NO tocamos stats para preservar los valores iniciales
     const client = new MongoClient(uri);
     await client.connect();
     const db = client.db(dbName);
@@ -54,10 +56,9 @@ export async function POST(request: NextRequest) {
         $set: {
           'googlePlaces.rating': rating,
           'googlePlaces.totalReviews': totalReviews,
-          'googlePlaces.lastUpdated': new Date(),
-          'stats.googleRating': rating,
-          'stats.googleReviews': totalReviews,
-          updatedAt: new Date()
+          'updatedAt': new Date()
+          // NO actualizamos stats.googleRating ni stats.googleReviews
+          // para preservar los valores iniciales
         }
       }
     );
