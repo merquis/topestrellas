@@ -10,9 +10,13 @@ const MotionDiv = motion.div as any;
 interface CancelSubscriptionModalProps {
   businessId: string;
   businessName?: string;
+  businessPhotoUrl?: string;
   initialStats: { rating: number; totalReviews: number } | null;
   currentStats: { rating: number; totalReviews: number } | null;
   createdAt?: string;
+  googleRedirections?: number;
+  tripadvisorRedirections?: number;
+  dailyAverage?: number;
   onClose: () => void;
   onConfirm: () => void;
 }
@@ -20,9 +24,13 @@ interface CancelSubscriptionModalProps {
 export default function CancelSubscriptionModal({
   businessId,
   businessName = 'Tu negocio',
+  businessPhotoUrl,
   initialStats,
   currentStats,
   createdAt,
+  googleRedirections = 0,
+  tripadvisorRedirections = 0,
+  dailyAverage = 0,
   onClose,
   onConfirm
 }: CancelSubscriptionModalProps) {
@@ -372,22 +380,69 @@ export default function CancelSubscriptionModal({
               exit={{ opacity: 0, x: -20 }}
               className="p-8"
             >
-              {/* Header elegante */}
-              <div className="text-center mb-8">
-                <MotionDiv
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-                  className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full mb-4"
-                >
-                  <span className="text-4xl">📊</span>
-                </MotionDiv>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-3">
-                  {businessName}
-                </h2>
-                <p className="text-gray-600 text-lg">
-                  Análisis de rendimiento y progreso
-                </p>
+              {/* Header elegante con foto del local */}
+              <div className="mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                  {/* Foto del local */}
+                  {businessPhotoUrl ? (
+                    <MotionDiv
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                      className="flex-shrink-0"
+                    >
+                      <img
+                        src={businessPhotoUrl}
+                        alt={businessName}
+                        className="w-20 h-20 rounded-2xl object-cover shadow-lg border-2 border-white"
+                        onError={(e) => {
+                          // Si la imagen falla, mostrar un placeholder
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const placeholder = target.nextElementSibling as HTMLElement;
+                          if (placeholder) placeholder.style.display = 'flex';
+                        }}
+                      />
+                      <div 
+                        className="hidden w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl items-center justify-center"
+                        style={{ display: 'none' }}
+                      >
+                        <span className="text-3xl">🏢</span>
+                      </div>
+                    </MotionDiv>
+                  ) : (
+                    <MotionDiv
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                      className="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center"
+                    >
+                      <span className="text-3xl">🏢</span>
+                    </MotionDiv>
+                  )}
+                  
+                  {/* Nombre y descripción */}
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                      {businessName}
+                    </h2>
+                    <p className="text-gray-600 mt-1">
+                      Análisis de rendimiento y progreso
+                    </p>
+                  </div>
+                  
+                  {/* Icono de estadísticas */}
+                  <MotionDiv
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
+                    className="flex-shrink-0"
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+                      <span className="text-2xl">📊</span>
+                    </div>
+                  </MotionDiv>
+                </div>
               </div>
 
               {/* Estadísticas de mejora con diseño premium */}
@@ -594,6 +649,128 @@ export default function CancelSubscriptionModal({
                       </div>
                     </MotionDiv>
                   ) : null}
+
+                  {/* Sección de progreso hacia el siguiente nivel */}
+                  {currentStats && (
+                    <div className="mt-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-xl p-5 border border-indigo-100">
+                      <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <span className="text-xl">🎯</span>
+                        Tu próximo objetivo
+                      </h4>
+                      
+                      {(() => {
+                        const currentRating = currentStats.rating;
+                        const totalReviews = currentStats.totalReviews;
+                        
+                        // Calcular siguiente nivel
+                        let targetRating = Math.ceil(currentRating * 10) / 10;
+                        if (Math.abs(currentRating - targetRating) < 0.01) {
+                          targetRating = Math.min(5.0, targetRating + 0.1);
+                        }
+                        
+                        // Si ya está en 5.0
+                        if (currentRating >= 5.0) {
+                          return (
+                            <div className="text-center py-4">
+                              <span className="text-3xl">🏆</span>
+                              <p className="text-lg font-semibold text-green-600 mt-2">
+                                ¡Excelente! Mantén tu puntuación perfecta de 5.0⭐
+                              </p>
+                            </div>
+                          );
+                        }
+                        
+                        // Calcular reseñas necesarias
+                        const currentSum = currentRating * totalReviews;
+                        const reviewsNeeded = Math.ceil(
+                          (targetRating * totalReviews - currentSum) / (5 - targetRating)
+                        );
+                        
+                        // Calcular porcentaje de progreso
+                        const progressPercentage = ((currentRating - Math.floor(currentRating)) * 100);
+                        
+                        return (
+                          <>
+                            {/* Barra de progreso visual */}
+                            <div className="mb-4">
+                              <div className="flex justify-between text-sm mb-2">
+                                <span>Actual: <strong>{currentRating.toFixed(1)}⭐</strong></span>
+                                <span>Objetivo: <strong>{targetRating.toFixed(1)}⭐</strong></span>
+                              </div>
+                              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                <MotionDiv 
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${progressPercentage}%` }}
+                                  transition={{ duration: 1, delay: 0.5 }}
+                                  className="h-full bg-gradient-to-r from-blue-500 to-green-500"
+                                />
+                              </div>
+                            </div>
+                            
+                            <p className="text-center mb-4">
+                              Te faltan <span className="text-2xl font-bold text-blue-600">{reviewsNeeded}</span> 
+                              reseñas de 5⭐ para subir a {targetRating.toFixed(1)}⭐
+                            </p>
+                            
+                            {/* Tiempo estimado si hay promedio diario */}
+                            {dailyAverage > 0 && (
+                              <p className="text-center text-sm text-gray-600">
+                                ⏱️ Tiempo estimado: {Math.ceil(reviewsNeeded / dailyAverage)} días
+                                <span className="text-xs text-gray-500 block">
+                                  (basado en tu promedio de {dailyAverage.toFixed(1)} reseñas/día)
+                                </span>
+                              </p>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Historial de redirecciones */}
+                  {(googleRedirections > 0 || tripadvisorRedirections > 0) && (
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {googleRedirections > 0 && (
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">📊</span>
+                            <div>
+                              <p className="font-semibold text-gray-800">
+                                Google Reviews
+                              </p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                <strong>{googleRedirections}</strong> {googleRedirections === 1 ? 'cliente fue' : 'clientes fueron'} 
+                                {' '}a tu página de Google
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Algunos ya pueden haber dejado su reseña
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {tripadvisorRedirections > 0 && (
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🏨</span>
+                            <div>
+                              <p className="font-semibold text-gray-800">
+                                TripAdvisor
+                              </p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                <strong>{tripadvisorRedirections}</strong> {tripadvisorRedirections === 1 ? 'cliente fue' : 'clientes fueron'}
+                                {' '}a tu página de TripAdvisor
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Potenciales reseñas en camino
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
