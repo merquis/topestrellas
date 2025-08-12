@@ -42,11 +42,27 @@ function UpdatePaymentMethodForm({
     setErrorMessage(null);
 
     try {
-      // Confirmar el SetupIntent
+      // Obtener datos del usuario actual
+      const authData = localStorage.getItem('authUser');
+      const user = authData ? JSON.parse(authData) : null;
+      
+      // Confirmar el SetupIntent con los datos del usuario
+      const billingDetails: any = {
+        name: businessName || user?.name || undefined
+      };
+      
+      // Solo incluir email si está disponible
+      if (user?.email) {
+        billingDetails.email = user.email;
+      }
+      
       const { error, setupIntent } = await stripe.confirmSetup({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/admin/subscriptions?payment_method_updated=true`,
+          payment_method_data: {
+            billing_details: billingDetails
+          }
         },
         redirect: 'if_required'
       });
@@ -93,7 +109,7 @@ function UpdatePaymentMethodForm({
               googlePay: 'never'
             },
             fields: {
-              billingDetails: 'auto'  // Permitir que Stripe recolecte los datos de facturación
+              billingDetails: 'never'  // No mostrar campos de facturación, los enviamos manualmente
             }
           }}
         />
