@@ -232,7 +232,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
               </div>
               <div className="text-right">
                 <p className="text-3xl font-bold text-gray-900">
-                  €{currentPlan?.recurringPrice || 0}
+                  {currentPlan?.recurringPrice || 0}€
                   <span className="text-sm text-gray-500 font-normal">/{currentPlan?.interval === 'year' ? 'año' : 'mes'}</span>
                 </p>
               </div>

@@ -193,7 +193,7 @@ export default function ChangePlanModal({
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-gray-900">
-                      €{currentPlan.recurringPrice}
+                      {currentPlan.recurringPrice}€
                       <span className="text-sm text-gray-500 font-normal">/{currentPlan.interval === 'year' ? 'año' : 'mes'}</span>
                     </p>
                   </div>
@@ -248,7 +248,7 @@ export default function ChangePlanModal({
                       <td className="p-3 border-b font-medium">Precio</td>
                       {currentPlan && (
                         <td className="text-center p-3 border-b bg-gray-50">
-                          <span className="text-lg font-bold">€{currentPlan.recurringPrice}</span>
+                          <span className="text-lg font-bold">{currentPlan.recurringPrice}€</span>
                           <span className="text-sm text-gray-500">/{currentPlan.interval === 'year' ? 'año' : 'mes'}</span>
                         </td>
                       )}
@@ -256,11 +256,11 @@ export default function ChangePlanModal({
                         const savings = calculateSavings(plan);
                         return (
                           <td key={plan._id} className="text-center p-3 border-b">
-                            <span className="text-lg font-bold">€{plan.recurringPrice}</span>
+                            <span className="text-lg font-bold">{plan.recurringPrice}€</span>
                             <span className="text-sm text-gray-500">/{plan.interval === 'year' ? 'año' : 'mes'}</span>
                             {savings && (
                               <div className="text-xs text-green-600 mt-1">
-                                Ahorras €{savings.amount} ({savings.percentage}%)
+                                Ahorras {savings.amount}€ ({savings.percentage}%)
                               </div>
                             )}
                           </td>
@@ -346,12 +346,12 @@ export default function ChangePlanModal({
 
                       <div className="text-center mb-6">
                         <p className="text-3xl font-bold text-gray-900">
-                          €{plan.recurringPrice}
+                          {plan.recurringPrice}€
                           <span className="text-sm text-gray-500 font-normal">/{plan.interval === 'year' ? 'año' : 'mes'}</span>
                         </p>
                         {savings && (
                           <p className="text-sm text-green-600 mt-1">
-                            Ahorras €{savings.amount}/mes
+                            Ahorras {savings.amount}€/mes
                           </p>
                         )}
                         {plan.trialDays && plan.trialDays > 0 && (
@@ -400,11 +400,11 @@ export default function ChangePlanModal({
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <p className="text-sm text-blue-800">
-                    <strong>📌 Has seleccionado:</strong> {selectedPlan.name} - €{selectedPlan.recurringPrice}/{selectedPlan.interval === 'year' ? 'año' : 'mes'}
+                    <strong>📌 Has seleccionado:</strong> {selectedPlan.name} - {selectedPlan.recurringPrice}€/{selectedPlan.interval === 'year' ? 'año' : 'mes'}
                   </p>
                   {currentPlan && selectedPlan.recurringPrice < currentPlan.recurringPrice && (
                     <p className="text-sm text-green-600 mt-1">
-                      ¡Excelente elección! Ahorrarás €{currentPlan.recurringPrice - selectedPlan.recurringPrice} cada {selectedPlan.interval === 'year' ? 'año' : 'mes'}.
+                      ¡Excelente elección! Ahorrarás {currentPlan.recurringPrice - selectedPlan.recurringPrice}€ cada {selectedPlan.interval === 'year' ? 'año' : 'mes'}.
                     </p>
                   )}
                 </motion.div>

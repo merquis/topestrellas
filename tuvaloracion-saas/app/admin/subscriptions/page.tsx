@@ -904,13 +904,13 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
               <div className="text-right">
                 <p className="text-sm text-gray-500">Total mensual</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  €{subscriptions.reduce((acc: number, sub: any) => {
+                  {subscriptions.reduce((acc: number, sub: any) => {
                     const plan = subscriptionPlans.find(p => p.key === sub.subscription?.plan);
                     if (sub.subscription?.status === 'active' && plan) {
                       return acc + (plan.recurringPrice || 0);
                     }
                     return acc;
-                  }, 0).toFixed(2)}
+                  }, 0).toFixed(2)}€
                 </p>
               </div>
             </div>
