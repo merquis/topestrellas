@@ -155,15 +155,21 @@ export default function UpdatePaymentMethodModal({
 
     try {
       const authData = localStorage.getItem('authUser');
-      const token = authData ? JSON.parse(authData).token : null;
+      const user = authData ? JSON.parse(authData) : null;
+
+      if (!user || !user.email) {
+        throw new Error('Usuario no autenticado');
+      }
 
       const response = await fetch('/api/admin/subscriptions/update-payment-method', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ businessId })
+        body: JSON.stringify({ 
+          businessId,
+          userEmail: user.email
+        })
       });
 
       const data = await response.json();

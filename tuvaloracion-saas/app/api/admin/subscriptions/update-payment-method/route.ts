@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { verifyAuth } from "@/lib/auth";
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
@@ -11,23 +9,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
   try {
-    const headersList = await headers();
-    const authHeader = headersList.get('Authorization');
-    
-    if (!authHeader) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-    
-    const user = verifyAuth(authHeader);
-
-    if (!user || !user.email) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const { businessId } = await request.json();
+    const { businessId, userEmail } = await request.json();
 
     if (!businessId) {
       return NextResponse.json({ error: 'ID de negocio requerido' }, { status: 400 });
+    }
+
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Email de usuario requerido' }, { status: 400 });
     }
 
     const db = await getDatabase();
@@ -109,7 +98,7 @@ export async function POST(request: Request) {
         usage: 'off_session', // Para pagos futuros automáticos
         metadata: {
           businessId: businessId,
-          userEmail: user.email,
+          userEmail: userEmail,
           action: 'update_payment_method',
           subscriptionId: business.subscription.stripeSubscriptionId
         },

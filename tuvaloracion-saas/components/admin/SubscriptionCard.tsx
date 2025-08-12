@@ -62,8 +62,8 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const [currentStats, setCurrentStats] = useState<GoogleStats | null>(null);
   const [initialStats, setInitialStats] = useState<GoogleStats | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const bizId = (business as any).businessId || (business as any)._id;
-  const bizName = (business as any).businessName || business.name;
+  const bizId = business._id || (business as any).businessId;
+  const bizName = business.name || (business as any).businessName;
 
   const currentPlan = plans.find(p => p.key === business.subscription?.plan);
   const isActive = business.subscription?.status === 'active' || business.subscription?.status === 'trialing';
