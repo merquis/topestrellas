@@ -102,8 +102,9 @@ export async function POST(request: Request) {
           action: 'update_payment_method',
           subscriptionId: business.subscription.stripeSubscriptionId
         },
+        payment_method_types: ['card'], // Solo tarjetas de crédito/débito
         automatic_payment_methods: {
-          enabled: true,
+          enabled: false, // Deshabilitamos métodos automáticos
         },
       });
 

@@ -87,7 +87,14 @@ function UpdatePaymentMethodForm({
         <PaymentElement 
           options={{
             layout: 'tabs',
-            paymentMethodOrder: ['card']
+            paymentMethodOrder: ['card'],
+            wallets: {
+              applePay: 'never',
+              googlePay: 'never'
+            },
+            fields: {
+              billingDetails: 'never'
+            }
           }}
         />
       </div>
