@@ -295,7 +295,10 @@ export default function CancelSubscriptionModal({
                 <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl p-6 mb-6 border border-indigo-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
                     <span className="text-2xl">⭐</span>
-                    Tu evolución con TopEstrellas.com{timeWithService ? ` en ${timeWithService}` : ''}
+                    Tu evolución con TopEstrellas.com
+                    {timeWithService && (
+                      <span className="text-green-600 font-bold"> en {timeWithService}</span>
+                    )}
                   </h3>
                   
                   <div className="grid md:grid-cols-2 gap-6">
@@ -461,19 +464,16 @@ export default function CancelSubscriptionModal({
                 </div>
               )}
 
-              {/* Información adicional */}
+              {/* Mensaje dinámico de retención */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
                 <div className="flex gap-3">
-                  <span className="text-2xl flex-shrink-0">💡</span>
+                  <span className="text-2xl flex-shrink-0">{retentionMessage.icon}</span>
                   <div>
                     <p className="text-sm text-amber-900 font-medium mb-1">
-                      ¿Sabías que...?
+                      {retentionMessage.title}
                     </p>
                     <p className="text-sm text-amber-800">
-                      Los negocios que mantienen su suscripción activa consiguen 
-                      <strong> más de 100 nuevas reseñas mensuales</strong>. Si tus empleados 
-                      incentivan activamente el uso de la aplicación, puedes 
-                      <strong> multiplicar estos resultados por 3 o más</strong>.
+                      {retentionMessage.message}
                     </p>
                   </div>
                 </div>
