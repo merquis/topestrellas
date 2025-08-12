@@ -124,6 +124,7 @@ export async function GET(request: Request) {
             businessId: business._id.toString(),
             businessName: business.name,
             subdomain: business.subdomain,
+            createdAt: business.createdAt, // Añadir createdAt directamente
             subscription: business.subscription,
             plan: business.subscription?.plan || 'trial',
             status: business.subscription?.status || 'active',
@@ -139,6 +140,9 @@ export async function GET(request: Request) {
               cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
               trialEnd: toDate((stripeSubscription as any).trial_end),
             } : null,
+            // Incluir también los datos de Google Places y stats si existen
+            googlePlaces: business.googlePlaces || null,
+            stats: business.stats || null,
           };
         })
       );
