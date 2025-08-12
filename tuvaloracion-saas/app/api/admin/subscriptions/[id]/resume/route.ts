@@ -17,11 +17,32 @@ export async function POST(
   context: any
 ) {
   try {
-    // Verificar autenticación
-    const authHeader = request.headers.get('cookie');
-    const user = verifyAuth(authHeader || '');
+    // Verificar autenticación - aceptar Bearer token o cookies
+    let user = null;
+    
+    // Intentar con Bearer token (mismo formato base64 que la cookie 'auth-token')
+    const authorizationHeader = request.headers.get('authorization');
+    if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
+      const token = authorizationHeader.substring(7).trim();
+      try {
+        const decoded = Buffer.from(token, 'base64').toString('utf-8');
+        const parsed = JSON.parse(decoded);
+        if (parsed && parsed.email) {
+          user = parsed;
+        }
+      } catch {
+        // Ignorar y probar con cookies
+      }
+    }
+    
+    // Si no hay Bearer válido, intentar con cookies
+    if (!user) {
+      const cookieHeader = request.headers.get('cookie');
+      user = verifyAuth(cookieHeader || '');
+    }
     
     if (!user) {
+      console.error('Authentication failed - no valid token or cookie found');
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
