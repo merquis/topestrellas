@@ -15,6 +15,7 @@ interface Business {
   _id: string;
   name: string;
   subdomain: string;
+  createdAt?: string;
   businessId?: string;
   businessName?: string;
   googlePlaces?: {
@@ -31,6 +32,7 @@ interface Business {
   stats?: {
     googleRating?: number;
     googleReviews?: number;
+    createdAt?: string;
   };
 }
 
