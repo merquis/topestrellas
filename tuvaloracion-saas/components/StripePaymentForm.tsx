@@ -286,7 +286,7 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                     Procesando...
                   </span>
                 ) : hasTrial ? (
-                  `Iniciar prueba de ${planData.trialDays} días`
+                  `Iniciar prueba de ${planData.trialDays} días GRATIS`
                 ) : (
                   `Pagar ${planData.recurringPrice}€/${planData.interval === 'month' ? 'mes' : 'año'}`
                 )}
