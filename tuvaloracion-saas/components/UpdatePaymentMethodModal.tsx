@@ -107,9 +107,9 @@ function UpdatePaymentMethodForm({
             fields: {
               billingDetails: {
                 // Hacer los campos obligatorios y ocultarlos si ya tenemos los datos
-                name: customerInfo?.name ? 'never' : 'always',
-                email: customerInfo?.email ? 'never' : 'always',
-                phone: customerInfo?.phone ? 'never' : 'always',
+                name: customerInfo?.name ? 'never' : 'auto',
+                email: customerInfo?.email ? 'never' : 'auto',
+                phone: customerInfo?.phone ? 'never' : 'auto',
                 address: {
                   country: 'never', // No mostrar país (siempre España)
                   line1: 'never',
