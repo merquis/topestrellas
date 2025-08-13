@@ -43,6 +43,11 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const hasTrial = planData.trialDays && planData.trialDays > 0;
+  
+  // Estados para capturar los valores actualizados de los campos
+  const [billingName, setBillingName] = useState(userData?.name || '');
+  const [billingEmail, setBillingEmail] = useState(userData?.email || '');
+  const [billingPhone, setBillingPhone] = useState(userData?.phone || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +167,8 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                   type="text"
                   id="billing-name"
                   name="billing-name"
-                  defaultValue={userData?.name || ''}
+                  value={billingName}
+                  onChange={(e) => setBillingName(e.target.value)}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
                   placeholder="Tu nombre completo"
                   required
@@ -174,7 +180,12 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                 <LinkAuthenticationElement 
                   options={{
                     defaultValues: {
-                      email: userData?.email || ''
+                      email: billingEmail
+                    }
+                  }}
+                  onChange={(event) => {
+                    if (event.value?.email) {
+                      setBillingEmail(event.value.email);
                     }
                   }}
                 />
@@ -189,7 +200,8 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                   type="tel"
                   id="billing-phone"
                   name="billing-phone"
-                  defaultValue={userData?.phone || ''}
+                  value={billingPhone}
+                  onChange={(e) => setBillingPhone(e.target.value)}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
                   placeholder="+34 600 000 000"
                   required
@@ -209,9 +221,9 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                     paymentMethodOrder: ['card'],
                     defaultValues: {
                       billingDetails: {
-                        name: userData?.name || '',
-                        email: userData?.email || '',
-                        phone: userData?.phone || '',
+                        name: billingName,
+                        email: billingEmail,
+                        phone: billingPhone,
                         address: {
                           country: 'ES'
                         }
@@ -224,6 +236,11 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                         phone: 'never', // Lo manejamos manualmente arriba
                         address: 'never'
                       }
+                    },
+                    // Deshabilitar la opción de guardar para pagos futuros
+                    wallets: {
+                      applePay: 'never',
+                      googlePay: 'never'
                     }
                   }}
                 />
