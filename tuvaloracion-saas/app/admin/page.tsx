@@ -1047,7 +1047,7 @@ export default function AdminDashboard() {
                             <img
                               src={businessPhotoUrl}
                               alt={selectedBusiness?.name || 'Foto del negocio'}
-                              className="w-full h-40 object-cover rounded-lg border"
+                              className="aspect-square w-full object-cover rounded-lg border"
                               loading="lazy"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />

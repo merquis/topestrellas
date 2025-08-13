@@ -108,28 +108,17 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {/* Header refinado: foto del negocio + info del plan */}
+      {/* Header refinado: info del plan sin imagen */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-2xl">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {businessPhotoUrl ? (
-              <img
-                src={businessPhotoUrl}
-                alt={businessName}
-                className="w-16 h-16 rounded-xl object-cover border-2 border-white shadow"
-                loading="lazy"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            ) : null}
-            <div>
-              <h2 className="text-xl font-bold">Último paso</h2>
-              <p className="text-blue-100 text-sm mt-0.5">
-                {businessName}
-              </p>
-              <p className="text-blue-100/90 text-xs">
-                {planData?.name || 'Plan'}
-              </p>
-            </div>
+          <div>
+            <h2 className="text-xl font-bold">Último paso</h2>
+            <p className="text-blue-100 text-sm mt-0.5">
+              {businessName}
+            </p>
+            <p className="text-blue-100/90 text-xs">
+              {planData?.name || 'Plan'}
+            </p>
           </div>
           <div className="text-right">
             {hasTrial ? (

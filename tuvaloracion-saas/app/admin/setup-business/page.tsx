@@ -732,53 +732,56 @@ function SetupBusinessContent() {
               <h2 className="text-xl font-bold mb-2">🔒 Datos de facturación</h2>
               <p className="text-sm text-gray-600 mb-6">Información que aparecerá en tus facturas</p>
               
-              <div className="space-y-4">
-                {/* Nombre completo - PRIMERO */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    name="billingName"
-                    value={formData.billingName}
-                    onChange={handleChange}
-                    placeholder="Jesus"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
+              {/* Contenedor único que engloba los 3 campos */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+                <div className="space-y-4">
+                  {/* Nombre completo - PRIMERO */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nombre completo
+                    </label>
+                    <input
+                      type="text"
+                      name="billingName"
+                      value={formData.billingName}
+                      onChange={handleChange}
+                      placeholder="Jesus"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      required
+                    />
+                  </div>
 
-                {/* Correo electrónico - SEGUNDO */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Correo electrónico
-                  </label>
-                  <input
-                    type="email"
-                    name="billingEmail"
-                    value={formData.billingEmail}
-                    onChange={handleChange}
-                    placeholder="jesus0985d@gmail.com"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
+                  {/* Correo electrónico - SEGUNDO */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Correo electrónico
+                    </label>
+                    <input
+                      type="email"
+                      name="billingEmail"
+                      value={formData.billingEmail}
+                      onChange={handleChange}
+                      placeholder="jesus0985d@gmail.com"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      required
+                    />
+                  </div>
 
-                {/* Teléfono - TERCERO */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    name="billingPhone"
-                    value={formData.billingPhone}
-                    onChange={handleChange}
-                    placeholder="666543026"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
+                  {/* Teléfono - TERCERO */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Teléfono
+                    </label>
+                    <input
+                      type="tel"
+                      name="billingPhone"
+                      value={formData.billingPhone}
+                      onChange={handleChange}
+                      placeholder="666543026"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
