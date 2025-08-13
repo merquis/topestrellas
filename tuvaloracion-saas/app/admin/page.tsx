@@ -1140,6 +1140,11 @@ export default function AdminDashboard() {
                           businessName={selectedBusiness?.name || 'Tu Negocio'}
                           planData={selectedPlanData}
                           clientSecret={clientSecret}
+                          userData={{
+                            name: tempUserData?.name || '',
+                            email: tempUserData?.email || '',
+                            phone: tempUserData?.phone || ''
+                          }}
                           onSuccess={() => {
                             // Guardar mensaje de éxito
                             localStorage.setItem('paymentSuccess', 'true');

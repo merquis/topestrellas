@@ -106,17 +106,17 @@ function UpdatePaymentMethodForm({
             },
             fields: {
               billingDetails: {
-                // Configurar qué campos de facturación mostrar
-                name: 'auto', // 'auto' usa los datos guardados si existen
-                email: 'auto',
-                phone: 'auto',
+                // Hacer los campos obligatorios y ocultarlos si ya tenemos los datos
+                name: customerInfo?.name ? 'never' : 'always',
+                email: customerInfo?.email ? 'never' : 'always',
+                phone: customerInfo?.phone ? 'never' : 'always',
                 address: {
-                  country: 'auto',
-                  line1: 'auto',
-                  line2: 'auto',
-                  city: 'auto',
-                  state: 'auto',
-                  postalCode: 'auto'
+                  country: 'never', // No mostrar país (siempre España)
+                  line1: 'never',
+                  line2: 'never',
+                  city: 'never',
+                  state: 'never',
+                  postalCode: 'never'
                 }
               }
             }
