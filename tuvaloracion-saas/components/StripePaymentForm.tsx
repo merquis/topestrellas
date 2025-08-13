@@ -152,12 +152,12 @@ function CheckoutForm({ businessId, businessName, planData, clientSecret, userDa
                       }
                     }
                   } : undefined,
-                  // Hacer los campos obligatorios y siempre visibles
+                  // Hacer los campos obligatorios y editables
                   fields: {
                     billingDetails: {
-                      name: userData ? 'never' : 'auto', // Si tenemos datos, no mostrar (ya están guardados)
-                      email: userData ? 'never' : 'auto', // Si tenemos datos, no mostrar
-                      phone: userData ? 'never' : 'auto', // Si tenemos datos, no mostrar
+                      name: 'auto', // Siempre visible y editable
+                      email: 'auto', // Siempre visible y editable
+                      phone: 'auto', // Siempre visible y editable
                       address: {
                         country: 'never', // No mostrar país (siempre España)
                         line1: 'never',
@@ -172,17 +172,15 @@ function CheckoutForm({ businessId, businessName, planData, clientSecret, userDa
               />
             </div>
 
-            {/* Mostrar información del usuario si está disponible */}
+            {/* Información sobre los campos de facturación */}
             {userData && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900 mb-2">Información de facturación:</p>
-                <div className="text-sm text-blue-800 space-y-1">
-                  <p>📧 {userData.email}</p>
-                  <p>👤 {userData.name}</p>
-                  <p>📱 {userData.phone}</p>
-                </div>
-                <p className="text-xs text-blue-600 mt-2">
-                  Esta información se usará para la facturación
+                <p className="text-sm font-medium text-blue-900 mb-1">
+                  ℹ️ Información de facturación
+                </p>
+                <p className="text-xs text-blue-700">
+                  Los campos están pre-rellenados con tus datos del registro. 
+                  Puedes modificarlos si necesitas usar información diferente para la facturación.
                 </p>
               </div>
             )}
