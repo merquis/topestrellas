@@ -123,7 +123,7 @@ export default function HelpPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold mb-4">Centro de Ayuda</h1>
           <p className="text-xl opacity-90 mb-6">
-            Todo lo que necesitas saber para sacar el máximo provecho de TuValoración
+            Todo lo que necesitas saber para sacar el máximo provecho de TopEstrellas
           </p>
         </div>
       </div>
@@ -135,7 +135,7 @@ export default function HelpPage() {
             🎥 Video Tutorial de la Plataforma
           </h2>
           <p className="text-gray-600 text-lg">
-            Aprende cómo usar TuValoración en menos de 10 minutos
+            Aprende cómo usar TopEstrellas en menos de 10 minutos
           </p>
         </div>
         
