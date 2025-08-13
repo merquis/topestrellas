@@ -111,7 +111,11 @@ function SetupBusinessContent() {
       'REFRESCO',
       'MOJITO',
       'CHUPITO'
-    ]
+    ],
+    // Datos de facturación para el paso 4
+    billingName: '',
+    billingEmail: '',
+    billingPhone: ''
   });
 
   // Estado para el autocompletado de provincias
@@ -204,7 +208,16 @@ function SetupBusinessContent() {
         setToast({ message: 'Por favor completa todos los campos requeridos', type: 'error' });
         return;
       }
-      // En lugar de ir al paso 3, crear el negocio directamente
+      setCurrentStep(3);
+    } else if (currentStep === 3) {
+      // Paso 3: Configuración adicional (premios, etc.)
+      setCurrentStep(4);
+    } else if (currentStep === 4) {
+      // Paso 4: Datos de facturación
+      if (!formData.billingName || !formData.billingEmail || !formData.billingPhone) {
+        setToast({ message: 'Por favor completa todos los datos de facturación', type: 'error' });
+        return;
+      }
       handleSubmit();
     }
   };
@@ -281,32 +294,88 @@ function SetupBusinessContent() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl text-white font-bold">TV</span>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            {/* Logo */}
+            <div className="relative">
+              <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                <svg 
+                  className="w-8 h-8 text-white" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              {/* Pequeñas estrellas decorativas */}
+              <div className="absolute -top-1 -right-1 w-3 h-3">
+                <svg className="w-full h-full text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              <div className="absolute -bottom-1 -left-1 w-2 h-2">
+                <svg className="w-full h-full text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+            </div>
+            {/* Nombre de la empresa */}
+            <div className="flex flex-col items-start">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                TopEstrellas
+              </h2>
+              <span className="text-xs text-gray-500 -mt-1">.com</span>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Configura tu Negocio</h1>
-          <p className="text-gray-600 mt-2">Hola {userName}, vamos a configurar tu negocio</p>
+          <h1 className="text-3xl font-bold text-gray-800">Crear Cuenta</h1>
+          <p className="text-gray-600 mt-2">Elige tu plan de suscripción</p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="max-w-2xl mx-auto mb-8">
+        {/* Progress Bar - Pasos 1 al 4 */}
+        <div className="max-w-3xl mx-auto mb-8">
           <div className="flex items-center justify-between">
-            <div className={`flex items-center ${currentStep >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+            {/* Paso 1 */}
+            <div className={`flex items-center ${currentStep >= 1 ? 'text-green-600' : 'text-gray-400'}`}>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-300'
+                currentStep >= 1 ? 'bg-green-600 text-white' : 'bg-gray-300'
               }`}>
-                1
+                {currentStep > 1 ? '✓' : '1'}
               </div>
-              <span className="ml-2 hidden sm:inline">Elige tu plan</span>
             </div>
-            <div className={`flex-1 h-1 mx-4 ${currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-            <div className={`flex items-center ${currentStep >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+            
+            {/* Línea entre 1 y 2 */}
+            <div className={`flex-1 h-1 mx-2 ${currentStep >= 2 ? 'bg-green-600' : 'bg-gray-300'}`}></div>
+            
+            {/* Paso 2 */}
+            <div className={`flex items-center ${currentStep >= 2 ? 'text-green-600' : 'text-gray-400'}`}>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-300'
+                currentStep >= 2 ? 'bg-green-600 text-white' : 'bg-gray-300'
               }`}>
-                2
+                {currentStep > 2 ? '✓' : '2'}
               </div>
-              <span className="ml-2 hidden sm:inline">Información básica</span>
+            </div>
+            
+            {/* Línea entre 2 y 3 */}
+            <div className={`flex-1 h-1 mx-2 ${currentStep >= 3 ? 'bg-green-600' : 'bg-gray-300'}`}></div>
+            
+            {/* Paso 3 */}
+            <div className={`flex items-center ${currentStep >= 3 ? 'text-green-600' : 'text-gray-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                currentStep >= 3 ? 'bg-green-600 text-white' : 'bg-gray-300'
+              }`}>
+                {currentStep > 3 ? '✓' : '3'}
+              </div>
+            </div>
+            
+            {/* Línea entre 3 y 4 */}
+            <div className={`flex-1 h-1 mx-2 ${currentStep >= 4 ? 'bg-green-600' : 'bg-gray-300'}`}></div>
+            
+            {/* Paso 4 */}
+            <div className={`flex items-center ${currentStep >= 4 ? 'text-green-600' : 'text-gray-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                currentStep >= 4 ? 'bg-green-600 text-white' : 'bg-gray-300'
+              }`}>
+                4
+              </div>
             </div>
           </div>
         </div>
@@ -496,6 +565,149 @@ function SetupBusinessContent() {
           </div>
         )}
 
+        {/* Step 3: Configuración adicional */}
+        {currentStep === 3 && (
+          <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold mb-6">Configuración de premios</h2>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Plataforma de reseñas principal
+                </label>
+                <select
+                  name="reviewPlatform"
+                  value={formData.reviewPlatform}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="google">Google Reviews</option>
+                  <option value="tripadvisor">TripAdvisor</option>
+                  <option value="both">Ambas</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  URL de Google Reviews (opcional)
+                </label>
+                <input
+                  type="url"
+                  name="googleReviewUrl"
+                  value={formData.googleReviewUrl}
+                  onChange={handleChange}
+                  placeholder="https://g.page/r/..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-4">
+                  Premios disponibles en la ruleta
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {formData.prizes.map((prize, index) => (
+                    <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                      <span className="text-sm font-medium text-gray-700">{prize}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Los premios se pueden personalizar más adelante desde el panel de administración
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Datos de facturación y pago */}
+        {currentStep === 4 && (
+          <div className="max-w-2xl mx-auto">
+            {/* Card del plan seleccionado */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium opacity-90">Último paso</h3>
+                  <h2 className="text-2xl font-bold">
+                    {plans.find(p => p.id === selectedPlan)?.name || 'Plan seleccionado'}
+                  </h2>
+                  <p className="text-sm opacity-90 mt-1">Plan básico</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold">
+                    {plans.find(p => p.id === selectedPlan)?.price || '0€'}
+                  </div>
+                  <div className="text-sm opacity-90">
+                    {plans.find(p => p.id === selectedPlan)?.duration || ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Formulario de datos de facturación */}
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <h2 className="text-xl font-bold mb-2">🔒 Datos de facturación</h2>
+              <p className="text-sm text-gray-600 mb-6">Información que aparecerá en tus facturas</p>
+              
+              <div className="space-y-4">
+                {/* Nombre completo - PRIMERO */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre completo
+                  </label>
+                  <input
+                    type="text"
+                    name="billingName"
+                    value={formData.billingName}
+                    onChange={handleChange}
+                    placeholder="Jesus"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                {/* Correo electrónico - SEGUNDO */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Correo electrónico
+                  </label>
+                  <input
+                    type="email"
+                    name="billingEmail"
+                    value={formData.billingEmail}
+                    onChange={handleChange}
+                    placeholder="jesus0985d@gmail.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                {/* Teléfono - TERCERO */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    name="billingPhone"
+                    value={formData.billingPhone}
+                    onChange={handleChange}
+                    placeholder="666543026"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Nota sobre el pago */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  💳 El pago se procesará de forma segura a través de Stripe. 
+                  {selectedPlan === 'trial' && ' Disfruta de 30 días gratis sin compromiso.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Buttons */}
         <div className="max-w-2xl mx-auto mt-8 flex justify-between">
@@ -515,13 +727,20 @@ function SetupBusinessContent() {
             >
               Siguiente →
             </button>
-          ) : (
+          ) : currentStep === 4 ? (
             <button
               onClick={handleNextStep}
               disabled={loading}
               className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50"
             >
-              {loading ? 'Creando...' : 'Crear mi Negocio'}
+              {loading ? 'Procesando pago...' : 'Finalizar y Pagar'}
+            </button>
+          ) : (
+            <button
+              onClick={handleNextStep}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+            >
+              Siguiente →
             </button>
           )}
         </div>
