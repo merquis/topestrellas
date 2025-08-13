@@ -5,6 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
   PaymentElement,
+  LinkAuthenticationElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
@@ -131,45 +132,46 @@ function CheckoutForm({ businessId, businessName, planData, clientSecret, userDa
       <div className="bg-white p-8 rounded-b-2xl shadow-xl">
         {clientSecret ? (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Payment Element de Stripe */}
-            <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
-              <PaymentElement 
-                options={{
-                  layout: {
-                    type: 'accordion',
-                    defaultCollapsed: false,
-                    radios: true,
-                    spacedAccordionItems: false
-                  },
-                  // Pre-rellenar los datos de facturación del paso 1
-                  defaultValues: userData ? {
-                    billingDetails: {
-                      name: userData.name || '',
-                      email: userData.email || '',
-                      phone: userData.phone || '',
-                      address: {
-                        country: 'ES' // España por defecto
+            {/* Campos de facturación y Payment Element de Stripe */}
+            <div className="space-y-4">
+              {/* Campo de Email con LinkAuthenticationElement para autocompletar */}
+              <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
+                <LinkAuthenticationElement 
+                  options={{
+                    defaultValues: {
+                      email: userData?.email || ''
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Payment Element para la tarjeta */}
+              <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
+                <PaymentElement 
+                  options={{
+                    layout: 'tabs',
+                    paymentMethodOrder: ['card'],
+                    defaultValues: {
+                      billingDetails: {
+                        name: userData?.name || '',
+                        email: userData?.email || '',
+                        phone: userData?.phone || '',
+                        address: {
+                          country: 'ES'
+                        }
+                      }
+                    },
+                    fields: {
+                      billingDetails: {
+                        name: 'auto',
+                        email: 'never', // Ya lo manejamos con LinkAuthenticationElement
+                        phone: 'auto',
+                        address: 'never'
                       }
                     }
-                  } : undefined,
-                  // Hacer los campos obligatorios y editables
-                  fields: {
-                    billingDetails: {
-                      name: 'auto', // Siempre visible y editable
-                      email: 'auto', // Siempre visible y editable
-                      phone: 'auto', // Siempre visible y editable
-                      address: {
-                        country: 'never', // No mostrar país (siempre España)
-                        line1: 'never',
-                        line2: 'never',
-                        city: 'never',
-                        state: 'never',
-                        postalCode: 'never'
-                      }
-                    }
-                  }
-                }}
-              />
+                  }}
+                />
+              </div>
             </div>
 
             {/* Información sobre los campos de facturación */}
