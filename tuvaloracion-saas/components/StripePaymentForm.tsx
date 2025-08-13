@@ -19,6 +19,7 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 interface PaymentFormProps {
   businessId: string;
   businessName: string;
+  businessPhotoUrl?: string;
   planData: {
     key: string;
     name: string;
@@ -36,7 +37,7 @@ interface PaymentFormProps {
   onCancel: () => void;
 }
 
-function CheckoutForm({ businessId, businessName, planData, clientSecret, userData, onSuccess, onCancel }: PaymentFormProps) {
+function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, clientSecret, userData, onSuccess, onCancel }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -107,24 +108,45 @@ function CheckoutForm({ businessId, businessName, planData, clientSecret, userDa
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {/* Header con información del plan */}
+      {/* Header refinado: foto del negocio + info del plan */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-2xl">
-        <h2 className="text-2xl font-bold mb-2">Completar Suscripción</h2>
-        <p className="text-blue-100">
-          Actualizando <strong>{businessName}</strong> al {planData?.name || 'Plan'}
-        </p>
-        <div className="mt-4 flex items-baseline gap-2">
-          {hasTrial ? (
-            <>
-              <span className="text-4xl font-bold">0€</span>
-              <span className="text-blue-100">hoy, después {planData.recurringPrice}€/{planData.interval === 'month' ? 'mes' : 'año'}</span>
-            </>
-          ) : (
-            <>
-              <span className="text-4xl font-bold">{planData.recurringPrice}€</span>
-              <span className="text-blue-100">/{planData.interval === 'month' ? 'mes' : 'año'}</span>
-            </>
-          )}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            {businessPhotoUrl ? (
+              <img
+                src={businessPhotoUrl}
+                alt={businessName}
+                className="w-16 h-16 rounded-xl object-cover border-2 border-white shadow"
+                loading="lazy"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ) : null}
+            <div>
+              <h2 className="text-xl font-bold">Último paso</h2>
+              <p className="text-blue-100 text-sm mt-0.5">
+                {businessName}
+              </p>
+              <p className="text-blue-100/90 text-xs">
+                {planData?.name || 'Plan'}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            {hasTrial ? (
+              <div>
+                <div className="text-3xl font-bold">0€</div>
+                <div className="text-xs text-blue-100">hoy</div>
+                <div className="text-[11px] text-blue-100/90">
+                  después {planData.recurringPrice}€/{planData.interval === 'month' ? 'mes' : 'año'}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-3xl font-bold">{planData.recurringPrice}€</div>
+                <div className="text-xs text-blue-100">/{planData.interval === 'month' ? 'mes' : 'año'}</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

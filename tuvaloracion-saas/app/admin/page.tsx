@@ -1022,6 +1022,17 @@ export default function AdminDashboard() {
                           <span>🏢</span>
                           <span>Tu Negocio</span>
                         </h4>
+                        {businessPhotoUrl && (
+                          <div className="mb-4">
+                            <img
+                              src={businessPhotoUrl}
+                              alt={selectedBusiness?.name || 'Foto del negocio'}
+                              className="w-full h-40 object-cover rounded-lg border"
+                              loading="lazy"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          </div>
+                        )}
                         <div className="space-y-3">
                           <div>
                             <p className="text-sm text-gray-600">Nombre</p>
@@ -1138,6 +1149,7 @@ export default function AdminDashboard() {
                         <StripePaymentForm
                           businessId={pendingBusinessId}
                           businessName={selectedBusiness?.name || 'Tu Negocio'}
+                          businessPhotoUrl={businessPhotoUrl}
                           planData={selectedPlanData}
                           clientSecret={clientSecret}
                           userData={{
