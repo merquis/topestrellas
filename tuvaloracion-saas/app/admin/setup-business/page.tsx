@@ -15,6 +15,7 @@ function SetupBusinessContent() {
   const [selectedPlan, setSelectedPlan] = useState('trial');
   const [plans, setPlans] = useState<any[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [expandedPlans, setExpandedPlans] = useState<{ [key: string]: boolean }>({});
   
   // Datos del usuario desde los parámetros
   const userName = searchParams.get('name') || '';
@@ -198,6 +199,14 @@ function SetupBusinessContent() {
 
   const handlePlanSelect = (planId: string) => {
     setSelectedPlan(planId);
+  };
+
+  const togglePlanExpanded = (planId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que se seleccione el plan al hacer clic en "Ver más"
+    setExpandedPlans(prev => ({
+      ...prev,
+      [planId]: !prev[planId]
+    }));
   };
 
   const handleNextStep = () => {
@@ -385,47 +394,122 @@ function SetupBusinessContent() {
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl font-bold text-center mb-8">Elige el plan perfecto para tu negocio</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {plans.map((plan: any) => (
-                <div
-                  key={plan.id}
-                  className={`relative bg-white rounded-xl shadow-lg p-6 cursor-pointer transition-all transform hover:scale-105 ${
-                    selectedPlan === plan.id ? 'ring-4 ring-blue-500' : ''
-                  }`}
-                  onClick={() => handlePlanSelect(plan.id)}
-                >
-                  {plan.recommended && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                        Recomendado
-                      </span>
-                    </div>
-                  )}
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">{plan.name}</h3>
-                    <div className="flex items-baseline justify-center">
-                      <span className="text-4xl font-bold text-gray-800">{plan.price}</span>
-                      <span className="text-gray-600 ml-1">{plan.duration}</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature: string, index: number) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
-                        <span className="text-gray-700 text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    className={`w-full py-3 rounded-lg font-medium transition-all ${
-                      selectedPlan === plan.id
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              {plans.map((plan: any) => {
+                const isExpanded = expandedPlans[plan.id];
+                const visibleFeatures = isExpanded ? plan.features : plan.features.slice(0, 5);
+                const hasMoreFeatures = plan.features.length > 5;
+                
+                return (
+                  <div
+                    key={plan.id}
+                    className={`relative bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-6 cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 ${
+                      selectedPlan === plan.id 
+                        ? 'border-blue-500 ring-4 ring-blue-200 bg-gradient-to-br from-blue-50 to-white' 
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
+                    onClick={() => handlePlanSelect(plan.id)}
                   >
-                    {selectedPlan === plan.id ? 'Seleccionado' : 'Seleccionar'}
-                  </button>
-                </div>
-              ))}
+                    {/* Badge de seleccionado */}
+                    {selectedPlan === plan.id && (
+                      <div className="absolute -top-3 -right-3">
+                        <div className="bg-green-500 text-white rounded-full p-2 shadow-lg">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Badge de recomendado */}
+                    {plan.recommended && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                        <span className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium shadow-lg animate-pulse">
+                          ⭐ Recomendado
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Header del plan */}
+                    <div className="text-center mb-6 pt-2">
+                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mb-3">
+                        <span className="text-2xl">{plan.icon || '📦'}</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">{plan.name}</h3>
+                      <div className="flex items-baseline justify-center">
+                        <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                          {plan.price}
+                        </span>
+                        <span className="text-gray-600 ml-1 font-medium">{plan.duration}</span>
+                      </div>
+                      {plan.id === 'trial' && (
+                        <div className="mt-2 inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Sin compromiso
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Lista de características */}
+                    <div className="mb-6">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                        Incluye:
+                      </div>
+                      <ul className="space-y-2">
+                        {visibleFeatures.map((feature: string, index: number) => (
+                          <li key={index} className="flex items-start group">
+                            <span className="text-green-500 mr-2 mt-0.5 flex-shrink-0">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </span>
+                            <span className="text-gray-700 text-sm leading-relaxed">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      {/* Botón Ver más/menos */}
+                      {hasMoreFeatures && (
+                        <button
+                          onClick={(e) => togglePlanExpanded(plan.id, e)}
+                          className="mt-3 text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center group"
+                        >
+                          <span>{isExpanded ? 'Ver menos' : `Ver más (${plan.features.length - 5} más)`}</span>
+                          <svg 
+                            className={`w-4 h-4 ml-1 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Botón de selección */}
+                    <button
+                      className={`w-full py-3 rounded-lg font-semibold transition-all transform hover:scale-105 ${
+                        selectedPlan === plan.id
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                          : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-blue-400 hover:text-blue-600'
+                      }`}
+                    >
+                      {selectedPlan === plan.id ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Plan Seleccionado
+                        </span>
+                      ) : (
+                        'Seleccionar este plan'
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -731,9 +815,9 @@ function SetupBusinessContent() {
             <button
               onClick={handleNextStep}
               disabled={loading}
-              className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50"
+              className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50 font-semibold text-lg"
             >
-              {loading ? 'Procesando pago...' : 'Finalizar y Pagar'}
+              {loading ? 'Procesando...' : selectedPlan === 'trial' ? 'Iniciar prueba de 7 días GRATIS' : 'Finalizar y Pagar'}
             </button>
           ) : (
             <button
