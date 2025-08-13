@@ -64,6 +64,16 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/admin/subscriptions/payment-success`,
+        payment_method_data: {
+          billing_details: {
+            name: billingName,
+            email: billingEmail,
+            phone: billingPhone,
+            address: {
+              country: 'ES'
+            }
+          }
+        }
       },
     });
 
