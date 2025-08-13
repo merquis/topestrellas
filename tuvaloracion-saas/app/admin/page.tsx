@@ -48,6 +48,7 @@ export default function AdminDashboard() {
   const [clientSecret, setClientSecret] = useState('');
   const [pendingBusinessId, setPendingBusinessId] = useState('');
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
   
   // Dashboard states
   const [businesses, setBusinesses] = useState([]);
@@ -1104,15 +1105,52 @@ export default function AdminDashboard() {
                           {/* Features del plan */}
                           {selectedPlanData?.features && selectedPlanData.features.length > 0 && (
                             <div className="pt-4 border-t border-gray-200">
-                              <p className="text-sm font-semibold text-gray-700 mb-2">Incluye:</p>
-                              <ul className="space-y-1">
-                                {selectedPlanData.features.slice(0, 3).map((feature: string, index: number) => (
-                                  <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
-                                    <span className="text-green-500 mt-0.5">✓</span>
-                                    <span>{feature}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                              <p className="text-sm font-semibold text-gray-700 mb-3">Incluye:</p>
+                              <div className="space-y-3">
+                                <ul className="space-y-2">
+                                  {(showAllFeatures 
+                                    ? selectedPlanData.features 
+                                    : selectedPlanData.features.slice(0, 5)
+                                  ).map((feature: string, index: number) => (
+                                    <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
+                                      <span className="text-green-500 mt-0.5 flex-shrink-0">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                      </span>
+                                      <span className="leading-relaxed">{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                                
+                                {/* Botón Ver más/menos */}
+                                {selectedPlanData.features.length > 5 && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setShowAllFeatures(!showAllFeatures);
+                                    }}
+                                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-all duration-200 hover:gap-3 group mt-3"
+                                  >
+                                    <span>
+                                      {showAllFeatures 
+                                        ? 'Ver menos características' 
+                                        : `Ver todas las ventajas (+${selectedPlanData.features.length - 5} más)`
+                                      }
+                                    </span>
+                                    <svg 
+                                      className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${
+                                        showAllFeatures ? 'rotate-180' : ''
+                                      }`} 
+                                      fill="none" 
+                                      stroke="currentColor" 
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
