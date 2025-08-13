@@ -49,12 +49,51 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
   const [billingEmail, setBillingEmail] = useState(userData?.email || '');
   const [billingPhone, setBillingPhone] = useState(userData?.phone || '');
 
+  // Función para actualizar los elementos de Stripe con los datos actuales
+  const updateStripeElements = () => {
+    if (!elements) return;
+    
+    try {
+      // Obtener el LinkAuthenticationElement y actualizarlo
+      const linkElement = elements.getElement('linkAuthentication');
+      if (linkElement) {
+        linkElement.update({
+          defaultValues: {
+            email: billingEmail
+          }
+        });
+      }
+
+      // Obtener el PaymentElement y actualizarlo
+      const paymentElement = elements.getElement('payment');
+      if (paymentElement) {
+        paymentElement.update({
+          defaultValues: {
+            billingDetails: {
+              name: billingName,
+              email: billingEmail,
+              phone: billingPhone,
+              address: {
+                country: 'ES'
+              }
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.log('Error actualizando elementos de Stripe:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!stripe || !elements) {
       return;
     }
+
+    // Actualizar elementos de Stripe ANTES de procesar el pago
+    updateStripeElements();
 
     setIsProcessing(true);
     setMessage(null);
