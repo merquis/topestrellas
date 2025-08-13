@@ -533,12 +533,19 @@ export default function AdminDashboard() {
           <div className="min-h-screen flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
               {/* Logo */}
-              <div className="mb-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <span className="text-3xl text-white font-bold">TV</span>
+              <div className="mb-6">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">TopEstrellas</h1>
+                    <span className="text-xs text-gray-500 -mt-1">.com</span>
+                  </div>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">TuValoración</h1>
-                <p className="text-gray-600">Sistema de reseñas y fidelización para negocios</p>
+                <p className="text-gray-600 text-sm">Sistema de reseñas y fidelización para negocios</p>
               </div>
 
               {/* Main Question */}
@@ -604,8 +611,13 @@ export default function AdminDashboard() {
                   </svg>
                 </button>
                 
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl text-white font-bold">TV</span>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </div>
+                  <span className="text-xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">TopEstrellas.com</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Iniciar Sesión</h2>
                 <p className="text-gray-600">Accede a tu panel de administración</p>
@@ -710,15 +722,22 @@ export default function AdminDashboard() {
                   </svg>
                 </button>
                 
-                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl text-white font-bold">TV</span>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </div>
+                  <span className="text-xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">TopEstrellas.com</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Crear Cuenta</h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   {registrationStep === 1 
                     ? 'Completa tus datos personales' 
                     : registrationStep === 2
                     ? 'Busca y selecciona tu negocio'
+                    : registrationStep === 4
+                    ? 'Completa tu pago'
                     : 'Elige tu plan de suscripción'
                   }
                 </p>
