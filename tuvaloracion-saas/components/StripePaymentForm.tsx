@@ -132,9 +132,17 @@ function CheckoutForm({ businessId, businessName, planData, clientSecret, userDa
       <div className="bg-white p-8 rounded-b-2xl shadow-xl">
         {clientSecret ? (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Título de sección */}
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">📝 Datos de facturación</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Información que aparecerá en tus facturas
+              </p>
+            </div>
+
             {/* Campos de facturación y Payment Element de Stripe */}
             <div className="space-y-4">
-              {/* Campo de Email con LinkAuthenticationElement para autocompletar */}
+              {/* Campo de Email con LinkAuthenticationElement */}
               <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
                 <LinkAuthenticationElement 
                   options={{
@@ -143,6 +151,44 @@ function CheckoutForm({ businessId, businessName, planData, clientSecret, userDa
                     }
                   }}
                 />
+              </div>
+
+              {/* Campos de Nombre y Teléfono manuales */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre completo
+                  </label>
+                  <input
+                    type="text"
+                    id="billing-name"
+                    name="billing-name"
+                    defaultValue={userData?.name || ''}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    placeholder="Tu nombre completo"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    id="billing-phone"
+                    name="billing-phone"
+                    defaultValue={userData?.phone || ''}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    placeholder="+34 600 000 000"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Título para la tarjeta */}
+              <div className="mt-6 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900">💳 Método de pago</h3>
               </div>
 
               {/* Payment Element para la tarjeta */}
@@ -163,9 +209,9 @@ function CheckoutForm({ businessId, businessName, planData, clientSecret, userDa
                     },
                     fields: {
                       billingDetails: {
-                        name: 'auto',
+                        name: 'never', // Lo manejamos manualmente arriba
                         email: 'never', // Ya lo manejamos con LinkAuthenticationElement
-                        phone: 'auto',
+                        phone: 'never', // Lo manejamos manualmente arriba
                         address: 'never'
                       }
                     }
