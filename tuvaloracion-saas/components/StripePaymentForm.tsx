@@ -48,6 +48,9 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
   const [billingName, setBillingName] = useState(userData?.name || '');
   const [billingEmail, setBillingEmail] = useState(userData?.email || '');
   const [billingPhone, setBillingPhone] = useState(userData?.phone || '');
+  
+  // Estado para forzar la actualización del LinkAuthenticationElement
+  const [linkKey, setLinkKey] = useState(0);
 
   // Función para actualizar los elementos de Stripe con los datos actuales
   const updateStripeElements = () => {
