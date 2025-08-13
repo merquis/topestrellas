@@ -54,17 +54,7 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
     if (!elements) return;
     
     try {
-      // Obtener el LinkAuthenticationElement y actualizarlo
-      const linkElement = elements.getElement('linkAuthentication');
-      if (linkElement) {
-        linkElement.update({
-          defaultValues: {
-            email: billingEmail
-          }
-        });
-      }
-
-      // Obtener el PaymentElement y actualizarlo
+      // Actualizar el PaymentElement con los datos de facturación actuales
       const paymentElement = elements.getElement('payment');
       if (paymentElement) {
         paymentElement.update({
