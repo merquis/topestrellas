@@ -168,54 +168,57 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
 
             {/* Campos de facturación y Payment Element de Stripe */}
             <div className="space-y-4">
-              {/* Campo de Nombre completo */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre completo
-                </label>
-                <input
-                  type="text"
-                  id="billing-name"
-                  name="billing-name"
-                  value={billingName}
-                  onChange={(e) => setBillingName(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                  placeholder="Tu nombre completo"
-                  required
-                />
-              </div>
+              {/* Sección unificada de datos de facturación */}
+              <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors space-y-4">
+                {/* Campo de Nombre completo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre completo
+                  </label>
+                  <input
+                    type="text"
+                    id="billing-name"
+                    name="billing-name"
+                    value={billingName}
+                    onChange={(e) => setBillingName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    placeholder="Tu nombre completo"
+                    required
+                  />
+                </div>
 
-              {/* Campo de Email con LinkAuthenticationElement */}
-              <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
-                <LinkAuthenticationElement 
-                  options={{
-                    defaultValues: {
-                      email: billingEmail
-                    }
-                  }}
-                  onChange={(event) => {
-                    if (event.value?.email) {
-                      setBillingEmail(event.value.email);
-                    }
-                  }}
-                />
-              </div>
+                {/* Campo de Email con LinkAuthenticationElement */}
+                <div>
+                  <LinkAuthenticationElement 
+                    options={{
+                      defaultValues: {
+                        email: billingEmail
+                      }
+                    }}
+                    onChange={(event) => {
+                      if (event.value?.email) {
+                        setBillingEmail(event.value.email);
+                      }
+                    }}
+                  />
+                </div>
 
-              {/* Campo de Teléfono */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="billing-phone"
-                  name="billing-phone"
-                  value={billingPhone}
-                  onChange={(e) => setBillingPhone(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                  placeholder="+34 600 000 000"
-                  required
-                />
+                {/* Campo de Teléfono */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    id="billing-phone"
+                    name="billing-phone"
+                    value={billingPhone}
+                    onChange={(e) => setBillingPhone(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    placeholder="+34 600 000 000"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Título para la tarjeta */}
