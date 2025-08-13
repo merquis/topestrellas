@@ -1042,36 +1042,42 @@ export default function AdminDashboard() {
                           <span>🏢</span>
                           <span>Tu Negocio</span>
                         </h4>
-                        {businessPhotoUrl && (
-                          <div className="mb-4 flex justify-center">
-                            <img
-                              src={businessPhotoUrl}
-                              alt={selectedBusiness?.name || 'Foto del negocio'}
-                              className="aspect-square w-1/2 object-cover rounded-lg border"
-                              loading="lazy"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          </div>
-                        )}
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm text-gray-600">Nombre</p>
-                            <p className="font-semibold text-gray-900">{selectedBusiness?.name || 'Tu Negocio'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600">Dirección</p>
-                            <p className="text-gray-700">{selectedBusiness?.formatted_address || 'Dirección del negocio'}</p>
-                          </div>
-                          {selectedBusiness?.rating && (
-                            <div>
-                              <p className="text-sm text-gray-600">Rating actual</p>
-                              <div className="flex items-center gap-2">
-                                <span className="text-yellow-500">⭐</span>
-                                <span className="font-semibold">{selectedBusiness.rating}</span>
-                                <span className="text-gray-500">({selectedBusiness.user_ratings_total || 0} reseñas)</span>
-                              </div>
+                        
+                        <div className="flex gap-4">
+                          {/* Columna izquierda - Imagen (25%) */}
+                          {businessPhotoUrl && (
+                            <div className="w-1/4 flex-shrink-0">
+                              <img
+                                src={businessPhotoUrl}
+                                alt={selectedBusiness?.name || 'Foto del negocio'}
+                                className="aspect-square w-full object-cover rounded-lg border"
+                                loading="lazy"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
                             </div>
                           )}
+                          
+                          {/* Columna derecha - Datos (75%) */}
+                          <div className={`${businessPhotoUrl ? 'w-3/4' : 'w-full'} space-y-3`}>
+                            <div>
+                              <p className="text-sm text-gray-600">Nombre</p>
+                              <p className="font-semibold text-gray-900">{selectedBusiness?.name || 'Tu Negocio'}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Dirección</p>
+                              <p className="text-gray-700">{selectedBusiness?.formatted_address || 'Dirección del negocio'}</p>
+                            </div>
+                            {selectedBusiness?.rating && (
+                              <div>
+                                <p className="text-sm text-gray-600">Rating actual</p>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-yellow-500">⭐</span>
+                                  <span className="font-semibold">{selectedBusiness.rating}</span>
+                                  <span className="text-gray-500">({selectedBusiness.user_ratings_total || 0} reseñas)</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
