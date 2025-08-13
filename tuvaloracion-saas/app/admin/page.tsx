@@ -1043,11 +1043,11 @@ export default function AdminDashboard() {
                           <span>Tu Negocio</span>
                         </h4>
                         {businessPhotoUrl && (
-                          <div className="mb-4">
+                          <div className="mb-4 flex justify-center">
                             <img
                               src={businessPhotoUrl}
                               alt={selectedBusiness?.name || 'Foto del negocio'}
-                              className="aspect-square w-full object-cover rounded-lg border"
+                              className="aspect-square w-1/2 object-cover rounded-lg border"
                               loading="lazy"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />
