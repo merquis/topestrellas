@@ -32,6 +32,11 @@ interface PaymentFormProps {
     email: string;
     phone: string;
   };
+  addressComponents?: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>;
   onSuccess: () => void;
   onCancel: () => void;
 }

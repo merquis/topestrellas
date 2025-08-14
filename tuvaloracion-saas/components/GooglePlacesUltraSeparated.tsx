@@ -411,7 +411,7 @@ export function GooglePlacesUltraSeparated({
     try {
       const params = new URLSearchParams({
         placeId: suggestion.place_id,
-        fields: 'name,rating,user_ratings_total,formatted_address,international_phone_number,website,photos',
+        fields: 'name,rating,user_ratings_total,formatted_address,international_phone_number,website,photos,address_components',
         language: 'es'
       });
 

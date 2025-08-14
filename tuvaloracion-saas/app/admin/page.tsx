@@ -37,6 +37,7 @@ export default function AdminDashboard() {
   const [selectedBusiness, setSelectedBusiness] = useState<GooglePlaceData | null>(null);
   const [businessPlaceId, setBusinessPlaceId] = useState('');
   const [businessPhotoUrl, setBusinessPhotoUrl] = useState('');
+  const [businessAddressComponents, setBusinessAddressComponents] = useState<any[]>([]);
   const [selectedPlan, setSelectedPlan] = useState('trial');
   const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([]);
   const [registerError, setRegisterError] = useState('');
@@ -211,11 +212,13 @@ export default function AdminDashboard() {
       nombre: place?.name,
       puntuacion: place?.rating,
       numeroReseñas: place?.user_ratings_total,
-      direccion: place?.formatted_address
+      direccion: place?.formatted_address,
+      addressComponents: place?.address_components
     });
     setSelectedBusiness(place);
     setBusinessPlaceId(placeId);
     setBusinessPhotoUrl(photoUrl || '');
+    setBusinessAddressComponents(place?.address_components || []);
   };
 
   const handleStep1Submit = async (e: React.FormEvent) => {
@@ -261,6 +264,7 @@ export default function AdminDashboard() {
         businessName: selectedBusiness.name,
         placeId: businessPlaceId,
         address: selectedBusiness.formatted_address || '',
+        addressComponents: businessAddressComponents,
         businessPhone: selectedBusiness.international_phone_number || tempUserData.phone,
         website: selectedBusiness.website || '',
         rating: selectedBusiness.rating || 0,
@@ -1220,6 +1224,7 @@ export default function AdminDashboard() {
                             email: tempUserData?.email || '',
                             phone: tempUserData?.phone || ''
                           }}
+                          addressComponents={businessAddressComponents}
                           onSuccess={() => {
                             // Guardar mensaje de éxito
                             localStorage.setItem('paymentSuccess', 'true');
