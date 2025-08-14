@@ -234,27 +234,52 @@ export default function AdminDashboard() {
     if (place?.address_components) {
       const components = place.address_components;
       
+      // Debug: Ver todos los componentes
+      console.log('Address Components:', components);
+      
       // Extraer dirección (calle y número)
       const streetNumber = components.find(c => c.types.includes('street_number'))?.long_name || '';
       const route = components.find(c => c.types.includes('route'))?.long_name || '';
-      const address = `${route}${streetNumber ? ' ' + streetNumber : ''}`.trim();
-      if (address) setBillingAddress(address);
+      const address = streetNumber ? `${route} ${streetNumber}` : route;
+      
+      // Si no hay calle específica, intentar usar la dirección formateada
+      if (address) {
+        setBillingAddress(address);
+      } else if (place.formatted_address) {
+        // Extraer la primera parte de la dirección formateada (antes de la primera coma)
+        const addressParts = place.formatted_address.split(',');
+        if (addressParts.length > 0) {
+          setBillingAddress(addressParts[0].trim());
+        }
+      }
       
       // Extraer código postal
       const postalCode = components.find(c => c.types.includes('postal_code'))?.long_name || '';
-      if (postalCode) setBillingPostalCode(postalCode);
+      setBillingPostalCode(postalCode);
       
-      // Extraer ciudad
-      const city = components.find(c => c.types.includes('locality'))?.long_name || '';
-      if (city) setBillingCity(city);
+      // Extraer ciudad (locality o administrative_area_level_3)
+      const city = components.find(c => c.types.includes('locality'))?.long_name || 
+                   components.find(c => c.types.includes('administrative_area_level_3'))?.long_name || 
+                   components.find(c => c.types.includes('administrative_area_level_4'))?.long_name || '';
+      setBillingCity(city);
       
-      // Extraer provincia
-      const province = components.find(c => c.types.includes('administrative_area_level_2'))?.long_name || '';
-      if (province) setBillingProvince(province);
+      // Extraer provincia (administrative_area_level_2 o administrative_area_level_1)
+      const province = components.find(c => c.types.includes('administrative_area_level_2'))?.long_name || 
+                      components.find(c => c.types.includes('administrative_area_level_1'))?.long_name || '';
+      setBillingProvince(province);
       
       // Extraer país
       const country = components.find(c => c.types.includes('country'))?.long_name || 'España';
       setBillingCountry(country);
+      
+      // Log para debug
+      console.log('Datos extraídos:', {
+        address,
+        postalCode,
+        city,
+        province,
+        country
+      });
     }
   };
 
