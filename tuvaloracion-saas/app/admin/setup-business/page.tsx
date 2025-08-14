@@ -224,13 +224,6 @@ function SetupBusinessContent() {
       // Paso 3: Configuración adicional (premios, etc.)
       // Crear el SetupIntent antes de ir al paso 4
       handleCreateSetupIntent();
-    } else if (currentStep === 4) {
-      // Paso 4: Datos de facturación
-      if (!formData.billingName || !formData.billingEmail || !formData.billingPhone) {
-        setToast({ message: 'Por favor completa todos los datos de facturación', type: 'error' });
-        return;
-      }
-      handleSubmit();
     }
   };
 
