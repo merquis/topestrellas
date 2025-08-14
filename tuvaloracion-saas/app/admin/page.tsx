@@ -394,6 +394,7 @@ export default function AdminDashboard() {
           businessName: selectedBusiness.name,
           placeId: businessPlaceId,
           address: selectedBusiness.formatted_address || '',
+          addressComponents: businessAddressComponents, // Añadido para mantener consistencia
           businessPhone: selectedBusiness.international_phone_number || tempUserData.phone,
           website: selectedBusiness.website || '',
           rating: selectedBusiness.rating || 0,
