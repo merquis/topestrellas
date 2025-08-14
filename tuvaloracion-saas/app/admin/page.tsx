@@ -54,6 +54,11 @@ export default function AdminDashboard() {
   // Billing fields
   const [companyName, setCompanyName] = useState('');
   const [companyNIF, setCompanyNIF] = useState('');
+  const [billingAddress, setBillingAddress] = useState('');
+  const [billingPostalCode, setBillingPostalCode] = useState('');
+  const [billingCity, setBillingCity] = useState('');
+  const [billingProvince, setBillingProvince] = useState('');
+  const [billingCountry, setBillingCountry] = useState('España');
   const [billingFieldsError, setBillingFieldsError] = useState<{companyName?: string; companyNIF?: string}>({});
   
   // Dashboard states
@@ -224,6 +229,33 @@ export default function AdminDashboard() {
     setBusinessPlaceId(placeId);
     setBusinessPhotoUrl(photoUrl || '');
     setBusinessAddressComponents(place?.address_components || []);
+    
+    // Extraer componentes de dirección para facturación
+    if (place?.address_components) {
+      const components = place.address_components;
+      
+      // Extraer dirección (calle y número)
+      const streetNumber = components.find(c => c.types.includes('street_number'))?.long_name || '';
+      const route = components.find(c => c.types.includes('route'))?.long_name || '';
+      const address = `${route}${streetNumber ? ' ' + streetNumber : ''}`.trim();
+      if (address) setBillingAddress(address);
+      
+      // Extraer código postal
+      const postalCode = components.find(c => c.types.includes('postal_code'))?.long_name || '';
+      if (postalCode) setBillingPostalCode(postalCode);
+      
+      // Extraer ciudad
+      const city = components.find(c => c.types.includes('locality'))?.long_name || '';
+      if (city) setBillingCity(city);
+      
+      // Extraer provincia
+      const province = components.find(c => c.types.includes('administrative_area_level_2'))?.long_name || '';
+      if (province) setBillingProvince(province);
+      
+      // Extraer país
+      const country = components.find(c => c.types.includes('country'))?.long_name || 'España';
+      setBillingCountry(country);
+    }
   };
 
   const handleStep1Submit = async (e: React.FormEvent) => {
@@ -1275,20 +1307,71 @@ export default function AdminDashboard() {
                             />
                           </div>
 
-                          {/* Dirección del negocio */}
-                          {selectedBusiness?.formatted_address && (
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Dirección de facturación
-                              </label>
-                              <input
-                                type="text"
-                                value={selectedBusiness.formatted_address}
-                                readOnly
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-                              />
-                            </div>
-                          )}
+                          {/* Campos de dirección separados */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Dirección *
+                            </label>
+                            <input
+                              type="text"
+                              value={billingAddress}
+                              onChange={(e) => setBillingAddress(e.target.value)}
+                              placeholder="Calle y número"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Código Postal *
+                            </label>
+                            <input
+                              type="text"
+                              value={billingPostalCode}
+                              onChange={(e) => setBillingPostalCode(e.target.value)}
+                              placeholder="38001"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Ciudad *
+                            </label>
+                            <input
+                              type="text"
+                              value={billingCity}
+                              onChange={(e) => setBillingCity(e.target.value)}
+                              placeholder="Santa Cruz de Tenerife"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Provincia
+                            </label>
+                            <input
+                              type="text"
+                              value={billingProvince}
+                              onChange={(e) => setBillingProvince(e.target.value)}
+                              placeholder="Santa Cruz de Tenerife"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              País
+                            </label>
+                            <input
+                              type="text"
+                              value={billingCountry}
+                              onChange={(e) => setBillingCountry(e.target.value)}
+                              placeholder="España"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
