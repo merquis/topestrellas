@@ -194,121 +194,38 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
       <div className="bg-white p-8 rounded-b-2xl shadow-xl">
         {clientSecret ? (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Título de sección */}
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">📝 Datos de facturación</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Información que aparecerá en tus facturas
-              </p>
-            </div>
-
-            {/* Campos de facturación y Payment Element de Stripe */}
-            <div className="space-y-4">
-              {/* Sección unificada de datos de facturación */}
-              <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors space-y-4">
-                {/* Campo de Nombre completo */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    id="billing-name"
-                    name="billing-name"
-                    value={billingName}
-                    onChange={(e) => setBillingName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                    placeholder="Tu nombre completo"
-                    required
-                  />
-                </div>
-
-                {/* Campo de Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Correo electrónico
-                  </label>
-                  <input
-                    type="email"
-                    id="billing-email"
-                    name="billing-email"
-                    value={billingEmail}
-                    onChange={(e) => setBillingEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                    placeholder="tu@email.com"
-                    required
-                  />
-                </div>
-
-                {/* Campo de Teléfono */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    id="billing-phone"
-                    name="billing-phone"
-                    value={billingPhone}
-                    onChange={(e) => setBillingPhone(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
-                    placeholder="+34 600 000 000"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Título para la tarjeta */}
-              <div className="mt-6 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">💳 Método de pago</h3>
-              </div>
-
-              {/* Payment Element para la tarjeta */}
-              <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
-                <PaymentElement 
-                  options={{
-                    layout: 'tabs',
-                    paymentMethodOrder: ['card'],
-                    defaultValues: {
-                      billingDetails: {
-                        name: billingName,
-                        email: billingEmail,
-                        phone: billingPhone,
-                        address: {
-                          country: 'ES'
-                        }
+            {/* Payment Element para la tarjeta */}
+            <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
+              <PaymentElement 
+                options={{
+                  layout: 'tabs',
+                  paymentMethodOrder: ['card'],
+                  defaultValues: {
+                    billingDetails: {
+                      name: billingName,
+                      email: billingEmail,
+                      phone: billingPhone,
+                      address: {
+                        country: 'ES'
                       }
-                    },
-                    fields: {
-                      billingDetails: {
-                        name: 'never', // Lo manejamos manualmente arriba
-                        email: 'never', // Ya lo manejamos con LinkAuthenticationElement
-                        phone: 'never', // Lo manejamos manualmente arriba
-                        address: 'never'
-                      }
-                    },
-                    // Deshabilitar la opción de guardar para pagos futuros
-                    wallets: {
-                      applePay: 'never',
-                      googlePay: 'never'
                     }
-                  }}
-                />
-              </div>
+                  },
+                  fields: {
+                    billingDetails: {
+                      name: 'auto',
+                      email: 'auto',
+                      phone: 'auto',
+                      address: 'auto'
+                    }
+                  },
+                  // Deshabilitar la opción de guardar para pagos futuros
+                  wallets: {
+                    applePay: 'never',
+                    googlePay: 'never'
+                  }
+                }}
+              />
             </div>
-
-            {/* Información sobre los campos de facturación */}
-            {userData && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900 mb-1">
-                  ℹ️ Información de facturación
-                </p>
-                <p className="text-xs text-blue-700">
-                  Los campos están pre-rellenados con tus datos del registro. 
-                  Puedes modificarlos si necesitas usar información diferente para la facturación.
-                </p>
-              </div>
-            )}
 
             {/* Mensaje de error */}
             {message && (
