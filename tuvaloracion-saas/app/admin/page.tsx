@@ -1291,44 +1291,6 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </div>
-
-                      {/* Información de facturación */}
-                      <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                        <h5 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                          <span>💳</span>
-                          <span>Información importante</span>
-                        </h5>
-                        <ul className="space-y-2 text-sm text-blue-800">
-                          {selectedPlanData?.trialDays > 0 && (
-                            <li className="flex items-start gap-2">
-                              <span>📅</span>
-                              <span>
-                                Primer cobro: {(() => {
-                                  const date = new Date();
-                                  date.setDate(date.getDate() + selectedPlanData.trialDays);
-                                  return date.toLocaleDateString('es-ES', {
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric'
-                                  });
-                                })()}
-                              </span>
-                            </li>
-                          )}
-                          <li className="flex items-start gap-2">
-                            <span>🔄</span>
-                            <span>Renovación automática {selectedPlanData?.interval === 'month' ? 'mensual' : 'anual'}</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span>❌</span>
-                            <span>Cancela cuando quieras sin penalización</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span>🔒</span>
-                            <span>Pago seguro procesado por Stripe</span>
-                          </li>
-                        </ul>
-                      </div>
                     </div>
 
                     {/* Columna Derecha - Formulario de pago */}
