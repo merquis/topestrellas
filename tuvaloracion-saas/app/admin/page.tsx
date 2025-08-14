@@ -61,6 +61,13 @@ export default function AdminDashboard() {
   const [billingCountry, setBillingCountry] = useState('España');
   const [billingFieldsError, setBillingFieldsError] = useState<{companyName?: string; companyNIF?: string}>({});
   
+  // Nuevos estados para el formulario de facturación
+  const [customerType, setCustomerType] = useState<'autonomo' | 'empresa'>('autonomo');
+  const [legalName, setLegalName] = useState('');
+  const [contactPerson, setContactPerson] = useState('');
+  const [billingEmail, setBillingEmail] = useState('');
+  const [billingPhone, setBillingPhone] = useState('');
+  
   // Dashboard states
   const [businesses, setBusinesses] = useState([]);
   const [stats, setStats] = useState({
@@ -1222,6 +1229,242 @@ export default function AdminDashboard() {
                               </div>
                             </div>
                           )}
+                        </div>
+                      </div>
+
+                      {/* Formulario de datos de facturación */}
+                      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                          <span>📋</span>
+                          <span>Datos de facturación</span>
+                        </h4>
+                        <p className="text-gray-600 text-sm mb-6">Información que aparecerá en tus facturas</p>
+                        
+                        <div className="space-y-4">
+                          {/* Tipo de cliente */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                              Tipo de cliente *
+                            </label>
+                            <div className="grid grid-cols-2 gap-4">
+                              <label className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                                customerType === 'autonomo' 
+                                  ? 'border-blue-500 bg-blue-50' 
+                                  : 'border-gray-300 hover:border-blue-300'
+                              }`}>
+                                <input
+                                  type="radio"
+                                  name="customerType"
+                                  value="autonomo"
+                                  checked={customerType === 'autonomo'}
+                                  onChange={(e) => setCustomerType(e.target.value as 'autonomo' | 'empresa')}
+                                  className="sr-only"
+                                />
+                                <div className="flex items-center">
+                                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                                    customerType === 'autonomo'
+                                      ? 'border-blue-500 bg-blue-500'
+                                      : 'border-gray-400'
+                                  }`}>
+                                    {customerType === 'autonomo' && (
+                                      <div className="w-2 h-2 bg-white rounded-full m-auto mt-0.5"></div>
+                                    )}
+                                  </div>
+                                  <span className="font-medium">Autónomo</span>
+                                </div>
+                              </label>
+                              
+                              <label className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                                customerType === 'empresa' 
+                                  ? 'border-blue-500 bg-blue-50' 
+                                  : 'border-gray-300 hover:border-blue-300'
+                              }`}>
+                                <input
+                                  type="radio"
+                                  name="customerType"
+                                  value="empresa"
+                                  checked={customerType === 'empresa'}
+                                  onChange={(e) => setCustomerType(e.target.value as 'autonomo' | 'empresa')}
+                                  className="sr-only"
+                                />
+                                <div className="flex items-center">
+                                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                                    customerType === 'empresa'
+                                      ? 'border-blue-500 bg-blue-500'
+                                      : 'border-gray-400'
+                                  }`}>
+                                    {customerType === 'empresa' && (
+                                      <div className="w-2 h-2 bg-white rounded-full m-auto mt-0.5"></div>
+                                    )}
+                                  </div>
+                                  <span className="font-medium">Empresa</span>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+
+                          {/* Nombre fiscal */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {customerType === 'empresa' ? 'Razón Social *' : 'Nombre fiscal completo *'}
+                            </label>
+                            <input
+                              type="text"
+                              value={legalName || selectedBusiness?.name || ''}
+                              onChange={(e) => setLegalName(e.target.value)}
+                              placeholder={customerType === 'empresa' 
+                                ? "Ej: Restaurante El Buen Sabor S.L." 
+                                : "Ej: Juan García López"}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              required
+                            />
+                            {customerType === 'autonomo' && (
+                              <p className="text-xs text-orange-500 mt-1">
+                                ⚠️ Este campo es obligatorio para la facturación
+                              </p>
+                            )}
+                          </div>
+
+                          {/* NIF/CIF */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {customerType === 'empresa' ? 'CIF *' : 'NIF *'}
+                            </label>
+                            <input
+                              type="text"
+                              value={companyNIF}
+                              onChange={(e) => setCompanyNIF(e.target.value.toUpperCase())}
+                              placeholder={customerType === 'empresa' ? "Ej: B12345678" : "Ej: 12345678Z"}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              required
+                            />
+                            <p className="text-xs text-orange-500 mt-1">
+                              ⚠️ Este campo es obligatorio para la facturación
+                            </p>
+                          </div>
+
+                          {/* Persona de contacto */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Persona de contacto
+                            </label>
+                            <input
+                              type="text"
+                              value={contactPerson || tempUserData?.name || ''}
+                              onChange={(e) => setContactPerson(e.target.value)}
+                              placeholder="Juan"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+
+                          {/* Email para facturas */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Email para facturas *
+                            </label>
+                            <input
+                              type="email"
+                              value={billingEmail || tempUserData?.email || ''}
+                              onChange={(e) => setBillingEmail(e.target.value)}
+                              placeholder="juan@gmail.com"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              required
+                            />
+                          </div>
+
+                          {/* Teléfono */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Teléfono
+                            </label>
+                            <input
+                              type="tel"
+                              value={billingPhone || tempUserData?.phone || ''}
+                              onChange={(e) => setBillingPhone(e.target.value)}
+                              placeholder="666666666"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+
+                          {/* Dirección fiscal */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Dirección fiscal *
+                            </label>
+                            <input
+                              type="text"
+                              value={billingAddress}
+                              onChange={(e) => setBillingAddress(e.target.value)}
+                              placeholder="Calle y número"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              required
+                            />
+                          </div>
+
+                          {/* Código Postal */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Código Postal *
+                            </label>
+                            <input
+                              type="text"
+                              value={billingPostalCode}
+                              onChange={(e) => setBillingPostalCode(e.target.value)}
+                              placeholder="38001"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              required
+                            />
+                          </div>
+
+                          {/* Ciudad */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Ciudad *
+                            </label>
+                            <input
+                              type="text"
+                              value={billingCity}
+                              onChange={(e) => setBillingCity(e.target.value)}
+                              placeholder="Santa Cruz de Tenerife"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              required
+                            />
+                          </div>
+
+                          {/* Provincia */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Provincia
+                            </label>
+                            <input
+                              type="text"
+                              value={billingProvince}
+                              onChange={(e) => setBillingProvince(e.target.value)}
+                              placeholder="Santa Cruz de Tenerife"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+
+                          {/* País */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              País
+                            </label>
+                            <input
+                              type="text"
+                              value="España"
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                            />
+                          </div>
+
+                          {/* Mensaje informativo */}
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p className="text-sm text-blue-800">
+                              <span className="font-semibold">ℹ️ Importante:</span> Estos datos aparecerán en todas tus facturas. 
+                              Asegúrate de que coinciden exactamente con tu información fiscal oficial.
+                            </p>
+                          </div>
                         </div>
                       </div>
 
