@@ -1167,6 +1167,68 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
+                      {/* Datos de facturación - NUEVO */}
+                      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span>📝</span>
+                          <span>Datos de facturación</span>
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-4">Información que aparecerá en tus facturas</p>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Nombre completo
+                            </label>
+                            <input
+                              type="text"
+                              value={tempUserData?.name || ''}
+                              readOnly
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Correo electrónico
+                            </label>
+                            <input
+                              type="email"
+                              value={tempUserData?.email || ''}
+                              readOnly
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Teléfono
+                            </label>
+                            <input
+                              type="tel"
+                              value={tempUserData?.phone || ''}
+                              readOnly
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                            />
+                          </div>
+
+                          {/* Dirección del negocio */}
+                          {selectedBusiness?.formatted_address && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Dirección de facturación
+                              </label>
+                              <input
+                                type="text"
+                                value={selectedBusiness.formatted_address}
+                                readOnly
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Información de facturación */}
                       <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                         <h5 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
