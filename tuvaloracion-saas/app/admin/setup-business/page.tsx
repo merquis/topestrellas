@@ -233,7 +233,16 @@ function SetupBusinessContent() {
       setCurrentStep(3);
     } else if (currentStep === 3) {
       // Paso 3: Configuración adicional (premios, etc.)
-      // Crear el SetupIntent antes de ir al paso 4
+      // Simplemente pasar al paso 4 para mostrar el formulario de facturación
+      setCurrentStep(4);
+    } else if (currentStep === 4 && !stripeClientSecret) {
+      // Validar datos de facturación antes de crear el SetupIntent
+      if (!formData.taxId || !formData.legalName || !formData.billingEmail || 
+          !formData.billingAddress || !formData.billingPostalCode || !formData.billingCity) {
+        setToast({ message: 'Por favor completa todos los campos de facturación requeridos', type: 'error' });
+        return;
+      }
+      // Ahora sí crear el SetupIntent con los datos de facturación
       handleCreateSetupIntent();
     }
   };
@@ -1048,10 +1057,12 @@ function SetupBusinessContent() {
           ) : currentStep === 4 ? (
             <button
               onClick={handleNextStep}
-              disabled={loading}
+              disabled={loading || loadingStripe}
               className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50 font-semibold text-lg"
             >
-              {loading ? 'Procesando...' : selectedPlan === 'trial' ? 'Iniciar prueba de 7 días GRATIS' : 'Finalizar y Pagar'}
+              {loading || loadingStripe ? 'Procesando...' : 
+                !stripeClientSecret ? 'Continuar al pago →' : 
+                selectedPlan === 'trial' ? 'Iniciar prueba de 7 días GRATIS' : 'Finalizar y Pagar'}
             </button>
           ) : (
             <button
