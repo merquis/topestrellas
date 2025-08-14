@@ -202,9 +202,6 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                   paymentMethodOrder: ['card'],
                   defaultValues: {
                     billingDetails: {
-                      name: billingName,
-                      email: billingEmail,
-                      phone: billingPhone,
                       address: {
                         country: 'ES'
                       }
@@ -212,10 +209,9 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                   },
                   fields: {
                     billingDetails: {
-                      name: 'auto',
-                      email: 'auto',
-                      phone: 'auto',
-                      address: 'auto'
+                      address: {
+                        country: 'never'
+                      }
                     }
                   },
                   // Deshabilitar la opción de guardar para pagos futuros
