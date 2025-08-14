@@ -113,7 +113,18 @@ function SetupBusinessContent() {
       'REFRESCO',
       'MOJITO',
       'CHUPITO'
-    ]
+    ],
+    // Nuevos campos de facturación
+    customerType: 'autonomo' as 'autonomo' | 'empresa',
+    taxId: '',
+    legalName: '',
+    contactPerson: '',
+    billingEmail: '',
+    billingPhone: '',
+    billingAddress: '',
+    billingPostalCode: '',
+    billingCity: '',
+    billingProvince: ''
   });
 
   // Estados para el paso 4 - Stripe
@@ -203,9 +214,9 @@ function SetupBusinessContent() {
     setSelectedPlan(planId);
   };
 
-  const togglePlanExpanded = (planId: string, e: React.MouseEvent) => {
+  const togglePlanExpanded = (planId: string, e: any) => {
     e.stopPropagation(); // Evitar que se seleccione el plan al hacer clic en "Ver más"
-    setExpandedPlans(prev => ({
+    setExpandedPlans((prev: any) => ({
       ...prev,
       [planId]: !prev[planId]
     }));
@@ -321,7 +332,7 @@ function SetupBusinessContent() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -739,12 +750,254 @@ function SetupBusinessContent() {
         {/* Step 4: Datos de facturación y pago con Stripe */}
         {currentStep === 4 && (
           <div className="max-w-4xl mx-auto">
-            {loadingStripe ? (
+            {/* Formulario de datos de facturación */}
+            {!stripeClientSecret ? (
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <h2 className="text-2xl font-bold mb-2">📋 Datos de facturación</h2>
+                <p className="text-gray-600 text-sm mb-6">Información que aparecerá en tus facturas</p>
+                
+                <div className="space-y-6">
+                  {/* Tipo de cliente */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Tipo de cliente *
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        formData.customerType === 'autonomo' 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-300 hover:border-blue-300'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="customerType"
+                          value="autonomo"
+                          checked={formData.customerType === 'autonomo'}
+                          onChange={handleChange}
+                          className="sr-only"
+                        />
+                        <div className="flex items-center">
+                          <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                            formData.customerType === 'autonomo'
+                              ? 'border-blue-500 bg-blue-500'
+                              : 'border-gray-400'
+                          }`}>
+                            {formData.customerType === 'autonomo' && (
+                              <div className="w-2 h-2 bg-white rounded-full m-auto mt-0.5"></div>
+                            )}
+                          </div>
+                          <span className="font-medium">Autónomo</span>
+                        </div>
+                      </label>
+                      
+                      <label className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        formData.customerType === 'empresa' 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-300 hover:border-blue-300'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="customerType"
+                          value="empresa"
+                          checked={formData.customerType === 'empresa'}
+                          onChange={handleChange}
+                          className="sr-only"
+                        />
+                        <div className="flex items-center">
+                          <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                            formData.customerType === 'empresa'
+                              ? 'border-blue-500 bg-blue-500'
+                              : 'border-gray-400'
+                          }`}>
+                            {formData.customerType === 'empresa' && (
+                              <div className="w-2 h-2 bg-white rounded-full m-auto mt-0.5"></div>
+                            )}
+                          </div>
+                          <span className="font-medium">Empresa</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Nombre de empresa / Razón social */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {formData.customerType === 'empresa' ? 'Razón Social *' : 'Nombre fiscal completo *'}
+                    </label>
+                    <input
+                      type="text"
+                      name="legalName"
+                      value={formData.legalName || formData.businessName}
+                      onChange={handleChange}
+                      placeholder={formData.customerType === 'empresa' 
+                        ? "Ej: Restaurante El Buen Sabor S.L." 
+                        : "Ej: Juan García López"}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                    {formData.customerType === 'autonomo' && (
+                      <p className="text-xs text-orange-500 mt-1">
+                        ⚠️ Este campo es obligatorio para la facturación
+                      </p>
+                    )}
+                  </div>
+
+                  {/* NIF/CIF */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {formData.customerType === 'empresa' ? 'CIF *' : 'NIF *'}
+                    </label>
+                    <input
+                      type="text"
+                      name="taxId"
+                      value={formData.taxId}
+                      onChange={handleChange}
+                      placeholder={formData.customerType === 'empresa' ? "Ej: B12345678" : "Ej: 12345678Z"}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                    <p className="text-xs text-orange-500 mt-1">
+                      ⚠️ Este campo es obligatorio para la facturación
+                    </p>
+                  </div>
+
+                  {/* Nombre completo (persona de contacto) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Persona de contacto
+                    </label>
+                    <input
+                      type="text"
+                      name="contactPerson"
+                      value={formData.contactPerson || userName}
+                      onChange={handleChange}
+                      placeholder="Juan"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Correo electrónico */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email para facturas *
+                    </label>
+                    <input
+                      type="email"
+                      name="billingEmail"
+                      value={formData.billingEmail || userEmail}
+                      onChange={handleChange}
+                      placeholder="juan@gmail.com"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  {/* Teléfono */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Teléfono
+                    </label>
+                    <input
+                      type="tel"
+                      name="billingPhone"
+                      value={formData.billingPhone || formData.phone}
+                      onChange={handleChange}
+                      placeholder="666666666"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Dirección */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dirección fiscal *
+                    </label>
+                    <input
+                      type="text"
+                      name="billingAddress"
+                      value={formData.billingAddress || formData.address}
+                      onChange={handleChange}
+                      placeholder="Calle y número"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  {/* Código Postal */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Código Postal *
+                    </label>
+                    <input
+                      type="text"
+                      name="billingPostalCode"
+                      value={formData.billingPostalCode || formData.postalCode}
+                      onChange={handleChange}
+                      placeholder="38001"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  {/* Ciudad */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ciudad *
+                    </label>
+                    <input
+                      type="text"
+                      name="billingCity"
+                      value={formData.billingCity || formData.city}
+                      onChange={handleChange}
+                      placeholder="Santa Cruz de Tenerife"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  {/* Provincia */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Provincia
+                    </label>
+                    <input
+                      type="text"
+                      name="billingProvince"
+                      value={formData.billingProvince || formData.city}
+                      onChange={handleChange}
+                      placeholder="Santa Cruz de Tenerife"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* País */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      País
+                    </label>
+                    <input
+                      type="text"
+                      value="España"
+                      disabled
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Mensaje informativo */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-semibold">ℹ️ Importante:</span> Estos datos aparecerán en todas tus facturas. 
+                      Asegúrate de que coinciden exactamente con tu información fiscal oficial.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : loadingStripe ? (
               <div className="bg-white rounded-xl shadow-lg p-12 text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                 <p className="text-gray-600">Preparando el formulario de pago...</p>
               </div>
-            ) : stripeClientSecret ? (
+            ) : (
               <StripePaymentForm
                 businessId={businessId}
                 businessName={formData.businessName}
@@ -757,9 +1010,9 @@ function SetupBusinessContent() {
                 }}
                 clientSecret={stripeClientSecret}
                 userData={{
-                  name: userName,
-                  email: userEmail,
-                  phone: formData.phone
+                  name: formData.legalName || userName,
+                  email: formData.billingEmail || userEmail,
+                  phone: formData.billingPhone || formData.phone
                 }}
                 onSuccess={async () => {
                   // Crear el negocio después del pago exitoso
@@ -770,16 +1023,6 @@ function SetupBusinessContent() {
                   setStripeClientSecret('');
                 }}
               />
-            ) : (
-              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                <p className="text-red-600">Error al cargar el formulario de pago. Por favor, intenta de nuevo.</p>
-                <button
-                  onClick={() => setCurrentStep(3)}
-                  className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Volver
-                </button>
-              </div>
             )}
           </div>
         )}
