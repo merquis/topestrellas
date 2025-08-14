@@ -1310,7 +1310,7 @@ export default function AdminDashboard() {
                             </label>
                             <input
                               type="text"
-                              value={legalName || selectedBusiness?.name || ''}
+                              value={legalName || (customerType === 'autonomo' ? tempUserData?.name : selectedBusiness?.name) || ''}
                               onChange={(e) => setLegalName(e.target.value)}
                               placeholder={customerType === 'empresa' 
                                 ? "Ej: Restaurante El Buen Sabor S.L." 
