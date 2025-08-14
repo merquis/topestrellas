@@ -51,6 +51,11 @@ export default function AdminDashboard() {
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   
+  // Billing fields
+  const [companyName, setCompanyName] = useState('');
+  const [companyNIF, setCompanyNIF] = useState('');
+  const [billingFieldsError, setBillingFieldsError] = useState<{companyName?: string; companyNIF?: string}>({});
+  
   // Dashboard states
   const [businesses, setBusinesses] = useState([]);
   const [stats, setStats] = useState({
@@ -1068,10 +1073,6 @@ export default function AdminDashboard() {
                               <p className="text-sm text-gray-600">Nombre</p>
                               <p className="font-semibold text-gray-900">{selectedBusiness?.name || 'Tu Negocio'}</p>
                             </div>
-                            <div>
-                              <p className="text-sm text-gray-600">Dirección</p>
-                              <p className="text-gray-700">{selectedBusiness?.formatted_address || 'Dirección del negocio'}</p>
-                            </div>
                             {selectedBusiness?.rating && (
                               <div>
                                 <p className="text-sm text-gray-600">Rating actual</p>
@@ -1121,7 +1122,7 @@ export default function AdminDashboard() {
                                 <ul className="space-y-2">
                                   {(showAllFeatures 
                                     ? selectedPlanData.features 
-                                    : selectedPlanData.features.slice(0, 5)
+                                    : selectedPlanData.features.slice(0, 3)
                                   ).map((feature: string, index: number) => (
                                     <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
                                       <span className="text-green-500 mt-0.5 flex-shrink-0">
@@ -1135,7 +1136,7 @@ export default function AdminDashboard() {
                                 </ul>
                                 
                                 {/* Botón Ver más/menos */}
-                                {selectedPlanData.features.length > 5 && (
+                                {selectedPlanData.features.length > 3 && (
                                   <button
                                     onClick={(e) => {
                                       e.preventDefault();
@@ -1146,7 +1147,7 @@ export default function AdminDashboard() {
                                     <span>
                                       {showAllFeatures 
                                         ? 'Ver menos características' 
-                                        : `Ver todas las ventajas (+${selectedPlanData.features.length - 5} más)`
+                                        : `Ver todas las ventajas (+${selectedPlanData.features.length - 3} más)`
                                       }
                                     </span>
                                     <svg 
@@ -1176,6 +1177,68 @@ export default function AdminDashboard() {
                         <p className="text-sm text-gray-600 mb-4">Información que aparecerá en tus facturas</p>
                         
                         <div className="space-y-4">
+                          {/* Nombre de empresa - OBLIGATORIO */}
+                          <div>
+                            <label className="block text-sm font-medium mb-1">
+                              <span className={`${!companyName ? 'text-red-600' : 'text-gray-700'}`}>
+                                Nombre de empresa *
+                              </span>
+                            </label>
+                            <input
+                              type="text"
+                              value={companyName}
+                              onChange={(e) => {
+                                setCompanyName(e.target.value);
+                                if (e.target.value) {
+                                  setBillingFieldsError(prev => ({...prev, companyName: undefined}));
+                                }
+                              }}
+                              placeholder="Ej: Restaurante El Buen Sabor S.L."
+                              className={`w-full px-3 py-2 border rounded-lg transition-colors ${
+                                !companyName 
+                                  ? 'border-red-300 bg-red-50 placeholder-red-400 focus:border-red-500 focus:ring-red-500' 
+                                  : 'border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500'
+                              }`}
+                            />
+                            {!companyName && (
+                              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                                <span>⚠️</span>
+                                <span>Este campo es obligatorio para la facturación</span>
+                              </p>
+                            )}
+                          </div>
+                          
+                          {/* NIF/CIF - OBLIGATORIO */}
+                          <div>
+                            <label className="block text-sm font-medium mb-1">
+                              <span className={`${!companyNIF ? 'text-red-600' : 'text-gray-700'}`}>
+                                NIF/CIF *
+                              </span>
+                            </label>
+                            <input
+                              type="text"
+                              value={companyNIF}
+                              onChange={(e) => {
+                                setCompanyNIF(e.target.value.toUpperCase());
+                                if (e.target.value) {
+                                  setBillingFieldsError(prev => ({...prev, companyNIF: undefined}));
+                                }
+                              }}
+                              placeholder="Ej: B12345678"
+                              className={`w-full px-3 py-2 border rounded-lg transition-colors ${
+                                !companyNIF 
+                                  ? 'border-red-300 bg-red-50 placeholder-red-400 focus:border-red-500 focus:ring-red-500' 
+                                  : 'border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500'
+                              }`}
+                            />
+                            {!companyNIF && (
+                              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                                <span>⚠️</span>
+                                <span>Este campo es obligatorio para la facturación</span>
+                              </p>
+                            )}
+                          </div>
+                          
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Nombre completo

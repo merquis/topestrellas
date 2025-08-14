@@ -238,14 +238,53 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
               </div>
             )}
 
-            {/* Información de seguridad */}
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-              <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-              </svg>
-              <div className="text-sm text-gray-600">
-                <p className="font-medium text-gray-700 mb-1">Pago seguro con Stripe</p>
-                <p>Tu información de pago está encriptada y nunca se almacena en nuestros servidores.</p>
+            {/* Información importante */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">💳</span>
+                <h4 className="font-semibold text-gray-900">Información importante</h4>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-base mt-0.5">📅</span>
+                  <div>
+                    <span className="font-medium text-gray-700">Primer cobro: </span>
+                    <span className="text-gray-600">
+                      {hasTrial ? (
+                        (() => {
+                          const firstChargeDate = new Date();
+                          firstChargeDate.setDate(firstChargeDate.getDate() + (planData.trialDays || 7));
+                          return firstChargeDate.toLocaleDateString('es-ES', { 
+                            day: 'numeric', 
+                            month: 'long', 
+                            year: 'numeric' 
+                          });
+                        })()
+                      ) : (
+                        'Hoy'
+                      )}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-base mt-0.5">🔄</span>
+                  <div>
+                    <span className="font-medium text-gray-700">Renovación automática </span>
+                    <span className="text-gray-600">{planData.interval === 'month' ? 'mensual' : 'anual'}</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-base mt-0.5">❌</span>
+                  <div>
+                    <span className="text-gray-600">Cancela cuando quieras sin penalización</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-base mt-0.5">🔒</span>
+                  <div>
+                    <span className="text-gray-600">Pago seguro procesado por Stripe</span>
+                  </div>
+                </div>
               </div>
             </div>
 
