@@ -5,7 +5,6 @@ import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
   PaymentElement,
-  LinkAuthenticationElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
@@ -219,19 +218,20 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                   />
                 </div>
 
-                {/* Campo de Email con LinkAuthenticationElement */}
+                {/* Campo de Email */}
                 <div>
-                  <LinkAuthenticationElement 
-                    options={{
-                      defaultValues: {
-                        email: billingEmail
-                      }
-                    }}
-                    onChange={(event) => {
-                      if (event.value?.email) {
-                        setBillingEmail(event.value.email);
-                      }
-                    }}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Correo electrónico
+                  </label>
+                  <input
+                    type="email"
+                    id="billing-email"
+                    name="billing-email"
+                    value={billingEmail}
+                    onChange={(e) => setBillingEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-base"
+                    placeholder="tu@email.com"
+                    required
                   />
                 </div>
 

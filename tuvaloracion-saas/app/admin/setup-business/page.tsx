@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Toast from '@/components/Toast';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { saveAuth } from '@/lib/auth';
+import StripePaymentForm from '@/components/StripePaymentForm';
 
 function SetupBusinessContent() {
   const router = useRouter();
@@ -112,12 +113,13 @@ function SetupBusinessContent() {
       'REFRESCO',
       'MOJITO',
       'CHUPITO'
-    ],
-    // Datos de facturación para el paso 4
-    billingName: '',
-    billingEmail: '',
-    billingPhone: ''
+    ]
   });
+
+  // Estados para el paso 4 - Stripe
+  const [stripeClientSecret, setStripeClientSecret] = useState('');
+  const [businessId, setBusinessId] = useState('');
+  const [loadingStripe, setLoadingStripe] = useState(false);
 
   // Estado para el autocompletado de provincias
   const [provinceSearch, setProvinceSearch] = useState('');
@@ -220,7 +222,8 @@ function SetupBusinessContent() {
       setCurrentStep(3);
     } else if (currentStep === 3) {
       // Paso 3: Configuración adicional (premios, etc.)
-      setCurrentStep(4);
+      // Crear el SetupIntent antes de ir al paso 4
+      handleCreateSetupIntent();
     } else if (currentStep === 4) {
       // Paso 4: Datos de facturación
       if (!formData.billingName || !formData.billingEmail || !formData.billingPhone) {
@@ -234,6 +237,43 @@ function SetupBusinessContent() {
   const handlePreviousStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleCreateSetupIntent = async () => {
+    setLoadingStripe(true);
+    try {
+      // Primero crear un ID temporal para el negocio
+      const tempBusinessId = `temp_${Date.now()}`;
+      setBusinessId(tempBusinessId);
+
+      // Crear el SetupIntent en Stripe
+      const response = await fetch('/api/admin/subscriptions/create-setup-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          name: userName,
+          businessId: tempBusinessId,
+          planKey: selectedPlan,
+          isNewUser: true
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStripeClientSecret(data.clientSecret);
+        setCurrentStep(4);
+      } else {
+        const error = await response.json();
+        setToast({ message: `Error: ${error.error}`, type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error al preparar el pago', type: 'error' });
+    } finally {
+      setLoadingStripe(false);
     }
   };
 
@@ -703,96 +743,51 @@ function SetupBusinessContent() {
           </div>
         )}
 
-        {/* Step 4: Datos de facturación y pago */}
+        {/* Step 4: Datos de facturación y pago con Stripe */}
         {currentStep === 4 && (
-          <div className="max-w-2xl mx-auto">
-            {/* Card del plan seleccionado */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium opacity-90">Último paso</h3>
-                  <h2 className="text-2xl font-bold">
-                    {plans.find(p => p.id === selectedPlan)?.name || 'Plan seleccionado'}
-                  </h2>
-                  <p className="text-sm opacity-90 mt-1">Plan básico</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold">
-                    {plans.find(p => p.id === selectedPlan)?.price || '0€'}
-                  </div>
-                  <div className="text-sm opacity-90">
-                    {plans.find(p => p.id === selectedPlan)?.duration || ''}
-                  </div>
-                </div>
+          <div className="max-w-4xl mx-auto">
+            {loadingStripe ? (
+              <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Preparando el formulario de pago...</p>
               </div>
-            </div>
-
-            {/* Formulario de datos de facturación */}
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              <h2 className="text-xl font-bold mb-2">🔒 Datos de facturación</h2>
-              <p className="text-sm text-gray-600 mb-6">Información que aparecerá en tus facturas</p>
-              
-              {/* Contenedor único que engloba los 3 campos */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-                <div className="space-y-4">
-                  {/* Nombre completo - PRIMERO */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nombre completo
-                    </label>
-                    <input
-                      type="text"
-                      name="billingName"
-                      value={formData.billingName}
-                      onChange={handleChange}
-                      placeholder="Jesus"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                      required
-                    />
-                  </div>
-
-                  {/* Correo electrónico - SEGUNDO */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Correo electrónico
-                    </label>
-                    <input
-                      type="email"
-                      name="billingEmail"
-                      value={formData.billingEmail}
-                      onChange={handleChange}
-                      placeholder="jesus0985d@gmail.com"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                      required
-                    />
-                  </div>
-
-                  {/* Teléfono - TERCERO */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Teléfono
-                    </label>
-                    <input
-                      type="tel"
-                      name="billingPhone"
-                      value={formData.billingPhone}
-                      onChange={handleChange}
-                      placeholder="666543026"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                      required
-                    />
-                  </div>
-                </div>
+            ) : stripeClientSecret ? (
+              <StripePaymentForm
+                businessId={businessId}
+                businessName={formData.businessName}
+                planData={{
+                  key: selectedPlan,
+                  name: plans.find(p => p.id === selectedPlan)?.name || 'Plan básico',
+                  recurringPrice: parseFloat(plans.find(p => p.id === selectedPlan)?.price?.replace('€', '') || '0') * 100,
+                  trialDays: selectedPlan === 'trial' ? 7 : 0,
+                  interval: 'month'
+                }}
+                clientSecret={stripeClientSecret}
+                userData={{
+                  name: userName,
+                  email: userEmail,
+                  phone: formData.phone
+                }}
+                onSuccess={async () => {
+                  // Crear el negocio después del pago exitoso
+                  await handleSubmit();
+                }}
+                onCancel={() => {
+                  setCurrentStep(3);
+                  setStripeClientSecret('');
+                }}
+              />
+            ) : (
+              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                <p className="text-red-600">Error al cargar el formulario de pago. Por favor, intenta de nuevo.</p>
+                <button
+                  onClick={() => setCurrentStep(3)}
+                  className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Volver
+                </button>
               </div>
-
-              {/* Nota sobre el pago */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  💳 El pago se procesará de forma segura a través de Stripe. 
-                  {selectedPlan === 'trial' && ' Disfruta de 30 días gratis sin compromiso.'}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
