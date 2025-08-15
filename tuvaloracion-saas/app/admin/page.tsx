@@ -525,23 +525,8 @@ export default function AdminDashboard() {
     setIsLoadingPayment(true);
     
     try {
-      // Preparar datos de facturación
-      const billingInfo = {
-        customerType,
-        legalName: legalName || (customerType === 'autonomo' ? tempUserData?.name : selectedBusiness?.name) || '',
-        taxId: companyNIF,
-        email: billingEmail || tempUserData?.email || '',
-        phone: billingPhone || tempUserData?.phone || '',
-        address: {
-          line1: billingAddress,
-          line2: '', // Opcional
-          city: billingCity,
-          state: billingProvince,
-          postal_code: billingPostalCode,
-          country: 'ES'
-        }
-      };
-
+      // NO enviar datos de facturación en este momento
+      // Solo crear el SetupIntent para validar el método de pago
       const subscriptionResponse = await fetch('/api/admin/subscriptions', {
         method: 'POST',
         headers: {
@@ -551,8 +536,8 @@ export default function AdminDashboard() {
           businessId,
           planKey: plan.key,
           userEmail: tempUserData.email,
-          action: 'subscribe',
-          billingInfo  // Enviar datos de facturación
+          action: 'subscribe'
+          // NO incluir billingInfo aquí - se enviará después de validar el pago
         }),
       });
 
@@ -1523,6 +1508,19 @@ export default function AdminDashboard() {
                             phone: tempUserData?.phone || ''
                           }}
                           addressComponents={businessAddressComponents}
+                          billingInfo={{
+                            customerType: customerType,
+                            legalName: legalName || (customerType === 'autonomo' ? tempUserData?.name : selectedBusiness?.name) || '',
+                            taxId: companyNIF,
+                            email: billingEmail || tempUserData?.email || '',
+                            phone: billingPhone || tempUserData?.phone || '',
+                            address: {
+                              line1: billingAddress,
+                              city: billingCity,
+                              postal_code: billingPostalCode,
+                              country: 'ES'
+                            }
+                          }}
                           onSuccess={() => {
                             // Guardar mensaje de éxito
                             localStorage.setItem('paymentSuccess', 'true');

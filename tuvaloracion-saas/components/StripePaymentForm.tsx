@@ -37,11 +37,24 @@ interface PaymentFormProps {
     short_name: string;
     types: string[];
   }>;
+  billingInfo?: {
+    customerType: 'autonomo' | 'empresa';
+    legalName: string;
+    taxId: string;
+    email: string;
+    phone?: string;
+    address: {
+      line1: string;
+      city: string;
+      postal_code: string;
+      country: string;
+    };
+  };
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, clientSecret, userData, onSuccess, onCancel }: PaymentFormProps) {
+function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, clientSecret, userData, billingInfo, onSuccess, onCancel }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -124,7 +137,36 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
       // Configuración exitosa
       setMessage('¡Pago procesado con éxito!');
       
-      // Actualizar el rol del usuario a 'admin' después del pago exitoso
+      // PASO 1: Enviar datos de facturación DESPUÉS del pago exitoso
+      if (billingInfo) {
+        try {
+          console.log('Enviando datos de facturación después del pago exitoso...');
+          const billingResponse = await fetch('/api/admin/billing', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              businessId,
+              billingInfo
+            }),
+          });
+
+          if (!billingResponse.ok) {
+            const errorData = await billingResponse.json();
+            console.error('Error guardando datos de facturación:', errorData);
+            // No bloqueamos el proceso si falla la facturación
+            // pero lo registramos para revisión manual
+          } else {
+            console.log('Datos de facturación guardados correctamente');
+          }
+        } catch (error) {
+          console.error('Error enviando datos de facturación:', error);
+          // Continuamos con el proceso aunque falle la facturación
+        }
+      }
+      
+      // PASO 2: Actualizar el rol del usuario a 'admin' después del pago exitoso
       try {
         // Obtener el email del localStorage si está disponible
         const pendingSubscription = localStorage.getItem('pendingSubscription');
@@ -150,7 +192,7 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
         console.error('Error actualizando rol del usuario:', error);
       }
       
-      // Redirigir directamente al panel con sesión iniciada
+      // PASO 3: Redirigir directamente al panel con sesión iniciada
       window.location.href = '/admin';
     }
 

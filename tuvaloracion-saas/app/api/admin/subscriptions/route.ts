@@ -176,11 +176,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validar billingInfo si se proporciona
-    if (billingInfo) {
-      if (!billingInfo.legalName || !billingInfo.taxId || !billingInfo.email) {
+    // Validar billingInfo solo si se proporciona y tiene datos
+    if (billingInfo && (billingInfo.legalName || billingInfo.taxId || billingInfo.email)) {
+      // Solo validar si al menos uno de los campos principales está presente
+      if (billingInfo.taxId && !billingInfo.legalName) {
         return NextResponse.json(
-          { success: false, error: 'Datos de facturación incompletos' },
+          { success: false, error: 'Si proporcionas el NIF/CIF, también debes proporcionar el nombre fiscal' },
           { status: 400 }
         );
       }
