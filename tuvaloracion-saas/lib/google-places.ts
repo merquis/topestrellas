@@ -166,10 +166,13 @@ export class GooglePlacesService {
         rating: result.rating,
         user_ratings_total: result.user_ratings_total,
         formatted_address: result.formatted_address,
+        address_components: result.address_components,  // NUEVO: Capturar componentes de dirección
         international_phone_number: result.international_phone_number,
+        formatted_phone_number: result.formatted_phone_number,  // NUEVO: Número formateado
         website: result.website,
         opening_hours: result.opening_hours,
-        photos: result.photos
+        photos: result.photos,
+        geometry: result.geometry  // NUEVO: Coordenadas si las necesitamos
       };
 
       // Procesar reseñas si están incluidas

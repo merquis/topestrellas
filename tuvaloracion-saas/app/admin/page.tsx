@@ -525,6 +525,23 @@ export default function AdminDashboard() {
     setIsLoadingPayment(true);
     
     try {
+      // Preparar datos de facturación
+      const billingInfo = {
+        customerType,
+        legalName: legalName || (customerType === 'autonomo' ? tempUserData?.name : selectedBusiness?.name) || '',
+        taxId: companyNIF,
+        email: billingEmail || tempUserData?.email || '',
+        phone: billingPhone || tempUserData?.phone || '',
+        address: {
+          line1: billingAddress,
+          line2: '', // Opcional
+          city: billingCity,
+          state: billingProvince,
+          postal_code: billingPostalCode,
+          country: 'ES'
+        }
+      };
+
       const subscriptionResponse = await fetch('/api/admin/subscriptions', {
         method: 'POST',
         headers: {
@@ -534,7 +551,8 @@ export default function AdminDashboard() {
           businessId,
           planKey: plan.key,
           userEmail: tempUserData.email,
-          action: 'subscribe'
+          action: 'subscribe',
+          billingInfo  // Enviar datos de facturación
         }),
       });
 
@@ -1306,7 +1324,7 @@ export default function AdminDashboard() {
                           {/* Nombre fiscal */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              {customerType === 'empresa' ? 'Razón Social *' : 'Nombre fiscal completo *'}
+                              {customerType === 'empresa' ? 'Razón Social *' : 'Nombre y apellidos *'}
                             </label>
                             <input
                               type="text"
@@ -1318,11 +1336,9 @@ export default function AdminDashboard() {
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               required
                             />
-                            {customerType === 'autonomo' && (
-                              <p className="text-xs text-orange-500 mt-1">
-                                ⚠️ Este campo es obligatorio para la facturación
-                              </p>
-                            )}
+                            <p className="text-xs text-orange-500 mt-1">
+                              ⚠️ Este campo es obligatorio para la facturación
+                            </p>
                           </div>
 
                           {/* NIF/CIF */}
@@ -1333,28 +1349,45 @@ export default function AdminDashboard() {
                             <input
                               type="text"
                               value={companyNIF}
-                              onChange={(e) => setCompanyNIF(e.target.value.toUpperCase())}
+                              onChange={(e) => {
+                                const value = e.target.value.toUpperCase();
+                                setCompanyNIF(value);
+                                // Validación en tiempo real
+                                if (value.length > 0) {
+                                  const isValid = customerType === 'empresa' 
+                                    ? /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/.test(value)
+                                    : /^(\d{8}[A-Z]|[XYZ]\d{7}[A-Z])$/.test(value);
+                                  
+                                  if (!isValid && value.length >= 9) {
+                                    setBillingFieldsError(prev => ({
+                                      ...prev,
+                                      companyNIF: customerType === 'empresa' 
+                                        ? 'CIF inválido. Formato: letra + 7 números + dígito control'
+                                        : 'NIF inválido. Formato: 8 números + letra'
+                                    }));
+                                  } else {
+                                    setBillingFieldsError(prev => ({
+                                      ...prev,
+                                      companyNIF: undefined
+                                    }));
+                                  }
+                                }
+                              }}
                               placeholder={customerType === 'empresa' ? "Ej: B12345678" : "Ej: 12345678Z"}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                billingFieldsError.companyNIF ? 'border-red-500' : 'border-gray-300'
+                              }`}
                               required
                             />
-                            <p className="text-xs text-orange-500 mt-1">
-                              ⚠️ Este campo es obligatorio para la facturación
-                            </p>
-                          </div>
-
-                          {/* Persona de contacto */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Persona de contacto
-                            </label>
-                            <input
-                              type="text"
-                              value={contactPerson || tempUserData?.name || ''}
-                              onChange={(e) => setContactPerson(e.target.value)}
-                              placeholder="Juan"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                            {billingFieldsError.companyNIF ? (
+                              <p className="text-xs text-red-500 mt-1">
+                                ❌ {billingFieldsError.companyNIF}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-orange-500 mt-1">
+                                ⚠️ Este campo es obligatorio para la facturación
+                              </p>
+                            )}
                           </div>
 
                           {/* Email para facturas */}

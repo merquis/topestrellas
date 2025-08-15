@@ -15,6 +15,25 @@ export interface Business {
   active: boolean  // Cambiado de isActive a active para coincidir con la BD
   createdAt: Date
   updatedAt: Date
+  // Nuevo: Datos de facturación
+  billing?: {
+    customerType: 'autonomo' | 'empresa'
+    legalName: string
+    taxId: string  // NIF/CIF
+    email: string
+    phone?: string
+    address: {
+      line1: string
+      line2?: string
+      city: string
+      state?: string  // Provincia
+      postal_code: string
+      country: 'ES'  // Siempre España
+    }
+    stripeCustomerId?: string
+    stripeTaxId?: string
+    updatedAt: Date
+  }
   config: {
     theme: {
       primaryColor: string
@@ -191,13 +210,22 @@ export interface GoogleReview {
   translated?: boolean;
 }
 
+// Nuevo: Tipo para address_components de Google Places
+export interface AddressComponent {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
+
 export interface GooglePlaceData {
   name?: string;
   rating?: number;
   user_ratings_total?: number;
   reviews?: GoogleReview[];
   formatted_address?: string;
+  address_components?: AddressComponent[];  // NUEVO: Para capturar código postal y más
   international_phone_number?: string;
+  formatted_phone_number?: string;  // NUEVO: Número formateado
   website?: string;
   opening_hours?: {
     open_now: boolean;
@@ -212,11 +240,12 @@ export interface GooglePlaceData {
     width: number;
     photo_reference: string;
   }>;
-  address_components?: Array<{
-    long_name: string;
-    short_name: string;
-    types: string[];
-  }>;
+  geometry?: {  // NUEVO: Para coordenadas si las necesitamos
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
 }
 
 export interface GooglePlacesApiResponse {
@@ -262,14 +291,15 @@ export interface PlacePhotoResponse {
   error?: string;
 }
 
-// Available Google Places API fields
+// Available Google Places API fields - ACTUALIZADO
 export const GOOGLE_PLACES_FIELDS = {
   BASIC: ['name', 'rating', 'user_ratings_total'],
-  CONTACT: ['formatted_address', 'international_phone_number', 'website'],
+  CONTACT: ['formatted_address', 'address_components', 'international_phone_number', 'formatted_phone_number', 'website'],  // ACTUALIZADO
   ATMOSPHERE: ['opening_hours', 'price_level'],
   REVIEWS: ['reviews'],
   PHOTOS: ['photos'],
-  ALL: ['name', 'rating', 'user_ratings_total', 'reviews', 'formatted_address', 'international_phone_number', 'website', 'opening_hours', 'photos']
+  GEOMETRY: ['geometry'],  // NUEVO
+  ALL: ['name', 'rating', 'user_ratings_total', 'reviews', 'formatted_address', 'address_components', 'international_phone_number', 'formatted_phone_number', 'website', 'opening_hours', 'photos', 'geometry']  // ACTUALIZADO
 } as const;
 
 // Default templates

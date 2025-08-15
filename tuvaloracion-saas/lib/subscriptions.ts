@@ -277,12 +277,13 @@ export async function updateBusinessSubscription(
 }
 
 /**
- * Crea o obtiene un cliente de Stripe
+ * Crea o obtiene un cliente de Stripe con datos de facturación
  */
 export async function getOrCreateStripeCustomer(
   email: string,
   businessId: string,
-  name?: string
+  name?: string,
+  billingInfo?: any
 ): Promise<string> {
   try {
     // Buscar si ya existe un cliente con este email
@@ -292,23 +293,90 @@ export async function getOrCreateStripeCustomer(
     });
 
     if (existingCustomers.data.length > 0) {
-      // Actualizar metadata del cliente existente
-      const customer = await stripe.customers.update(existingCustomers.data[0].id, {
+      // Actualizar cliente existente con datos de facturación
+      const updateData: any = {
         metadata: {
           businessId,
+          customerType: billingInfo?.customerType || '',
+          legalName: billingInfo?.legalName || '',
         },
-      });
+      };
+
+      // Si hay datos de facturación, actualizar la dirección y el tax_id
+      if (billingInfo) {
+        updateData.name = billingInfo.legalName || name;
+        updateData.phone = billingInfo.phone || undefined;
+        updateData.address = {
+          line1: billingInfo.address?.line1 || '',
+          line2: billingInfo.address?.line2 || '',
+          city: billingInfo.address?.city || '',
+          state: billingInfo.address?.state || '',
+          postal_code: billingInfo.address?.postal_code || '',
+          country: billingInfo.address?.country || 'ES',
+        };
+
+        // Añadir el NIF/CIF como tax_id para facturas españolas
+        if (billingInfo.taxId) {
+          try {
+            // Verificar si ya existe un tax_id para este cliente
+            const taxIds = await stripe.customers.listTaxIds(existingCustomers.data[0].id);
+            const existingSpanishTaxId = taxIds.data.find(tid => tid.type === 'es_cif');
+            
+            if (!existingSpanishTaxId) {
+              // Crear nuevo tax_id
+              await stripe.customers.createTaxId(existingCustomers.data[0].id, {
+                type: 'es_cif', // Para España, tanto NIF como CIF usan es_cif
+                value: billingInfo.taxId,
+              });
+            }
+          } catch (taxError) {
+            console.error('Error añadiendo tax_id:', taxError);
+            // No fallar si hay error con el tax_id, continuar sin él
+          }
+        }
+      }
+
+      const customer = await stripe.customers.update(existingCustomers.data[0].id, updateData);
       return customer.id;
     }
 
-    // Crear nuevo cliente
-    const customer = await stripe.customers.create({
+    // Crear nuevo cliente con datos de facturación
+    const createData: any = {
       email,
-      name,
+      name: billingInfo?.legalName || name,
       metadata: {
         businessId,
+        customerType: billingInfo?.customerType || '',
+        legalName: billingInfo?.legalName || '',
       },
-    });
+    };
+
+    if (billingInfo) {
+      createData.phone = billingInfo.phone || undefined;
+      createData.address = {
+        line1: billingInfo.address?.line1 || '',
+        line2: billingInfo.address?.line2 || '',
+        city: billingInfo.address?.city || '',
+        state: billingInfo.address?.state || '',
+        postal_code: billingInfo.address?.postal_code || '',
+        country: billingInfo.address?.country || 'ES',
+      };
+    }
+
+    const customer = await stripe.customers.create(createData);
+
+    // Añadir el NIF/CIF como tax_id después de crear el cliente
+    if (billingInfo?.taxId && customer.id) {
+      try {
+        await stripe.customers.createTaxId(customer.id, {
+          type: 'es_cif', // Para España
+          value: billingInfo.taxId,
+        });
+      } catch (taxError) {
+        console.error('Error añadiendo tax_id al nuevo cliente:', taxError);
+        // No fallar si hay error con el tax_id
+      }
+    }
 
     return customer.id;
   } catch (error) {
@@ -324,13 +392,14 @@ export async function getOrCreateStripeCustomer(
 export async function createSetupIntentAndReturnClientSecret(
   userEmail: string,
   businessId: string,
-  userName?: string
+  userName?: string,
+  billingInfo?: any
 ): Promise<{ clientSecret: string; customerId: string }> {
   try {
     console.log('[createSetupIntentAndReturnClientSecret] Iniciando con:', { userEmail, businessId });
 
-    // 1. Obtener o crear el cliente de Stripe
-    const customerId = await getOrCreateStripeCustomer(userEmail, businessId, userName);
+    // 1. Obtener o crear el cliente de Stripe con datos de facturación
+    const customerId = await getOrCreateStripeCustomer(userEmail, businessId, userName, billingInfo);
     console.log('[createSetupIntentAndReturnClientSecret] Cliente de Stripe:', customerId);
 
     // 2. Crear un SetupIntent para validar y guardar el método de pago
@@ -371,7 +440,8 @@ export async function createSubscriptionAndReturnClientSecret(
   businessId: string,
   planKey: string,
   userEmail: string,
-  userName?: string
+  userName?: string,
+  billingInfo?: any
 ): Promise<{
   clientSecret: string;
   customerId: string;
@@ -381,12 +451,13 @@ export async function createSubscriptionAndReturnClientSecret(
     El flujo de registro debería llamar a un endpoint que solo cree un SetupIntent.`);
 
   try {
-    // El objetivo ahora es solo crear un SetupIntent.
+    // El objetivo ahora es solo crear un SetupIntent con datos de facturación.
     // La creación de la suscripción se delega al webhook 'setup_intent.succeeded'.
     const { clientSecret, customerId } = await createSetupIntentAndReturnClientSecret(
       userEmail,
       businessId,
-      userName
+      userName,
+      billingInfo
     );
 
     // Devolvemos una estructura compatible con la antigua para no romper el frontend de inmediato.

@@ -167,13 +167,23 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { businessId, planKey, userEmail, action = 'subscribe' } = body;
+    const { businessId, planKey, userEmail, action = 'subscribe', billingInfo } = body;
 
     if (!businessId || !planKey || !userEmail) {
       return NextResponse.json(
         { success: false, error: 'businessId, planKey y userEmail son requeridos' },
         { status: 400 }
       );
+    }
+
+    // Validar billingInfo si se proporciona
+    if (billingInfo) {
+      if (!billingInfo.legalName || !billingInfo.taxId || !billingInfo.email) {
+        return NextResponse.json(
+          { success: false, error: 'Datos de facturación incompletos' },
+          { status: 400 }
+        );
+      }
     }
 
     const db = await getDatabase();
@@ -226,20 +236,36 @@ export async function POST(request: Request) {
         businessId,
         planKey,
         userEmail,
-        business.name
+        business.name,
+        billingInfo // Pasar los datos de facturación
       );
 
-      // Guardar el ID de cliente de Stripe y el plan seleccionado para usarlo en el webhook
+      // Preparar los datos de facturación para guardar en MongoDB
+      const billingDataToSave = billingInfo ? {
+        'billing.customerType': billingInfo.customerType,
+        'billing.legalName': billingInfo.legalName,
+        'billing.taxId': billingInfo.taxId,
+        'billing.email': billingInfo.email,
+        'billing.phone': billingInfo.phone,
+        'billing.address': billingInfo.address,
+        'billing.stripeCustomerId': customerId,
+        'billing.updatedAt': new Date()
+      } : {};
+
+      // Guardar el ID de cliente de Stripe, el plan seleccionado y los datos de facturación
       await db.collection('businesses').updateOne(
         { _id: new ObjectId(businessId) },
         { 
           $set: { 
             'subscription.stripeCustomerId': customerId,
             'selectedPlanKey': planKey, // Guardamos el plan que el usuario quiere
+            ...billingDataToSave, // Guardar datos de facturación si existen
             updatedAt: new Date()
           } 
         }
       );
+
+      console.log(`[POST /api/admin/subscriptions] Datos de facturación guardados para negocio ${businessId}`);
 
       return NextResponse.json({
         success: true,
