@@ -505,12 +505,12 @@ export default function AdminDashboard() {
       // Guardar el businessId para el paso 4
       setPendingBusinessId(businessId);
       
-      // Avanzar al paso 4 (pago)
+      // Avanzar al paso 4 (pago) SIN llamar a preparePayment
       setRegistrationStep(4);
       setRegisterError('');
       
-      // Preparar el pago
-      await preparePayment(businessId, plan);
+      // NO llamar a preparePayment aquí - se hará cuando el usuario haga clic en pagar
+      // await preparePayment(businessId, plan); // ELIMINADO
       
     } catch (error: any) {
       console.error('Error al seleccionar plan:', error);
@@ -1070,11 +1070,6 @@ export default function AdminDashboard() {
               {/* Step 4: Payment */}
               {registrationStep === 4 && (
                 <div className="space-y-6">
-                  {console.log("Hola - Estoy en el paso 4")}
-                  {console.log("clientSecret:", clientSecret)}
-                  {console.log("selectedPlanData:", selectedPlanData)}
-                  {console.log("isLoadingPayment:", isLoadingPayment)}
-                  
                   {/* Mostrar loading mientras se prepara el pago */}
                   {isLoadingPayment && (
                     <div className="text-center py-12">
@@ -1083,39 +1078,8 @@ export default function AdminDashboard() {
                     </div>
                   )}
                   
-                  {/* Mostrar error si no hay clientSecret */}
-                  {!isLoadingPayment && !clientSecret && (
-                    <div className="text-center py-12">
-                      <div className="text-red-500 text-4xl mb-4">⚠️</div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
-                        Error al preparar el pago
-                      </h3>
-                      <p className="text-gray-600 mb-4">
-                        No se pudo conectar con el sistema de pagos.
-                      </p>
-                      {registerError && (
-                        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200 max-w-md mx-auto">
-                          <div className="flex items-center gap-2">
-                            <span className="text-red-500">❌</span>
-                            <span>{registerError}</span>
-                          </div>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => {
-                          setRegistrationStep(3);
-                          setClientSecret('');
-                          setRegisterError('');
-                        }}
-                        className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                      >
-                        Volver a intentar
-                      </button>
-                    </div>
-                  )}
-                  
-                  {/* Mostrar formulario de pago cuando esté listo */}
-                  {!isLoadingPayment && clientSecret && selectedPlanData && (
+                  {/* Mostrar formulario completo cuando NO está cargando */}
+                  {!isLoadingPayment && selectedPlanData && (
                     <>
                       <div className="text-center mb-8">
                         <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -1511,8 +1475,64 @@ export default function AdminDashboard() {
                           Método de pago
                         </h4>
                         
-                        {/* Componente de Stripe */}
-                        <StripePaymentForm
+                        {/* Si no hay clientSecret, mostrar botón para preparar pago */}
+                        {!clientSecret ? (
+                          <div className="space-y-4">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                              <p className="text-sm text-yellow-800">
+                                <span className="font-semibold">⚠️ Importante:</span> Asegúrate de que todos los datos de facturación estén completos antes de continuar.
+                              </p>
+                            </div>
+                            
+                            <button
+                              onClick={async () => {
+                                // Validar NIF/CIF antes de continuar
+                                if (!companyNIF) {
+                                  setRegisterError('Por favor, introduce tu NIF/CIF');
+                                  return;
+                                }
+                                
+                                if (billingFieldsError.companyNIF) {
+                                  setRegisterError('Por favor, corrige el NIF/CIF antes de continuar');
+                                  return;
+                                }
+                                
+                                if (!legalName && !tempUserData?.name && !selectedBusiness?.name) {
+                                  setRegisterError('Por favor, introduce el nombre fiscal');
+                                  return;
+                                }
+                                
+                                // Llamar a preparePayment con los datos actuales
+                                await preparePayment(pendingBusinessId, selectedPlanData);
+                              }}
+                              disabled={isLoadingPayment || !companyNIF || !!billingFieldsError.companyNIF}
+                              className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            >
+                              {isLoadingPayment ? (
+                                <span className="flex items-center justify-center gap-2">
+                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                  Preparando pago...
+                                </span>
+                              ) : (
+                                <span className="flex items-center justify-center gap-2">
+                                  <span>💳</span>
+                                  <span>Continuar al pago</span>
+                                </span>
+                              )}
+                            </button>
+                            
+                            {registerError && (
+                              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm border border-red-200">
+                                <div className="flex items-center gap-2">
+                                  <span>❌</span>
+                                  <span>{registerError}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          /* Componente de Stripe - solo se muestra cuando hay clientSecret */
+                          <StripePaymentForm
                           businessId={pendingBusinessId}
                           businessName={selectedBusiness?.name || 'Tu Negocio'}
                           businessPhotoUrl={businessPhotoUrl}

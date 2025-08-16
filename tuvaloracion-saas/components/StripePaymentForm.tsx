@@ -52,6 +52,7 @@ interface PaymentFormProps {
   };
   onSuccess: () => void;
   onCancel: () => void;
+  onPreparePayment?: () => Promise<void>; // Nueva prop para preparar el pago
 }
 
 function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, clientSecret, userData, billingInfo, onSuccess, onCancel }: PaymentFormProps) {
