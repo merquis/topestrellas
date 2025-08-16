@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     // 1. Obtener o crear el cliente de Stripe
-    const customerId = await getOrCreateStripeCustomer(userEmail, businessId, userName);
+    const { customerId, taxId } = await getOrCreateStripeCustomer(userEmail, businessId, userName);
 
     // 2. Crear un SetupIntent
     const setupIntent = await stripe.setupIntents.create({
