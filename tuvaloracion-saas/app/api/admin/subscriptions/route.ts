@@ -233,7 +233,7 @@ export async function POST(request: Request) {
 
     // Crear un SetupIntent para el nuevo flujo de suscripción
     try {
-      const { clientSecret, customerId, mode } = await createSubscriptionAndReturnClientSecret(
+      const { clientSecret, customerId, taxId, mode } = await createSubscriptionAndReturnClientSecret(
         businessId,
         planKey,
         userEmail,
@@ -241,37 +241,62 @@ export async function POST(request: Request) {
         billingInfo // Pasar los datos de facturación
       );
 
-      // Preparar los datos de facturación para guardar en MongoDB
+      // Preparar la estructura completa de billing para MongoDB
       const billingDataToSave = billingInfo ? {
-        'billing.customerType': billingInfo.customerType,
-        'billing.legalName': billingInfo.legalName,
-        'billing.taxId': billingInfo.taxId,
-        'billing.email': billingInfo.email,
-        'billing.phone': billingInfo.phone,
-        'billing.address': billingInfo.address,
-        'billing.stripeCustomerId': customerId,
-        'billing.updatedAt': new Date()
+        billing: {
+          customerType: billingInfo.customerType || 'empresa',
+          legalName: billingInfo.legalName || '',
+          taxId: billingInfo.taxId || '',
+          email: billingInfo.email || userEmail,
+          phone: billingInfo.phone || '',
+          address: {
+            line1: billingInfo.address?.line1 || '',
+            line2: billingInfo.address?.line2 || '',
+            city: billingInfo.address?.city || '',
+            state: billingInfo.address?.state || '',
+            postal_code: billingInfo.address?.postal_code || '',
+            country: billingInfo.address?.country || 'ES'
+          },
+          stripeCustomerId: customerId,
+          stripeTaxId: taxId || '',
+          metadata: {
+            businessId: businessId,
+            customerType: billingInfo.customerType || 'empresa',
+            legalName: billingInfo.legalName || ''
+          },
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
       } : {};
 
-      // Guardar el ID de cliente de Stripe, el plan seleccionado y los datos de facturación
+      // Guardar el ID de cliente de Stripe, el plan seleccionado y la estructura completa de billing
       await db.collection('businesses').updateOne(
         { _id: new ObjectId(businessId) },
         { 
           $set: { 
             'subscription.stripeCustomerId': customerId,
             'selectedPlanKey': planKey, // Guardamos el plan que el usuario quiere
-            ...billingDataToSave, // Guardar datos de facturación si existen
+            ...billingDataToSave, // Guardar estructura completa de billing
             updatedAt: new Date()
           } 
         }
       );
 
-      console.log(`[POST /api/admin/subscriptions] Datos de facturación guardados para negocio ${businessId}`);
+      console.log(`[POST /api/admin/subscriptions] Estructura completa de billing guardada para negocio ${businessId}`);
+      if (billingInfo) {
+        console.log(`[POST /api/admin/subscriptions] Datos guardados:`, {
+          customerType: billingInfo.customerType,
+          legalName: billingInfo.legalName,
+          taxId: billingInfo.taxId ? '***' + billingInfo.taxId.slice(-4) : 'No proporcionado',
+          stripeTaxId: taxId || 'No creado'
+        });
+      }
 
       return NextResponse.json({
         success: true,
         clientSecret,
         customerId,
+        taxId,
         mode, // Enviar el modo 'setup' al frontend
         plan: {
           name: plan.name,

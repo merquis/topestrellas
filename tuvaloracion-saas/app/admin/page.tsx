@@ -525,8 +525,24 @@ export default function AdminDashboard() {
     setIsLoadingPayment(true);
     
     try {
-      // NO enviar datos de facturación en este momento
-      // Solo crear el SetupIntent para validar el método de pago
+      // Preparar los datos de facturación para enviar ANTES del SetupIntent
+      const billingInfo = {
+        customerType: customerType,
+        legalName: legalName || (customerType === 'autonomo' ? tempUserData?.name : selectedBusiness?.name) || '',
+        taxId: companyNIF,
+        email: billingEmail || tempUserData?.email || '',
+        phone: billingPhone || tempUserData?.phone || '',
+        address: {
+          line1: billingAddress,
+          line2: '',
+          city: billingCity,
+          state: billingProvince,
+          postal_code: billingPostalCode,
+          country: 'ES'
+        }
+      };
+
+      // Enviar datos de facturación JUNTO con la creación del SetupIntent
       const subscriptionResponse = await fetch('/api/admin/subscriptions', {
         method: 'POST',
         headers: {
@@ -536,8 +552,8 @@ export default function AdminDashboard() {
           businessId,
           planKey: plan.key,
           userEmail: tempUserData.email,
-          action: 'subscribe'
-          // NO incluir billingInfo aquí - se enviará después de validar el pago
+          action: 'subscribe',
+          billingInfo: billingInfo // INCLUIR datos de facturación aquí
         }),
       });
 
@@ -547,7 +563,7 @@ export default function AdminDashboard() {
         throw new Error(subscriptionData.error || 'Error al crear la sesión de pago');
       }
 
-      const { clientSecret, subscriptionId, customerId } = subscriptionData;
+      const { clientSecret, subscriptionId, customerId, taxId } = subscriptionData;
       
       if (!clientSecret) {
         throw new Error('No se pudo obtener el client secret para el pago');
