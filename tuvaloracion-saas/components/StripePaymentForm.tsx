@@ -137,36 +137,10 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
       // Configuración exitosa
       setMessage('¡Pago procesado con éxito!');
       
-      // PASO 1: Enviar datos de facturación DESPUÉS del pago exitoso
-      if (billingInfo) {
-        try {
-          console.log('Enviando datos de facturación después del pago exitoso...');
-          const billingResponse = await fetch('/api/admin/billing', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              businessId,
-              billingInfo
-            }),
-          });
-
-          if (!billingResponse.ok) {
-            const errorData = await billingResponse.json();
-            console.error('Error guardando datos de facturación:', errorData);
-            // No bloqueamos el proceso si falla la facturación
-            // pero lo registramos para revisión manual
-          } else {
-            console.log('Datos de facturación guardados correctamente');
-          }
-        } catch (error) {
-          console.error('Error enviando datos de facturación:', error);
-          // Continuamos con el proceso aunque falle la facturación
-        }
-      }
+      // Los datos de facturación ya se enviaron ANTES del pago en preparePayment
+      // No es necesario enviarlos de nuevo
       
-      // PASO 2: Actualizar el rol del usuario a 'admin' después del pago exitoso
+      // Actualizar el rol del usuario a 'admin' después del pago exitoso
       try {
         // Obtener el email del localStorage si está disponible
         const pendingSubscription = localStorage.getItem('pendingSubscription');
