@@ -267,6 +267,8 @@ export default function CreatePlanModal({ onClose, onSave }: CreatePlanModalProp
                   disabled={loading}
                 >
                   <option value="month">Mensual</option>
+                  <option value="quarter">Trimestral</option>
+                  <option value="semester">Semestral</option>
                   <option value="year">Anual</option>
                 </select>
               </div>

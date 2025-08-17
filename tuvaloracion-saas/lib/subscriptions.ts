@@ -16,7 +16,7 @@ export interface SubscriptionPlan {
   setupPrice: number; // En euros
   recurringPrice: number; // En euros
   currency: string;
-  interval: 'month' | 'year';
+  interval: 'month' | 'quarter' | 'semester' | 'year';
   trialDays: number;
   features: string[];
   active: boolean;
@@ -152,9 +152,35 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
 
     // Configurar el precio según si es recurrente o no
     if (plan.interval) {
+      // Mapear nuestros intervalos a los de Stripe
+      let stripeInterval: 'month' | 'year' = 'month';
+      let intervalCount = 1;
+      
+      switch(plan.interval) {
+        case 'month':
+          stripeInterval = 'month';
+          intervalCount = 1;
+          break;
+        case 'quarter':
+          stripeInterval = 'month';
+          intervalCount = 3; // Stripe cobrará cada 3 meses
+          break;
+        case 'semester':
+          stripeInterval = 'month';
+          intervalCount = 6; // Stripe cobrará cada 6 meses
+          break;
+        case 'year':
+          stripeInterval = 'year';
+          intervalCount = 1;
+          break;
+        default:
+          stripeInterval = 'month';
+          intervalCount = 1;
+      }
+      
       priceData.recurring = {
-        interval: plan.interval === 'year' ? 'year' : 'month',
-        interval_count: 1,
+        interval: stripeInterval,
+        interval_count: intervalCount,
         trial_period_days: plan.trialDays > 0 ? plan.trialDays : undefined,
       };
       priceData.unit_amount = eurosToCents(plan.recurringPrice);
