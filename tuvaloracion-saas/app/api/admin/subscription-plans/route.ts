@@ -8,8 +8,8 @@ import {
 import { z } from 'zod';
 import { ObjectId } from 'mongodb';
 
-// Schema de validaciรณn para crear/actualizar planes
-const PlanSchema = z.object({
+// Schema base para planes (sin validaciones de refine)
+const BasePlanSchema = z.object({
   key: z.string().min(1),
   name: z.string().min(1),
   description: z.string().optional(),
@@ -24,8 +24,11 @@ const PlanSchema = z.object({
   icon: z.string().optional(),
   color: z.string().optional(),
   popular: z.boolean().default(false),
-}).refine(
-  (data) => {
+});
+
+// Schema para crear planes (con validación de refine)
+const PlanSchema = BasePlanSchema.refine(
+  (data: z.infer<typeof BasePlanSchema>) => {
     // Si hay precio original, debe ser mayor que el precio recurrente
     if (data.originalPrice !== undefined && data.originalPrice !== null) {
       return data.originalPrice > data.recurringPrice;
@@ -37,6 +40,9 @@ const PlanSchema = z.object({
     path: ["originalPrice"],
   }
 );
+
+// Schema para actualizar planes (partial sin refine)
+const UpdatePlanSchema = BasePlanSchema.partial();
 
 export async function GET(request: Request) {
   try {
@@ -162,7 +168,7 @@ export async function POST(request: Request) {
       success: true, 
       plan: finalPlan
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creando plan:', error);
     
     if (error instanceof z.ZodError) {
@@ -191,7 +197,18 @@ export async function PUT(request: Request) {
       );
     }
     
-    const validatedData = PlanSchema.partial().parse(updateData);
+    // Usar el schema de actualización (partial sin refine)
+    const validatedData = UpdatePlanSchema.parse(updateData);
+    
+    // Validación manual del precio original si se proporciona
+    if (validatedData.originalPrice !== undefined && validatedData.recurringPrice !== undefined) {
+      if (validatedData.originalPrice <= validatedData.recurringPrice) {
+        return NextResponse.json(
+          { success: false, error: 'El precio original debe ser mayor que el precio recurrente' },
+          { status: 400 }
+        );
+      }
+    }
     
     const db = await getDatabase();
     
@@ -204,6 +221,16 @@ export async function PUT(request: Request) {
         { success: false, error: 'Plan no encontrado' },
         { status: 404 }
       );
+    }
+    
+    // Validación adicional si solo se actualiza el precio original
+    if (validatedData.originalPrice !== undefined && validatedData.recurringPrice === undefined) {
+      if (validatedData.originalPrice <= currentPlan.recurringPrice) {
+        return NextResponse.json(
+          { success: false, error: 'El precio original debe ser mayor que el precio recurrente actual' },
+          { status: 400 }
+        );
+      }
     }
     
     if (validatedData.key && validatedData.key !== currentPlan.key) {
@@ -275,7 +302,7 @@ export async function PUT(request: Request) {
       success: true, 
       plan: updatedPlan 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error actualizando plan:', error);
     
     if (error instanceof z.ZodError) {
@@ -349,7 +376,8 @@ export async function DELETE(request: Request) {
     // Desactivar el precio en Stripe si existe
     if (plan.stripePriceId) {
       try {
-        const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
+        const Stripe = (await import('stripe')).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
           apiVersion: '2025-07-30.basil',
         });
         
