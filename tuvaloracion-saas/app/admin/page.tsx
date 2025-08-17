@@ -1667,6 +1667,23 @@ export default function AdminDashboard() {
                                 {plan.trialDays > 0 && (
                                   <p className="text-gray-600 text-sm mb-1">después</p>
                                 )}
+                                
+                                {/* Badge de descuento si hay precio original */}
+                                {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
+                                  <div className="mb-3">
+                                    <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                                      ¡{Math.round(((plan.originalPrice - plan.recurringPrice) / plan.originalPrice) * 100)}% DESCUENTO!
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                {/* Precio original tachado si existe */}
+                                {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
+                                  <div className="text-gray-500 line-through text-xl mb-1">
+                                    {plan.originalPrice} €/{plan.interval === 'month' ? 'mes' : 'año'}
+                                  </div>
+                                )}
+                                
                                 <div className={`text-4xl font-bold ${
                                   isGreen ? 'text-green-600' : isBlue ? 'text-blue-600' : isPurple ? 'text-purple-600' : 'text-gray-900'
                                 }`}>
