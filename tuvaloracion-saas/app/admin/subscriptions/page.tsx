@@ -453,6 +453,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     key: plan.key || '',
     name: plan.name || '',
     description: plan.description || '',
+    originalPrice: String(plan.originalPrice || ''),
     setupPrice: String(plan.setupPrice || 0),
     recurringPrice: String(plan.recurringPrice),
     currency: plan.currency || 'EUR',
@@ -487,6 +488,16 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
       newErrors.recurringPrice = 'El precio debe ser un número válido mayor o igual a 0';
     }
     
+    // Validar precio original si se proporciona
+    if (formData.originalPrice && formData.originalPrice.trim() !== '') {
+      const originalPrice = parseFloat(formData.originalPrice);
+      if (isNaN(originalPrice) || originalPrice < 0) {
+        newErrors.originalPrice = 'El precio original debe ser un número válido mayor o igual a 0';
+      } else if (originalPrice <= recurringPrice) {
+        newErrors.originalPrice = 'El precio original debe ser mayor que el precio actual';
+      }
+    }
+    
     const setupPrice = parseFloat(formData.setupPrice);
     if (isNaN(setupPrice) || setupPrice < 0) {
       newErrors.setupPrice = 'El precio de configuración debe ser un número válido mayor o igual a 0';
@@ -515,6 +526,9 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     
     const planData = {
       ...formData,
+      originalPrice: formData.originalPrice && formData.originalPrice.trim() !== '' 
+        ? parseFloat(formData.originalPrice) 
+        : undefined,
       setupPrice: parseFloat(formData.setupPrice),
       recurringPrice: parseFloat(formData.recurringPrice),
       trialDays: parseInt(formData.trialDays),
@@ -615,10 +629,28 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
             <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <span>💰</span> Precios y Facturación
             </h4>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Precio Recurrente (€) *
+                  Precio Original (€) <span className="text-xs text-gray-500">(opcional)</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.originalPrice}
+                  onChange={(e) => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.originalPrice ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="500.00"
+                />
+                {errors.originalPrice && <p className="text-red-500 text-xs mt-1">{errors.originalPrice}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Precio Actual (€) *
                 </label>
                 <input
                   type="number"
@@ -630,14 +662,14 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     errors.recurringPrice ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="129.00"
+                  placeholder="350.00"
                 />
                 {errors.recurringPrice && <p className="text-red-500 text-xs mt-1">{errors.recurringPrice}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Precio Configuración (€)
+                  Precio Setup (€)
                 </label>
                 <input
                   type="number"
@@ -663,15 +695,15 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="month">Mensual</option>
-                  <option value="quarter">Trimestral (3 meses)</option>
-                  <option value="semester">Semestral (6 meses)</option>
+                  <option value="quarter">Trimestral</option>
+                  <option value="semester">Semestral</option>
                   <option value="year">Anual</option>
                 </select>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Días de Prueba
+                  Días Prueba
                 </label>
                 <input
                   type="number"
@@ -704,6 +736,14 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
                 {parseInt(formData.trialDays) > 0 && (
                   <span>
                     {' '}(con <span className="font-bold text-green-600">{formData.trialDays} días</span> de prueba gratis)
+                  </span>
+                )}
+                {formData.originalPrice && formData.originalPrice.trim() !== '' && parseFloat(formData.originalPrice) > parseFloat(formData.recurringPrice) && (
+                  <span className="block mt-2">
+                    <span className="text-green-600 font-bold">
+                      ¡Ahorro de {(parseFloat(formData.originalPrice) - parseFloat(formData.recurringPrice)).toFixed(2)}€ 
+                      ({Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.recurringPrice)) / parseFloat(formData.originalPrice)) * 100)}% de descuento)!
+                    </span>
                   </span>
                 )}
               </p>

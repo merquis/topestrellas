@@ -13,17 +13,30 @@ const PlanSchema = z.object({
   key: z.string().min(1),
   name: z.string().min(1),
   description: z.string().optional(),
+  originalPrice: z.number().min(0).optional(),
   setupPrice: z.number().min(0),
   recurringPrice: z.number().min(0),
   currency: z.string().default('EUR'),
-  interval: z.enum(['month', 'year']).optional(),
+  interval: z.enum(['month', 'quarter', 'semester', 'year']).optional(),
   trialDays: z.number().min(0).default(0),
   features: z.array(z.string()),
   active: z.boolean().default(true),
   icon: z.string().optional(),
   color: z.string().optional(),
   popular: z.boolean().default(false),
-});
+}).refine(
+  (data) => {
+    // Si hay precio original, debe ser mayor que el precio recurrente
+    if (data.originalPrice !== undefined && data.originalPrice !== null) {
+      return data.originalPrice > data.recurringPrice;
+    }
+    return true;
+  },
+  {
+    message: "El precio original debe ser mayor que el precio recurrente",
+    path: ["originalPrice"],
+  }
+);
 
 export async function GET(request: Request) {
   try {

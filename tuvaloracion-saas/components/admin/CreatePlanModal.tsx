@@ -13,6 +13,7 @@ export default function CreatePlanModal({ onClose, onSave }: CreatePlanModalProp
     key: '',
     name: '',
     description: '',
+    originalPrice: '', // Nuevo campo para precio original
     recurringPrice: '',
     setupPrice: '0',
     currency: 'EUR',
@@ -51,6 +52,7 @@ export default function CreatePlanModal({ onClose, onSave }: CreatePlanModalProp
     try {
       const planData = {
         ...formData,
+        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
         recurringPrice: parseFloat(formData.recurringPrice),
         setupPrice: parseFloat(formData.setupPrice),
         trialDays: parseInt(formData.trialDays),
@@ -60,6 +62,9 @@ export default function CreatePlanModal({ onClose, onSave }: CreatePlanModalProp
       // Validaciones
       if (planData.recurringPrice < 0) {
         throw new Error('El precio no puede ser negativo');
+      }
+      if (planData.originalPrice && planData.originalPrice <= planData.recurringPrice) {
+        throw new Error('El precio original debe ser mayor que el precio actual');
       }
       if (planData.features.length === 0) {
         throw new Error('Debes añadir al menos una característica');
@@ -222,10 +227,27 @@ export default function CreatePlanModal({ onClose, onSave }: CreatePlanModalProp
           <div className="bg-blue-50 rounded-lg p-4 space-y-4">
             <h4 className="font-semibold text-gray-700">Precios y Facturación</h4>
             
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Precio Recurrente (€) <span className="text-red-500">*</span>
+                  Precio Original (€)
+                  <span className="text-xs text-gray-500 ml-1">(opcional)</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.originalPrice}
+                  onChange={(e) => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="500"
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Precio Actual (€) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -235,14 +257,14 @@ export default function CreatePlanModal({ onClose, onSave }: CreatePlanModalProp
                   value={formData.recurringPrice}
                   onChange={(e) => setFormData(prev => ({ ...prev, recurringPrice: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="29.99"
+                  placeholder="350"
                   disabled={loading}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Precio de Configuración (€)
+                  Precio Setup (€)
                 </label>
                 <input
                   type="number"

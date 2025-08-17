@@ -14,6 +14,7 @@ interface PlanCardProps {
     name: string;
     description?: string;
     icon: string;
+    originalPrice?: number;
     recurringPrice: number;
     currency?: string;
     interval: string;
@@ -83,6 +84,11 @@ const PlanCard: React.FC<PlanCardProps> = ({
   const colors = getColorClasses();
   const price = plan.recurringPrice;
   const isFree = price === 0;
+  
+  // Calcular el porcentaje de descuento si hay precio original
+  const discountPercentage = plan.originalPrice && plan.originalPrice > price
+    ? Math.round(((plan.originalPrice - price) / plan.originalPrice) * 100)
+    : 0;
 
   return (
     <div
@@ -108,6 +114,21 @@ const PlanCard: React.FC<PlanCardProps> = ({
         </div>
       )}
 
+      {/* Badge de descuento */}
+      {discountPercentage > 0 && !isCurrentPlan && (
+        <div className="absolute -top-3 left-4 z-10">
+          <span className={`${
+            discountPercentage >= 50 
+              ? 'bg-gradient-to-r from-red-500 to-orange-500' 
+              : discountPercentage >= 30 
+              ? 'bg-gradient-to-r from-orange-500 to-yellow-500'
+              : 'bg-gradient-to-r from-green-500 to-emerald-500'
+          } text-white px-3 py-1 rounded-full text-xs font-bold uppercase animate-pulse`}>
+            -{discountPercentage}% OFF
+          </span>
+        </div>
+      )}
+
       {/* Content */}
       <div className="text-center flex flex-col h-full">
         {/* Icon */}
@@ -124,6 +145,14 @@ const PlanCard: React.FC<PlanCardProps> = ({
         {/* Price */}
         {showPrice && (
           <div className="mb-6">
+            {/* Precio original tachado si existe */}
+            {plan.originalPrice && plan.originalPrice > price && !isFree && (
+              <div className="text-lg text-gray-400 line-through mb-1">
+                {plan.originalPrice}€
+              </div>
+            )}
+            
+            {/* Precio actual */}
             <div className={`text-4xl font-bold ${colors.text}`}>
               {isFree ? (
                 'GRATIS'
@@ -131,11 +160,23 @@ const PlanCard: React.FC<PlanCardProps> = ({
                 <>{plan.recurringPrice}€</>
               )}
             </div>
+            
+            {/* Texto descriptivo del intervalo */}
             <p className="text-sm text-gray-500 mt-1">
               {isFree && plan.trialDays ? (
                 `${plan.trialDays} días de prueba`
               ) : !isFree ? (
-                `por ${plan.interval === 'month' ? 'mes' : 'año'}`
+                <>
+                  por {plan.interval === 'month' ? 'mes' : 
+                       plan.interval === 'quarter' ? '3 meses' :
+                       plan.interval === 'semester' ? '6 meses' : 
+                       'año'}
+                  {discountPercentage > 0 && (
+                    <span className="ml-2 text-green-600 font-semibold">
+                      ¡Ahorra {(plan.originalPrice! - price).toFixed(0)}€!
+                    </span>
+                  )}
+                </>
               ) : (
                 ''
               )}

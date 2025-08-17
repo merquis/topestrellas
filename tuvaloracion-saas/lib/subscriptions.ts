@@ -15,6 +15,7 @@ export interface SubscriptionPlan {
   description?: string;
   setupPrice: number; // En euros
   recurringPrice: number; // En euros
+  originalPrice?: number; // En euros - Precio original (antes del descuento) para mostrar tachado
   currency: string;
   interval: 'month' | 'quarter' | 'semester' | 'year';
   trialDays: number;
@@ -351,7 +352,7 @@ export async function getOrCreateStripeCustomer(
           try {
             // Verificar si ya existe un tax_id para este cliente
             const taxIds = await stripe.customers.listTaxIds(customerId);
-            const existingSpanishTaxId = taxIds.data.find(tid => tid.type === 'es_cif');
+            const existingSpanishTaxId = taxIds.data.find((tid: any) => tid.type === 'es_cif');
             
             if (!existingSpanishTaxId) {
               // Crear nuevo tax_id
