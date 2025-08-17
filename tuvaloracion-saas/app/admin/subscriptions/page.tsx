@@ -453,6 +453,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     key: plan.key || '',
     name: plan.name || '',
     description: plan.description || '',
+    setupPrice: String(plan.setupPrice || 0),
     recurringPrice: String(plan.recurringPrice),
     currency: plan.currency || 'EUR',
     interval: plan.interval || 'month',
@@ -464,15 +465,62 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     popular: plan.popular || false
   });
 
+  const [errors, setErrors] = useState<any>({});
+
+  const validateForm = () => {
+    const newErrors: any = {};
+    
+    if (!formData.key.trim()) {
+      newErrors.key = 'La clave del plan es requerida';
+    }
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre del plan es requerido';
+    }
+    
+    if (!formData.description.trim()) {
+      newErrors.description = 'La descripción es requerida';
+    }
+    
+    const recurringPrice = parseFloat(formData.recurringPrice);
+    if (isNaN(recurringPrice) || recurringPrice < 0) {
+      newErrors.recurringPrice = 'El precio debe ser un número válido mayor o igual a 0';
+    }
+    
+    const setupPrice = parseFloat(formData.setupPrice);
+    if (isNaN(setupPrice) || setupPrice < 0) {
+      newErrors.setupPrice = 'El precio de configuración debe ser un número válido mayor o igual a 0';
+    }
+    
+    const trialDays = parseInt(formData.trialDays);
+    if (isNaN(trialDays) || trialDays < 0) {
+      newErrors.trialDays = 'Los días de prueba deben ser un número válido mayor o igual a 0';
+    }
+    
+    const validFeatures = formData.features.filter(f => f.trim() !== '');
+    if (validFeatures.length === 0) {
+      newErrors.features = 'Debe incluir al menos una característica';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     const planData = {
       ...formData,
-      recurringPrice: parseFloat(formData.recurringPrice), // Guardar el valor real introducido
-      setupPrice: 0,
+      setupPrice: parseFloat(formData.setupPrice),
+      recurringPrice: parseFloat(formData.recurringPrice),
       trialDays: parseInt(formData.trialDays),
       features: formData.features.filter(f => f.trim() !== '')
     };
+    
     onSave(planData);
   };
 
@@ -498,200 +546,295 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
   };
 
   return (
-<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Editar Plan</h3>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-4xl w-full p-8 my-8 max-h-[90vh] overflow-y-auto">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">✏️ Editar Plan de Suscripción</h3>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Sección: Información Básica */}
+          <div className="bg-gray-50 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span>📝</span> Información Básica
+            </h4>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Clave del Plan *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.key}
+                  onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.key ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="ej: premium"
+                />
+                {errors.key && <p className="text-red-500 text-xs mt-1">{errors.key}</p>}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre del Plan *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.name ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="ej: Plan Premium"
+                />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              </div>
+            </div>
+
+            <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Clave del Plan
+                Descripción *
               </label>
-              <input
-                type="text"
+              <textarea
                 required
-                value={formData.key}
-                onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="ej: premium"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
+                rows={3}
+                placeholder="Descripción detallada del plan"
               />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del Plan
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="ej: Plan Premium"
-              />
+              {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descripción
-            </label>
-            <textarea
-              required
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={3}
-              placeholder="Descripción del plan"
-            />
+          {/* Sección: Precios y Facturación */}
+          <div className="bg-blue-50 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span>💰</span> Precios y Facturación
+            </h4>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Precio Recurrente (€) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  step="0.01"
+                  value={formData.recurringPrice}
+                  onChange={(e) => setFormData(prev => ({ ...prev, recurringPrice: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.recurringPrice ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="129.00"
+                />
+                {errors.recurringPrice && <p className="text-red-500 text-xs mt-1">{errors.recurringPrice}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Precio Configuración (€)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.setupPrice}
+                  onChange={(e) => setFormData(prev => ({ ...prev, setupPrice: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.setupPrice ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="0.00"
+                />
+                {errors.setupPrice && <p className="text-red-500 text-xs mt-1">{errors.setupPrice}</p>}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Intervalo *
+                </label>
+                <select
+                  value={formData.interval}
+                  onChange={(e) => setFormData(prev => ({ ...prev, interval: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="month">Mensual</option>
+                  <option value="quarter">Trimestral (3 meses)</option>
+                  <option value="semester">Semestral (6 meses)</option>
+                  <option value="year">Anual</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Días de Prueba
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.trialDays}
+                  onChange={(e) => setFormData(prev => ({ ...prev, trialDays: e.target.value }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.trialDays ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="7"
+                />
+                {errors.trialDays && <p className="text-red-500 text-xs mt-1">{errors.trialDays}</p>}
+              </div>
+            </div>
+
+            <div className="mt-4 bg-white rounded-lg p-3">
+              <p className="text-sm text-gray-600">
+                <span className="font-semibold">💡 Resumen:</span> Los clientes pagarán{' '}
+                <span className="font-bold text-blue-600">
+                  {formData.recurringPrice || '0'}€
+                </span>{' '}
+                {formData.interval === 'month' ? 'cada mes' : 
+                 formData.interval === 'quarter' ? 'cada 3 meses' :
+                 formData.interval === 'semester' ? 'cada 6 meses' : 'cada año'}
+                {parseFloat(formData.setupPrice) > 0 && (
+                  <span>
+                    {' '}+ <span className="font-bold text-orange-600">{formData.setupPrice}€</span> de configuración inicial
+                  </span>
+                )}
+                {parseInt(formData.trialDays) > 0 && (
+                  <span>
+                    {' '}(con <span className="font-bold text-green-600">{formData.trialDays} días</span> de prueba gratis)
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Precio (€)
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formData.recurringPrice}
-                onChange={(e) => setFormData(prev => ({ ...prev, recurringPrice: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="29"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Intervalo
-              </label>
-              <select
-                value={formData.interval}
-                onChange={(e) => setFormData(prev => ({ ...prev, interval: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="month">Mensual</option>
-                <option value="year">Anual</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Días de Prueba
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.trialDays}
-                onChange={(e) => setFormData(prev => ({ ...prev, trialDays: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Icono
-              </label>
-              <input
-                type="text"
-                value={formData.icon}
-                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="🚀"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color
-              </label>
-              <select
-                value={formData.color}
-                onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="green">Verde</option>
-                <option value="blue">Azul</option>
-                <option value="purple">Morado</option>
-              </select>
+          {/* Sección: Apariencia */}
+          <div className="bg-purple-50 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span>🎨</span> Apariencia
+            </h4>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Icono del Plan
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.icon}
+                    onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="🚀"
+                  />
+                  <div className="w-12 h-10 border border-gray-300 rounded-lg flex items-center justify-center text-2xl">
+                    {formData.icon || '📦'}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Usa un emoji o deja vacío para usar el predeterminado</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Color del Plan
+                </label>
+                <select
+                  value={formData.color}
+                  onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="green">🟢 Verde</option>
+                  <option value="blue">🔵 Azul</option>
+                  <option value="purple">🟣 Morado</option>
+                  <option value="orange">🟠 Naranja</option>
+                  <option value="red">🔴 Rojo</option>
+                  <option value="gray">⚫ Gris</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Características
-            </label>
+          {/* Sección: Características */}
+          <div className="bg-green-50 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span>✨</span> Características del Plan
+            </h4>
             <div className="space-y-2">
               {formData.features.map((feature, index) => (
                 <div key={index} className="flex gap-2">
+                  <span className="text-green-600 mt-2">•</span>
                   <input
                     type="text"
                     value={feature}
                     onChange={(e) => updateFeature(index, e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Característica del plan"
+                    placeholder="Ej: Hasta 500 reseñas/mes"
                   />
                   {formData.features.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeFeature(index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                     >
                       ✕
                     </button>
                   )}
                 </div>
               ))}
+              {errors.features && <p className="text-red-500 text-xs mt-1">{errors.features}</p>}
               <button
                 type="button"
                 onClick={addFeature}
-                className="text-blue-600 hover:text-blue-800 text-sm"
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2"
               >
                 + Añadir característica
               </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.active}
-                onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
-                className="mr-2"
-              />
-              Plan activo
-            </label>
-            
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.popular}
-                onChange={(e) => setFormData(prev => ({ ...prev, popular: e.target.checked }))}
-                className="mr-2"
-              />
-              Plan popular
-            </label>
+          {/* Sección: Opciones */}
+          <div className="bg-yellow-50 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span>⚙️</span> Opciones
+            </h4>
+            <div className="flex flex-wrap gap-6">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.active}
+                  onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                  className="mr-2 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="font-medium">Plan activo</span>
+              </label>
+              
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.popular}
+                  onChange={(e) => setFormData(prev => ({ ...prev, popular: e.target.checked }))}
+                  className="mr-2 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="font-medium">Marcar como popular</span>
+              </label>
+            </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          {/* Botones de acción */}
+          <div className="flex gap-3 pt-4 border-t">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold"
+              className="flex-1 px-6 py-3 text-gray-600 hover:text-gray-800 font-semibold transition"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-semibold shadow-lg"
             >
-              Guardar Cambios
+              💾 Guardar Cambios
             </button>
           </div>
         </form>
