@@ -284,7 +284,9 @@ export async function POST(request: Request) {
       subscription: {
         plan: data.plan || 'trial',
         validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días de prueba
-        status: 'active'
+        status: data.plan === 'trial' ? 'trialing' : 'active',
+        trialDays: data.plan === 'trial' ? 7 : 0,
+        createdAt: new Date()
       },
       
       stats: {

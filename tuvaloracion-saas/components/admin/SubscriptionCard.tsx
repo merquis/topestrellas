@@ -29,6 +29,13 @@ interface Business {
     status: string;
     validUntil?: Date;
     stripeSubscriptionId?: string;
+    trialDays?: number;
+  };
+  stripeDetails?: {
+    status: string;
+    currentPeriodEnd?: Date;
+    cancelAtPeriodEnd?: boolean;
+    trialEnd?: Date;
   };
   stats?: {
     googleRating?: number;
@@ -49,6 +56,7 @@ interface Plan {
   icon: string;
   color: string;
   popular?: boolean;
+  trialDays?: number;
 }
 
 interface SubscriptionCardProps {
@@ -360,15 +368,49 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
                   <span className="text-sm text-gray-500 font-normal">/{currentPlan?.interval === 'year' ? 'año' : 'mes'}</span>
                 </p>
                 {/* Fecha de próxima renovación */}
-                {isActive && business.subscription?.validUntil && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Renueva: {new Date(business.subscription.validUntil).toLocaleDateString('es-ES', { 
-                      day: 'numeric', 
-                      month: 'short', 
-                      year: 'numeric' 
-                    })}
-                  </p>
-                )}
+                {isActive && (() => {
+                  let renewalDate: Date | null = null;
+                  
+                  // Primero intentar usar los datos de Stripe
+                  if (business.subscription?.status === 'trialing' && business.stripeDetails?.trialEnd) {
+                    // Si está en periodo de prueba, usar trialEnd de Stripe
+                    renewalDate = new Date(business.stripeDetails.trialEnd);
+                  } else if (business.stripeDetails?.currentPeriodEnd) {
+                    // Si está activo, usar currentPeriodEnd de Stripe
+                    renewalDate = new Date(business.stripeDetails.currentPeriodEnd);
+                  } else if (business.subscription?.validUntil) {
+                    // Fallback: usar validUntil si está disponible y es válido
+                    const validUntilDate = new Date(business.subscription.validUntil);
+                    if (validUntilDate.getTime() > new Date('2000-01-01').getTime()) {
+                      renewalDate = validUntilDate;
+                    }
+                  }
+                  
+                  // Si aún no tenemos fecha, calcular manualmente para trials
+                  if (!renewalDate && business.subscription?.status === 'trialing') {
+                    const createdDate = business.createdAt ? new Date(business.createdAt) : new Date();
+                    const trialDays = currentPlan?.trialDays || 7;
+                    renewalDate = new Date(createdDate.getTime() + trialDays * 24 * 60 * 60 * 1000);
+                  }
+                  
+                  if (renewalDate) {
+                    const label = business.subscription?.status === 'trialing' 
+                      ? 'Prueba termina' 
+                      : 'Renueva';
+                    
+                    return (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {label}: {renewalDate.toLocaleDateString('es-ES', { 
+                          day: 'numeric', 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                    );
+                  }
+                  
+                  return null;
+                })()}
               </div>
             </div>
 
