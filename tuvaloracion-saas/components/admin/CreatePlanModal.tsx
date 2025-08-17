@@ -109,8 +109,8 @@ export default function CreatePlanModal({ onClose, onSave }: CreatePlanModalProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-3xl w-full p-6 my-8 relative">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
