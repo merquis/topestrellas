@@ -841,21 +841,11 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Ej: Hasta 500 reseñas/mes"
                   />
-                  <div className="flex items-center gap-1 min-w-[100px]">
+                  <div className="flex items-center justify-center min-w-[40px]">
                     {feature.included ? (
-                      <span className="text-green-600 text-sm font-medium flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Incluida
-                      </span>
+                      <span className="text-green-600 text-2xl font-bold">✓</span>
                     ) : (
-                      <span className="text-gray-400 text-sm font-medium flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                        No incluida
-                      </span>
+                      <span className="text-red-600 text-2xl font-bold">✗</span>
                     )}
                   </div>
                   {formData.features.length > 1 && (

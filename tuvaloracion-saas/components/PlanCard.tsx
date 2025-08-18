@@ -207,9 +207,9 @@ const PlanCard: React.FC<PlanCardProps> = ({
                     />
                   </svg>
                 ) : (
-                  // X gris para características no incluidas
+                  // X roja para características no incluidas
                   <svg 
-                    className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" 
+                    className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" 
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                   >
@@ -220,7 +220,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
                     />
                   </svg>
                 )}
-                <span className={`text-sm ${isIncluded ? 'text-gray-700' : 'text-gray-400 line-through'}`}>
+                <span className={`text-sm ${isIncluded ? 'text-gray-700' : 'text-gray-500'}`}>
                   {featureName}
                 </span>
               </li>
