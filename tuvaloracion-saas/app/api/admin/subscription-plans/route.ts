@@ -8,6 +8,15 @@ import {
 import { z } from 'zod';
 import { ObjectId } from 'mongodb';
 
+// Schema para características - soporta tanto strings como objetos para compatibilidad
+const FeatureSchema = z.union([
+  z.string(),
+  z.object({
+    name: z.string(),
+    included: z.boolean()
+  })
+]);
+
 // Schema base para planes (sin validaciones de refine)
 const BasePlanSchema = z.object({
   key: z.string().min(1),
@@ -19,7 +28,7 @@ const BasePlanSchema = z.object({
   currency: z.string().default('EUR'),
   interval: z.enum(['month', 'quarter', 'semester', 'year']).optional(),
   trialDays: z.number().min(0).default(0),
-  features: z.array(z.string()),
+  features: z.array(FeatureSchema),
   active: z.boolean().default(true),
   icon: z.string().optional(),
   color: z.string().optional(),

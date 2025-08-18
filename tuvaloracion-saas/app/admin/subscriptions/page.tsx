@@ -449,6 +449,19 @@ const fetchPlans = async () => {
 
 // Componente para editar un plan existente
 function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onClose: () => void; onSave: (planData: any) => void }) {
+  // Convertir features antiguas (strings) a nueva estructura si es necesario
+  const convertFeatures = (features: any) => {
+    if (!features || features.length === 0) {
+      return [{ name: '', included: true }];
+    }
+    // Si ya es el formato nuevo, usarlo directamente
+    if (typeof features[0] === 'object' && 'name' in features[0]) {
+      return features;
+    }
+    // Si es el formato antiguo (array de strings), convertir
+    return features.map((f: string) => ({ name: f, included: true }));
+  };
+
   const [formData, setFormData] = useState({
     key: plan.key || '',
     name: plan.name || '',
@@ -459,7 +472,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     currency: plan.currency || 'EUR',
     interval: plan.interval || 'month',
     trialDays: String(plan.trialDays || 0),
-    features: plan.features || [''],
+    features: convertFeatures(plan.features),
     active: plan.active !== undefined ? plan.active : true,
     icon: plan.icon || '🚀',
     color: plan.color || 'blue',
@@ -511,7 +524,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
       newErrors.trialDays = 'Los días de prueba deben ser un número válido mayor o igual a 0';
     }
     
-    const validFeatures = formData.features.filter(f => f.trim() !== '');
+    const validFeatures = formData.features.filter(f => f.name && f.name.trim() !== '');
     if (validFeatures.length === 0) {
       newErrors.features = 'Debe incluir al menos una característica';
     }
@@ -535,7 +548,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
       setupPrice: parseFloat(formData.setupPrice),
       recurringPrice: parseFloat(formData.recurringPrice),
       trialDays: parseInt(formData.trialDays),
-      features: formData.features.filter(f => f.trim() !== '')
+      features: formData.features.filter(f => f.name && f.name.trim() !== '')
     };
     
     onSave(planData);
@@ -544,7 +557,7 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
   const addFeature = () => {
     setFormData(prev => ({
       ...prev,
-      features: [...prev.features, '']
+      features: [...prev.features, { name: '', included: true }]
     }));
   };
 
@@ -555,10 +568,12 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
     }));
   };
 
-  const updateFeature = (index: number, value: string) => {
+  const updateFeature = (index: number, field: 'name' | 'included', value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
-      features: prev.features.map((f, i) => i === index ? value : f)
+      features: prev.features.map((f, i) => 
+        i === index ? { ...f, [field]: value } : f
+      )
     }));
   };
 
@@ -807,17 +822,42 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
             <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <span>✨</span> Características del Plan
             </h4>
+            <p className="text-sm text-gray-600 mb-4">
+              Define las características del plan y marca si están incluidas o no
+            </p>
             <div className="space-y-2">
               {formData.features.map((feature, index) => (
-                <div key={index} className="flex gap-2">
-                  <span className="text-green-600 mt-2">•</span>
+                <div key={index} className="flex gap-2 items-center">
+                  <input
+                    type="checkbox"
+                    checked={feature.included}
+                    onChange={(e) => updateFeature(index, 'included', e.target.checked)}
+                    className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
                   <input
                     type="text"
-                    value={feature}
-                    onChange={(e) => updateFeature(index, e.target.value)}
+                    value={feature.name}
+                    onChange={(e) => updateFeature(index, 'name', e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Ej: Hasta 500 reseñas/mes"
                   />
+                  <div className="flex items-center gap-1 min-w-[100px]">
+                    {feature.included ? (
+                      <span className="text-green-600 text-sm font-medium flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Incluida
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-sm font-medium flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        No incluida
+                      </span>
+                    )}
+                  </div>
                   {formData.features.length > 1 && (
                     <button
                       type="button"
@@ -833,9 +873,12 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
               <button
                 type="button"
                 onClick={addFeature}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2"
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 flex items-center gap-1"
               >
-                + Añadir característica
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Añadir característica
               </button>
             </div>
           </div>
