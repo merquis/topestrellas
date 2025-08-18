@@ -1771,7 +1771,13 @@ export default function AdminDashboard() {
                                   <div className="text-center">
                                     <div className="text-base font-semibold">Prueba gratuita</div>
                                     <div className="text-xs font-normal opacity-90 mt-0.5">
-                                      {plan.trialDays} días gratis, luego {plan.recurringPrice} € al {plan.interval === 'month' ? 'mes' : 'año'}.
+                                      {plan.trialDays} días gratis, luego {plan.recurringPrice} € {
+                                        plan.interval === 'month' ? 'al mes' : 
+                                        plan.interval === 'quarter' ? 'al trimestre' :
+                                        plan.interval === 'semester' ? 'al semestre' : 
+                                        plan.interval === 'year' ? 'al año' : 
+                                        `/${plan.interval}`
+                                      }.
                                     </div>
                                   </div>
                                 ) : (
