@@ -1701,14 +1701,24 @@ export default function AdminDashboard() {
                               
                               {/* Features */}
                               <ul className="text-sm text-gray-600 space-y-2 text-left mb-6">
-                                {plan.features?.map((feature: string, index: number) => (
-                                  <li key={index} className="flex items-start gap-2">
-                                    <span className={`mt-0.5 ${
-                                      isGreen ? 'text-green-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : 'text-gray-500'
-                                    }`}>✓</span>
-                                    <span>{feature}</span>
-                                  </li>
-                                ))}
+                                {plan.features?.map((feature: string | { name: string; included: boolean }, index: number) => {
+                                  // Manejar tanto strings como objetos para compatibilidad
+                                  const featureName = typeof feature === 'string' ? feature : feature.name;
+                                  const isIncluded = typeof feature === 'string' ? true : feature.included;
+                                  
+                                  return (
+                                    <li key={index} className="flex items-start gap-2">
+                                      {isIncluded ? (
+                                        <span className={`mt-0.5 ${
+                                          isGreen ? 'text-green-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : 'text-gray-500'
+                                        }`}>✓</span>
+                                      ) : (
+                                        <span className="mt-0.5 text-gray-400">✗</span>
+                                      )}
+                                      <span className={isIncluded ? '' : 'text-gray-400 line-through'}>{featureName}</span>
+                                    </li>
+                                  );
+                                })}
                               </ul>
                               
                               {/* Información sobre el cobro */}
