@@ -19,7 +19,7 @@ export interface SubscriptionPlan {
   currency: string;
   interval: 'month' | 'quarter' | 'semester' | 'year';
   trialDays: number;
-  features: string[];
+  features: (string | { name: string; included: boolean })[]; // Soporta ambos formatos para compatibilidad
   active: boolean;
   icon?: string;
   color?: string;
