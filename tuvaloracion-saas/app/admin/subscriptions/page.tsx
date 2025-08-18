@@ -26,6 +26,7 @@ interface SubscriptionPlan {
   key: string;
   name: string;
   description: string;
+  originalPrice?: number;
   setupPrice: number;
   recurringPrice: number;
   currency: string;
@@ -779,22 +780,28 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
                   Icono del Plan
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {availableIcons.map(icon => (
+                  {availableIcons.map(iconOption => (
                     <button
-                      key={icon}
+                      key={`icon-${iconOption}`}
                       type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, icon }))}
-                      className={`p-3 text-2xl rounded-lg border-2 transition-all ${
-                        formData.icon === icon 
-                          ? 'border-blue-500 bg-blue-50 scale-110' 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setFormData(prev => ({ ...prev, icon: iconOption }));
+                      }}
+                      className={`p-3 text-2xl rounded-lg border-2 transition-all hover:scale-105 ${
+                        formData.icon === iconOption 
+                          ? 'border-blue-500 bg-blue-50 scale-110 shadow-lg ring-2 ring-blue-300' 
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
+                      title={`Seleccionar ${iconOption}`}
                     >
-                      {icon}
+                      {iconOption}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Selecciona un icono para el plan</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Icono seleccionado: <span className="text-lg font-bold">{formData.icon}</span>
+                </p>
               </div>
               
               <div>
