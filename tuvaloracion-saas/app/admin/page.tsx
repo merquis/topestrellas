@@ -1660,7 +1660,18 @@ export default function AdminDashboard() {
                             
                             <div className="text-center">
                               <div className="text-4xl mb-3">{plan.icon || '📦'}</div>
-                              <h4 className="text-xl font-bold text-gray-900 mb-4">{plan.name}</h4>
+                              <h4 className="text-xl font-bold text-gray-900">{plan.name}</h4>
+                              
+                              {/* Duración del intervalo de suscripción */}
+                              <div className="mb-4">
+                                <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                  {plan.interval === 'month' ? 'Mensual' : 
+                                   plan.interval === 'quarter' ? 'Trimestral (3 meses)' :
+                                   plan.interval === 'semester' ? 'Semestral (6 meses)' : 
+                                   plan.interval === 'year' ? 'Anual (12 meses)' : 
+                                   plan.interval}
+                                </span>
+                              </div>
                               
                               {/* Precio con formato europeo */}
                               <div className="mb-6">
@@ -1746,7 +1757,7 @@ export default function AdminDashboard() {
                                 type="button"
                                 onClick={() => handleSelectPlan(plan)}
                                 disabled={isCreatingBusiness}
-                                className={`w-full py-3.5 px-6 rounded-full font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg ${
+                                className={`w-full py-3.5 px-6 rounded-full font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg cursor-pointer ${
                                   isGreen 
                                     ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
                                     : isBlue

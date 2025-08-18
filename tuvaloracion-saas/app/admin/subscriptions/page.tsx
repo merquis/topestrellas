@@ -784,17 +784,17 @@ function EditPlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan; onCl
                       key={icon}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, icon }))}
-                      className={`p-2 text-2xl rounded-lg border-2 transition-all ${
+                      className={`p-3 text-2xl rounded-lg border-2 transition-all ${
                         formData.icon === icon 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-blue-500 bg-blue-50 scale-110' 
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       {icon}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Selecciona un icono para el plan</p>
+                <p className="text-xs text-gray-500 mt-2">Selecciona un icono para el plan</p>
               </div>
               
               <div>
