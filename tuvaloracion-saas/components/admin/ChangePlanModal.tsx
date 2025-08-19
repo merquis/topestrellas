@@ -18,7 +18,7 @@ interface Plan {
   recurringPrice: number;
   currency: string;
   interval: string; // 'month' | 'year' esperado, pero puede venir como string
-  features: string[];
+  features: (string | { name: string; included: boolean })[];
   icon: string;
   color: string;
   popular?: boolean;
@@ -271,14 +271,23 @@ export default function ChangePlanModal({
                     {(() => {
                       const allFeatures = new Set<string>();
                       [currentPlan, ...availablePlans].forEach(plan => {
-                        if (plan) plan.features.forEach(f => allFeatures.add(f));
+                        if (plan) {
+                          plan.features.forEach(f => {
+                            const featureName = typeof f === 'string' ? f : f.name;
+                            allFeatures.add(featureName);
+                          });
+                        }
                       });
                       return Array.from(allFeatures).map(feature => (
                         <tr key={feature}>
                           <td className="p-3 border-b text-sm">{feature}</td>
                           {currentPlan && (
                             <td className="text-center p-3 border-b bg-gray-50">
-                              {currentPlan.features.includes(feature) ? (
+                              {currentPlan.features.some(f => {
+                                const fname = typeof f === 'string' ? f : f.name;
+                                const included = typeof f === 'string' ? true : f.included;
+                                return fname === feature && included;
+                              }) ? (
                                 <span className="text-green-500">✓</span>
                               ) : (
                                 <span className="text-gray-300">-</span>
@@ -287,7 +296,11 @@ export default function ChangePlanModal({
                           )}
                           {availablePlans.map(plan => (
                             <td key={plan._id} className="text-center p-3 border-b">
-                              {plan.features.includes(feature) ? (
+                              {plan.features.some(f => {
+                                const fname = typeof f === 'string' ? f : f.name;
+                                const included = typeof f === 'string' ? true : f.included;
+                                return fname === feature && included;
+                              }) ? (
                                 <span className="text-green-500">✓</span>
                               ) : (
                                 <span className="text-gray-300">-</span>
@@ -362,14 +375,27 @@ export default function ChangePlanModal({
                       </div>
 
                       <ul className="space-y-2 mb-6">
-                        {plan.features.slice(0, 5).map((feature, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            <span className="text-sm text-gray-600">{feature}</span>
-                          </li>
-                        ))}
+                        {plan.features.slice(0, 5).map((feature, index) => {
+                          const featureName = typeof feature === 'string' ? feature : feature.name;
+                          const isIncluded = typeof feature === 'string' ? true : feature.included;
+                          
+                          return (
+                            <li key={index} className="flex items-start gap-2">
+                              {isIncluded ? (
+                                <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              <span className={`text-sm ${isIncluded ? 'text-gray-600' : 'text-gray-400 line-through'}`}>
+                                {featureName}
+                              </span>
+                            </li>
+                          );
+                        })}
                         {plan.features.length > 5 && (
                           <li className="text-sm text-gray-500 pl-7">
                             +{plan.features.length - 5} más...
