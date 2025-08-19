@@ -1640,18 +1640,37 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Footer con garantías */}
-                  <div className="flex justify-center gap-6 mt-8 pt-6 border-t border-gray-200">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span>🛡️</span>
-                      <span className="text-sm">Garantía de satisfacción</span>
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    {/* Layout móvil - vertical alineado a la izquierda */}
+                    <div className="flex flex-col gap-2 md:hidden">
+                      <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-lg">
+                        <span className="text-lg">🔒</span>
+                        <span className="text-sm font-medium">Pago seguro con Stripe</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-lg">
+                        <span className="text-lg">↩️</span>
+                        <span className="text-sm font-medium">Garantía de devolución</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-lg">
+                        <span className="text-lg">📧</span>
+                        <span className="text-sm font-medium">Te avisamos antes del cobro</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span>🔒</span>
-                      <span className="text-sm">Pago 100% seguro</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span>📧</span>
-                      <span className="text-sm">Soporte 24/7</span>
+                    
+                    {/* Layout desktop - horizontal */}
+                    <div className="hidden md:flex justify-center gap-6">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span>🔒</span>
+                        <span className="text-sm">Pago seguro con Stripe</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span>↩️</span>
+                        <span className="text-sm">Garantía de devolución</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span>📧</span>
+                        <span className="text-sm">Te avisamos antes del cobro</span>
+                      </div>
                     </div>
                   </div>
                     </>
@@ -1867,18 +1886,18 @@ export default function AdminDashboard() {
                   )}
 
                   {/* Trust badges */}
-                  <div className="mt-8 pt-6 border-t border-gray-200">
-                    {/* Layout móvil - vertical */}
-                    <div className="flex flex-col gap-4 md:hidden">
-                      <div className="flex items-center justify-center gap-3 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    {/* Layout móvil - vertical alineado a la izquierda */}
+                    <div className="flex flex-col gap-2 md:hidden">
+                      <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-lg">
                         <span className="text-lg">🔒</span>
                         <span className="text-sm font-medium">Pago seguro con Stripe</span>
                       </div>
-                      <div className="flex items-center justify-center gap-3 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-lg">
                         <span className="text-lg">↩️</span>
                         <span className="text-sm font-medium">Garantía de devolución</span>
                       </div>
-                      <div className="flex items-center justify-center gap-3 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-lg">
                         <span className="text-lg">📧</span>
                         <span className="text-sm font-medium">Te avisamos antes del cobro</span>
                       </div>

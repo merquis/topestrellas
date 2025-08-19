@@ -588,24 +588,38 @@ export function GooglePlacesUltraSeparated({
       {/* Vista previa del lugar seleccionado */}
       {selectedPlace && (
         <div className="mt-4 p-4 sm:p-6 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-xl shadow-lg">
-          {/* Mensaje de confirmación - PRIMERO en móviles */}
-          <div className="flex items-start gap-3 mb-4 md:hidden">
-            <span className="text-green-500 mt-1 text-xl">✅</span>
-            <div className="flex-1">
-              <p className="text-sm text-green-600 font-medium">
-                Datos obtenidos correctamente
-              </p>
-            </div>
-          </div>
-
           <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
-            {/* Foto del negocio - MÁS GRANDE en móviles */}
+            {/* Layout móvil: Nombre arriba, foto debajo */}
+            <div className="md:hidden w-full">
+              {/* Nombre del restaurante - ARRIBA en móviles */}
+              <div className="mb-4 text-center">
+                <h4 className="text-xl font-bold text-gray-800">
+                  {selectedPlace.name}
+                </h4>
+              </div>
+
+              {/* Foto del negocio - DEBAJO del nombre en móviles */}
+              {showPhoto && selectedPhotoUrl && (
+                <div className="flex justify-center mb-4">
+                  <img
+                    src={selectedPhotoUrl}
+                    alt={selectedPlace.name}
+                    className="rounded-xl object-cover shadow-md border-2 border-white w-40 h-40"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Layout desktop: Foto a la izquierda */}
             {showPhoto && selectedPhotoUrl && (
-              <div className="flex-shrink-0 w-full md:w-auto flex justify-center md:justify-start">
+              <div className="hidden md:flex flex-shrink-0 w-auto justify-start">
                 <img
                   src={selectedPhotoUrl}
                   alt={selectedPlace.name}
-                  className="rounded-xl object-cover shadow-md border-2 border-white w-40 h-40 md:w-24 md:h-24 lg:w-28 lg:h-28"
+                  className="rounded-xl object-cover shadow-md border-2 border-white w-24 h-24 lg:w-28 lg:h-28"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -614,44 +628,34 @@ export function GooglePlacesUltraSeparated({
             )}
             
             <div className="flex-1 min-w-0 w-full">
-              {/* Mensaje de confirmación - Para desktop */}
-              <div className="hidden md:flex items-start gap-3 mb-4">
-                <span className="text-green-500 mt-1 text-xl">✅</span>
-                <div className="flex-1">
-                  <h4 className="text-xl font-bold text-gray-800 mb-1">
-                    {selectedPlace.name}
-                  </h4>
-                  <p className="text-sm text-green-600 font-medium">
-                    Datos obtenidos correctamente
-                  </p>
-                </div>
-              </div>
-
-              {/* Nombre del restaurante - Para móviles (debajo de la foto) */}
-              <div className="md:hidden mb-4 text-center">
+              {/* Nombre del restaurante - Para desktop */}
+              <div className="hidden md:block mb-4">
                 <h4 className="text-xl font-bold text-gray-800">
                   {selectedPlace.name}
                 </h4>
               </div>
 
-              {/* Puntuación y reseñas - LÍNEA HORIZONTAL en móviles, grid en desktop */}
+              {/* Puntuación y reseñas - NUEVO LAYOUT */}
               <div className="mb-4">
-                {/* Layout móvil - línea horizontal */}
+                {/* Layout móvil - Estrellas horizontal arriba, reseñas debajo */}
                 <div className="md:hidden">
                   {(selectedPlace.rating || selectedPlace.user_ratings_total !== undefined) && (
-                    <div className="flex items-center justify-center gap-6 p-4 bg-white/80 rounded-lg">
+                    <div className="space-y-3">
+                      {/* Estrellas en horizontal */}
                       {selectedPlace.rating && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center gap-2 p-3 bg-white/80 rounded-lg">
                           <span className="text-yellow-500 text-xl">⭐</span>
+                          <span className="font-semibold text-gray-700">Estrellas:</span>
                           <span className="text-xl font-bold text-yellow-600">{selectedPlace.rating}</span>
-                          <span className="text-gray-500 text-sm">/5</span>
+                          <span className="text-gray-500">/5</span>
                         </div>
                       )}
+                      {/* Reseñas debajo */}
                       {selectedPlace.user_ratings_total !== undefined && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center gap-2 p-3 bg-white/80 rounded-lg">
                           <span className="text-blue-500 text-xl">📊</span>
+                          <span className="font-semibold text-gray-700">Reseñas:</span>
                           <span className="text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
-                          <span className="text-gray-500 text-sm">reseñas</span>
                         </div>
                       )}
                     </div>
