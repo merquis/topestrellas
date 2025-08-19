@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         }
       } catch {}
       if (!business && businessIdCandidate) {
-        business = await activeDb.collection('businesses').findOne({ _id: String(businessIdCandidate) });
+        business = await activeDb.collection('businesses').findOne({ _id: String(businessIdCandidate) } as any);
         console.log('Buscando como string:', businessIdCandidate);
       }
       if (!business) {
@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
         }
       } catch {}
       if (!business && businessIdCandidate) {
-        business = await activeDbPost.collection('businesses').findOne({ _id: String(businessIdCandidate) });
+        business = await activeDbPost.collection('businesses').findOne({ _id: String(businessIdCandidate) } as any);
       }
       if (!business) {
         business = await activeDbPost.collection('businesses').findOne({ 'contact.email': user.email });
