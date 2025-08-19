@@ -72,8 +72,26 @@ export async function GET(request: Request) {
     
     const plans = await db.collection('subscriptionplans')
       .find(query)
-      .sort({ recurringPrice: 1 })
       .toArray();
+    
+    // Ordenar los planes con un orden fijo específico
+    const planOrder = ['esencial', 'crecimiento', 'liderazgo'];
+    const sortedPlans = plans.sort((a, b) => {
+      const aIndex = planOrder.indexOf(a.key.toLowerCase());
+      const bIndex = planOrder.indexOf(b.key.toLowerCase());
+      
+      // Si ambos planes están en el orden definido, usar ese orden
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      
+      // Si solo uno está en el orden definido, ese va primero
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      
+      // Si ninguno está en el orden definido, ordenar por precio
+      return a.recurringPrice - b.recurringPrice;
+    });
     
     return NextResponse.json({ 
       success: true, 

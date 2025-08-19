@@ -1685,7 +1685,12 @@ export default function AdminDashboard() {
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                     <div className="flex items-center gap-2 text-green-800">
                       <span className="text-green-600">✓</span>
-                      <span className="font-medium">7 días gratis en todos los planes • No se cobra nada hoy • Cancela cuando quieras</span>
+                      <span className="font-medium">
+                        {subscriptionPlans.length > 0 && subscriptionPlans[0]?.trialDays > 0 
+                          ? `${subscriptionPlans[0].trialDays} días gratis en todos los planes`
+                          : 'Prueba gratis en todos los planes'
+                        } • No se cobra nada hoy • Cancela cuando quieras
+                      </span>
                     </div>
                   </div>
 
@@ -1770,7 +1775,7 @@ export default function AdminDashboard() {
                                 <div className="h-12 flex flex-col justify-center mb-2">
                                   {plan.trialDays > 0 ? (
                                     <>
-                                      <p className="text-gray-500 text-sm">7 días a 0€</p>
+                                      <p className="text-gray-500 text-sm">{plan.trialDays} días a 0€</p>
                                       <p className="text-gray-600 text-xs">después</p>
                                     </>
                                   ) : (
