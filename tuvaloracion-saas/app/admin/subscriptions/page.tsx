@@ -349,22 +349,35 @@ const fetchPlans = async () => {
 
   const handleUpdatePlan = async (planId: string, planData: any) => {
     try {
-      const response = await fetch(`/api/admin/subscription-plans/${planId}`, {
+      // Incluir el ID en el body, no en la URL
+      const response = await fetch('/api/admin/subscription-plans', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(planData),
+        body: JSON.stringify({
+          id: planId,
+          ...planData
+        }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        setToast({ message: 'Plan actualizado correctamente', type: 'success' });
+        setToast({ 
+          message: '✅ Plan actualizado y sincronizado con Stripe correctamente', 
+          type: 'success' 
+        });
         fetchPlans();
         setShowEditPlanModal(false);
         setEditingPlan(null);
       } else {
-        throw new Error('Error al actualizar el plan');
+        throw new Error(data.error || data.details || 'Error al actualizar el plan');
       }
-    } catch (error) {
-      setToast({ message: 'Error al actualizar el plan', type: 'error' });
+    } catch (error: any) {
+      console.error('Error actualizando plan:', error);
+      setToast({ 
+        message: `❌ ${error.message || 'Error al actualizar el plan'}`, 
+        type: 'error' 
+      });
     }
   };
 

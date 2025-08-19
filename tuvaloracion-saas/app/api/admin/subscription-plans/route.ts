@@ -217,6 +217,13 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { id, ...updateData } = body;
     
+    console.log('[PUT /subscription-plans] Iniciando actualización:', {
+      id,
+      updateData,
+      recurringPrice: updateData.recurringPrice,
+      setupPrice: updateData.setupPrice
+    });
+    
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'ID del plan requerido' },
@@ -226,6 +233,12 @@ export async function PUT(request: Request) {
     
     // Usar el schema de actualización (partial sin refine)
     const validatedData = UpdatePlanSchema.parse(updateData);
+    
+    console.log('[PUT /subscription-plans] Datos validados:', {
+      recurringPrice: validatedData.recurringPrice,
+      setupPrice: validatedData.setupPrice,
+      interval: validatedData.interval
+    });
     
     // Validación manual del precio original si se proporciona
     if (validatedData.originalPrice !== undefined && validatedData.recurringPrice !== undefined) {
@@ -288,23 +301,51 @@ export async function PUT(request: Request) {
     };
     
     // Sincronizar con Stripe si está activo y hubo cambios relevantes (excepto trial)
-    if (updatedPlan.active && updatedPlan.key !== 'trial' && (
+    const shouldSyncToStripe = updatedPlan.active && updatedPlan.key !== 'trial' && (
       validatedData.recurringPrice !== undefined ||
       validatedData.setupPrice !== undefined ||
       validatedData.interval !== undefined ||
       validatedData.trialDays !== undefined ||
       validatedData.name !== undefined ||
       validatedData.description !== undefined
-    )) {
+    );
+    
+    console.log(`[PUT /subscription-plans] ¿Debe sincronizar con Stripe?:`, {
+      shouldSync: shouldSyncToStripe,
+      isActive: updatedPlan.active,
+      key: updatedPlan.key,
+      hasRecurringPriceChange: validatedData.recurringPrice !== undefined,
+      hasSetupPriceChange: validatedData.setupPrice !== undefined,
+      recurringPriceValue: validatedData.recurringPrice,
+      setupPriceValue: validatedData.setupPrice
+    });
+    
+    if (shouldSyncToStripe) {
       console.log(`[PUT /subscription-plans] Sincronizando cambios del plan ${updatedPlan.key} con Stripe...`);
+      console.log(`[PUT /subscription-plans] Plan antes de sincronizar:`, {
+        recurringPrice: updatedPlan.recurringPrice,
+        setupPrice: updatedPlan.setupPrice,
+        interval: updatedPlan.interval,
+        stripePriceId: updatedPlan.stripePriceId,
+        stripeProductId: updatedPlan.stripeProductId
+      });
       try {
         const { productId, priceId } = await syncPlanToStripe(updatedPlan as SubscriptionPlan);
         
-        console.log(`[PUT /subscription-plans] Plan actualizado - ProductID: ${productId}, PriceID: ${priceId}`);
+        console.log(`[PUT /subscription-plans] ✅ Plan sincronizado con Stripe:`, {
+          productId,
+          priceId,
+          oldPriceId: updatedPlan.stripePriceId,
+          priceChanged: priceId !== updatedPlan.stripePriceId
+        });
         
-        Object.assign(updatedPlan, {
-          stripeProductId: productId,
-          stripePriceId: priceId
+        // Actualizar los IDs de Stripe en el objeto
+        updatedPlan.stripeProductId = productId;
+        updatedPlan.stripePriceId = priceId;
+        
+        console.log(`[PUT /subscription-plans] Plan después de sincronizar:`, {
+          stripePriceId: updatedPlan.stripePriceId,
+          stripeProductId: updatedPlan.stripeProductId
         });
       } catch (stripeError: any) {
         console.error('[PUT /subscription-plans] Error crítico sincronizando con Stripe:', stripeError);
@@ -320,10 +361,26 @@ export async function PUT(request: Request) {
       }
     }
     
-    await db.collection('subscriptionplans').updateOne(
+    const updateResult = await db.collection('subscriptionplans').updateOne(
       { _id: new ObjectId(id) },
       { $set: updatedPlan }
     );
+    
+    console.log(`[PUT /subscription-plans] Resultado de actualización en MongoDB:`, {
+      matchedCount: updateResult.matchedCount,
+      modifiedCount: updateResult.modifiedCount,
+      acknowledged: updateResult.acknowledged
+    });
+    
+    // Verificar que se guardó correctamente
+    const verifyPlan = await db.collection('subscriptionplans').findOne({ 
+      _id: new ObjectId(id) 
+    });
+    
+    console.log(`[PUT /subscription-plans] Verificación del plan guardado:`, {
+      stripePriceId: verifyPlan?.stripePriceId,
+      recurringPrice: verifyPlan?.recurringPrice
+    });
     
     return NextResponse.json({ 
       success: true, 
