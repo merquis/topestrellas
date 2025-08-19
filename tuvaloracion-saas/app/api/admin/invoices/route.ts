@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { verifyAuth } from '@/lib/auth';
 
@@ -43,9 +44,19 @@ export async function GET(request: NextRequest) {
     if (dbUser.role === 'admin' && dbUser.businessId) {
       console.log('Buscando business con ID:', dbUser.businessId);
       
-      const business = await db.collection('businesses').findOne({ 
-        _id: dbUser.businessId 
-      });
+      // Convertir businessId a ObjectId si es necesario
+      let businessQuery;
+      try {
+        // Intentar convertir a ObjectId si es un string válido
+        businessQuery = { _id: new ObjectId(dbUser.businessId) };
+        console.log('Buscando con ObjectId:', dbUser.businessId);
+      } catch (error) {
+        // Si falla, buscar como string
+        businessQuery = { _id: dbUser.businessId };
+        console.log('Buscando como string:', dbUser.businessId);
+      }
+      
+      const business = await db.collection('businesses').findOne(businessQuery);
       
       console.log('Business encontrado:', business ? 'Sí' : 'No');
       
@@ -244,12 +255,23 @@ export async function POST(request: NextRequest) {
     let stripeCustomerId = null;
     
     if (dbUser.role === 'admin' && dbUser.businessId) {
-      const business = await db.collection('businesses').findOne({ 
-        _id: dbUser.businessId 
-      });
+      // Convertir businessId a ObjectId si es necesario
+      let businessQuery;
+      try {
+        businessQuery = { _id: new ObjectId(dbUser.businessId) };
+      } catch (error) {
+        businessQuery = { _id: dbUser.businessId };
+      }
       
-      if (business && business.subscription && business.subscription.stripeCustomerId) {
-        stripeCustomerId = business.subscription.stripeCustomerId;
+      const business = await db.collection('businesses').findOne(businessQuery);
+      
+      if (business) {
+        // Buscar stripeCustomerId en diferentes ubicaciones
+        if (business.subscription && business.subscription.stripeCustomerId) {
+          stripeCustomerId = business.subscription.stripeCustomerId;
+        } else if (business.billing && business.billing.stripeCustomerId) {
+          stripeCustomerId = business.billing.stripeCustomerId;
+        }
       }
     }
 
