@@ -324,7 +324,15 @@ export default function InvoicesPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: index * 0.02 }}
-                        className="hover:bg-gray-50 transition-colors"
+                        style={{
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e: any) => {
+                          e.currentTarget.style.backgroundColor = '#f9fafb';
+                        }}
+                        onMouseLeave={(e: any) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {invoice.number || invoice.id.slice(-8).toUpperCase()}
@@ -416,7 +424,7 @@ export default function InvoicesPage() {
           <div className="mt-6 flex justify-center">
             <div className="flex gap-2">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   currentPage === 1
@@ -445,7 +453,7 @@ export default function InvoicesPage() {
               })}
               
               <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
                 disabled={!hasMore}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   !hasMore
