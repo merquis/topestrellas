@@ -90,10 +90,18 @@ export async function GET(request: NextRequest) {
     );
 
     // Obtener descripción del plan si existe
-    const invoicesWithDetails = paginatedInvoices.map(invoice => {
+    const invoicesWithDetails = paginatedInvoices.map((invoice: any) => {
       let description = '';
       if (invoice.lines?.data?.[0]) {
         description = invoice.lines.data[0].description || '';
+      }
+
+      // Manejar la suscripción que puede venir como string o objeto expandido
+      let subscriptionId = null;
+      if (invoice.subscription) {
+        subscriptionId = typeof invoice.subscription === 'string' 
+          ? invoice.subscription 
+          : invoice.subscription.id;
       }
 
       return {
@@ -108,11 +116,7 @@ export async function GET(request: NextRequest) {
         period_end: invoice.period_end,
         invoice_pdf: invoice.invoice_pdf,
         hosted_invoice_url: invoice.hosted_invoice_url,
-        subscription: invoice.subscription 
-          ? (typeof invoice.subscription === 'string' 
-            ? invoice.subscription 
-            : invoice.subscription.id)
-          : null,
+        subscription: subscriptionId,
         description: description,
         payment_intent: invoice.payment_intent 
           ? {
