@@ -293,7 +293,7 @@ export async function PUT(request: Request) {
       updatedAssignedTo = updateData.assignedTo;
     }
     
-    const updatedPlan = {
+    const updatedPlan: any = {
       ...currentPlan,
       ...validatedData,
       assignedTo: updatedAssignedTo,
