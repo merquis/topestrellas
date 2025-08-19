@@ -367,7 +367,7 @@ function InvoicesContent() {
                           {invoice.status === 'open' && (
                             <button
                               onClick={() => handlePayInvoice(invoice)}
-                              className="text-yellow-600 hover:text-yellow-800 font-medium text-sm"
+                              className="text-yellow-600 hover:text-yellow-800 font-medium text-sm cursor-pointer"
                               title="Pagar factura"
                             >
                               Pagar
@@ -376,7 +376,7 @@ function InvoicesContent() {
                           {invoice.status === 'uncollectible' && (
                             <button
                               onClick={() => handlePayInvoice(invoice)}
-                              className="text-red-600 hover:text-red-800 font-medium text-sm animate-pulse"
+                              className="text-red-600 hover:text-red-800 font-medium text-sm animate-pulse cursor-pointer"
                               title="Resolver pago"
                             >
                               Resolver
@@ -384,7 +384,7 @@ function InvoicesContent() {
                           )}
                           <button
                             onClick={() => handleViewInvoice(invoice)}
-                            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                            className="text-blue-600 hover:text-blue-800 font-medium text-sm cursor-pointer"
                             title="Ver factura"
                           >
                             Ver
@@ -394,7 +394,7 @@ function InvoicesContent() {
                               <span className="text-gray-300">|</span>
                               <button
                                 onClick={() => handleDownloadInvoice(invoice)}
-                                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                                className="text-blue-600 hover:text-blue-800 font-medium text-sm cursor-pointer"
                                 title="Descargar PDF"
                               >
                                 Descargar
