@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Crear componente motion tipado correctamente para tr
+const MotionTr = motion('tr');
+
 interface Invoice {
   id: string;
   number: string | null;
@@ -319,7 +322,7 @@ export default function InvoicesPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   <AnimatePresence>
                     {invoices.map((invoice, index) => (
-                      <motion.tr
+                      <MotionTr
                         key={invoice.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -402,7 +405,7 @@ export default function InvoicesPage() {
                             )}
                           </div>
                         </td>
-                      </motion.tr>
+                      </MotionTr>
                     ))}
                   </AnimatePresence>
                 </tbody>
