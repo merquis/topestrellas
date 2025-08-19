@@ -180,39 +180,40 @@ export default function InvoicesPage() {
 
         {/* Alerta de facturas impagadas */}
         {unpaidInvoices > 0 && (
-          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">⚠️</span>
-                <div>
-                  <p className="font-semibold text-red-800">
-                    ATENCIÓN: Tienes {unpaidInvoices} factura{unpaidInvoices > 1 ? 's' : ''} pendiente{unpaidInvoices > 1 ? 's' : ''} de pago
-                  </p>
-                  <p className="text-sm text-red-600 mt-1">
-                    Importe total pendiente: {formatAmount(unpaidAmount)}
-                  </p>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <p className="font-semibold text-red-800">
+                      ATENCIÓN: Tienes {unpaidInvoices} factura{unpaidInvoices > 1 ? 's' : ''} pendiente{unpaidInvoices > 1 ? 's' : ''} de pago
+                    </p>
+                    <p className="text-sm text-red-600 mt-1">
+                      Importe total pendiente: {formatAmount(unpaidAmount)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedYear('all')}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    💳 Pagar Ahora
+                  </button>
+                  <button
+                    onClick={handleUpdatePaymentMethod}
+                    className="px-4 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    🔄 Actualizar Método de Pago
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedYear('all')}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  💳 Pagar Ahora
-                </button>
-                <button
-                  onClick={handleUpdatePaymentMethod}
-                  className="px-4 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  🔄 Actualizar Método de Pago
-                </button>
-              </div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         )}
 
         {/* Estadísticas */}
