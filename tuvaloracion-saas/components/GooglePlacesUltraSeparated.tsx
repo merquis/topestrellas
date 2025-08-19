@@ -588,13 +588,24 @@ export function GooglePlacesUltraSeparated({
       {/* Vista previa del lugar seleccionado */}
       {selectedPlace && (
         <div className="mt-4 p-4 sm:p-6 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-xl shadow-lg">
-          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+          {/* Mensaje de confirmación - PRIMERO en móviles */}
+          <div className="flex items-start gap-3 mb-4 md:hidden">
+            <span className="text-green-500 mt-1 text-xl">✅</span>
+            <div className="flex-1">
+              <p className="text-sm text-green-600 font-medium">
+                Datos obtenidos correctamente
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
+            {/* Foto del negocio - MÁS GRANDE en móviles */}
             {showPhoto && selectedPhotoUrl && (
-              <div className="flex-shrink-0 w-full sm:w-auto flex justify-center sm:justify-start">
+              <div className="flex-shrink-0 w-full md:w-auto flex justify-center md:justify-start">
                 <img
                   src={selectedPhotoUrl}
                   alt={selectedPlace.name}
-                  className="rounded-xl object-cover shadow-md border-2 border-white w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28"
+                  className="rounded-xl object-cover shadow-md border-2 border-white w-40 h-40 md:w-24 md:h-24 lg:w-28 lg:h-28"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -603,7 +614,8 @@ export function GooglePlacesUltraSeparated({
             )}
             
             <div className="flex-1 min-w-0 w-full">
-              <div className="flex items-start gap-3 mb-4">
+              {/* Mensaje de confirmación - Para desktop */}
+              <div className="hidden md:flex items-start gap-3 mb-4">
                 <span className="text-green-500 mt-1 text-xl">✅</span>
                 <div className="flex-1">
                   <h4 className="text-xl font-bold text-gray-800 mb-1">
@@ -615,42 +627,76 @@ export function GooglePlacesUltraSeparated({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                {selectedPlace.rating && (
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-white/80 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1 sm:mb-0">
-                      <span className="text-yellow-500 text-lg">⭐</span>
-                      <span className="font-semibold text-gray-700 text-sm sm:text-base">Puntuación:</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg sm:text-xl font-bold text-yellow-600">{selectedPlace.rating}</span>
-                      <span className="text-gray-500 text-sm">/5</span>
-                    </div>
-                  </div>
-                )}
-                
-                {selectedPlace.user_ratings_total !== undefined && (
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-white/80 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1 sm:mb-0">
-                      <span className="text-blue-500 text-lg">📊</span>
-                      <span className="font-semibold text-gray-700 text-sm sm:text-base">Reseñas:</span>
-                    </div>
-                    <span className="text-lg sm:text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
-                  </div>
-                )}
-                
-                {selectedPlace.formatted_address && (
-                  <div className="p-3 bg-white/80 rounded-lg sm:col-span-2">
-                    <div className="flex items-start gap-2 mb-2">
-                      <span className="text-red-500 text-lg mt-0.5 flex-shrink-0">📍</span>
-                      <span className="font-semibold text-gray-700 text-sm sm:text-base">Dirección:</span>
-                    </div>
-                    <p className="text-gray-600 leading-relaxed pl-6 break-words text-sm sm:text-base">
-                      {selectedPlace.formatted_address}
-                    </p>
-                  </div>
-                )}
+              {/* Nombre del restaurante - Para móviles (debajo de la foto) */}
+              <div className="md:hidden mb-4 text-center">
+                <h4 className="text-xl font-bold text-gray-800">
+                  {selectedPlace.name}
+                </h4>
               </div>
+
+              {/* Puntuación y reseñas - LÍNEA HORIZONTAL en móviles, grid en desktop */}
+              <div className="mb-4">
+                {/* Layout móvil - línea horizontal */}
+                <div className="md:hidden">
+                  {(selectedPlace.rating || selectedPlace.user_ratings_total !== undefined) && (
+                    <div className="flex items-center justify-center gap-6 p-4 bg-white/80 rounded-lg">
+                      {selectedPlace.rating && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-yellow-500 text-xl">⭐</span>
+                          <span className="text-xl font-bold text-yellow-600">{selectedPlace.rating}</span>
+                          <span className="text-gray-500 text-sm">/5</span>
+                        </div>
+                      )}
+                      {selectedPlace.user_ratings_total !== undefined && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-500 text-xl">📊</span>
+                          <span className="text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
+                          <span className="text-gray-500 text-sm">reseñas</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Layout desktop - grid original */}
+                <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {selectedPlace.rating && (
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between p-3 bg-white/80 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1 md:mb-0">
+                        <span className="text-yellow-500 text-lg">⭐</span>
+                        <span className="font-semibold text-gray-700 text-sm md:text-base">Puntuación:</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg md:text-xl font-bold text-yellow-600">{selectedPlace.rating}</span>
+                        <span className="text-gray-500 text-sm">/5</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedPlace.user_ratings_total !== undefined && (
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between p-3 bg-white/80 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1 md:mb-0">
+                        <span className="text-blue-500 text-lg">📊</span>
+                        <span className="font-semibold text-gray-700 text-sm md:text-base">Reseñas:</span>
+                      </div>
+                      <span className="text-lg md:text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Dirección */}
+              {selectedPlace.formatted_address && (
+                <div className="p-3 bg-white/80 rounded-lg mb-4">
+                  <div className="flex items-start gap-2 mb-2">
+                    <span className="text-red-500 text-lg mt-0.5 flex-shrink-0">📍</span>
+                    <span className="font-semibold text-gray-700 text-sm md:text-base">Dirección:</span>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed pl-6 break-words text-sm md:text-base">
+                    {selectedPlace.formatted_address}
+                  </p>
+                </div>
+              )}
 
               {/* Sección "¡Aumenta tus ventas!" - Solo mostrar si no están ocultos los mensajes promocionales */}
               {!hidePromotionalMessages && selectedPlace.rating && selectedPlace.rating < 5.0 && (

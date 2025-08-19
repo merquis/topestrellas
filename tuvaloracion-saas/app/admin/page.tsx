@@ -855,33 +855,33 @@ export default function AdminDashboard() {
               </div>
 
               {/* Progress Indicator */}
-              <div className="flex items-center justify-center mb-8 px-2 sm:px-4">
-                <div className="flex items-center justify-center w-full max-w-sm sm:max-w-md">
-                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+              <div className="flex items-center justify-center mb-8 px-4">
+                <div className="flex items-center justify-between w-full max-w-xs sm:max-w-sm md:max-w-md">
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full font-bold transition-all text-xs sm:text-sm md:text-base flex-shrink-0 ${
                     registrationStep >= 1 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 1 ? '✓' : '1'}
                   </div>
-                  <div className={`w-4 sm:w-8 h-1 rounded-full transition-all flex-shrink-0 ${
+                  <div className={`flex-1 h-1 mx-2 sm:mx-3 rounded-full transition-all ${
                     registrationStep >= 2 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full font-bold transition-all text-xs sm:text-sm md:text-base flex-shrink-0 ${
                     registrationStep >= 2 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 2 ? '✓' : '2'}
                   </div>
-                  <div className={`w-4 sm:w-8 h-1 rounded-full transition-all flex-shrink-0 ${
+                  <div className={`flex-1 h-1 mx-2 sm:mx-3 rounded-full transition-all ${
                     registrationStep >= 3 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full font-bold transition-all text-xs sm:text-sm md:text-base flex-shrink-0 ${
                     registrationStep >= 3 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 3 ? '✓' : '3'}
                   </div>
-                  <div className={`w-4 sm:w-8 h-1 rounded-full transition-all flex-shrink-0 ${
+                  <div className={`flex-1 h-1 mx-2 sm:mx-3 rounded-full transition-all ${
                     registrationStep >= 4 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full font-bold transition-all text-xs sm:text-sm md:text-base flex-shrink-0 ${
                     registrationStep >= 4 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     4
@@ -1867,18 +1867,37 @@ export default function AdminDashboard() {
                   )}
 
                   {/* Trust badges */}
-                  <div className="flex justify-center gap-6 mt-8 pt-6 border-t border-gray-200">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span>🔒</span>
-                      <span className="text-sm">Pago seguro con Stripe</span>
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    {/* Layout móvil - vertical */}
+                    <div className="flex flex-col gap-4 md:hidden">
+                      <div className="flex items-center justify-center gap-3 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                        <span className="text-lg">🔒</span>
+                        <span className="text-sm font-medium">Pago seguro con Stripe</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-3 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                        <span className="text-lg">↩️</span>
+                        <span className="text-sm font-medium">Garantía de devolución</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-3 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                        <span className="text-lg">📧</span>
+                        <span className="text-sm font-medium">Te avisamos antes del cobro</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span>↩️</span>
-                      <span className="text-sm">Garantía de devolución</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span>📧</span>
-                      <span className="text-sm">Te avisamos antes del cobro</span>
+                    
+                    {/* Layout desktop - horizontal */}
+                    <div className="hidden md:flex justify-center gap-6">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span>🔒</span>
+                        <span className="text-sm">Pago seguro con Stripe</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span>↩️</span>
+                        <span className="text-sm">Garantía de devolución</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <span>📧</span>
+                        <span className="text-sm">Te avisamos antes del cobro</span>
+                      </div>
                     </div>
                   </div>
                 </div>
