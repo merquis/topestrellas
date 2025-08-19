@@ -824,16 +824,27 @@ export default function AdminDashboard() {
                   </div>
                   <span className="text-xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">TopEstrellas.com</span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Crear Cuenta</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {registrationStep === 1 
+                    ? 'Crear Cuenta' 
+                    : registrationStep === 2
+                    ? 'Encuentra tu Negocio'
+                    : registrationStep === 3
+                    ? 'Elige tu Plan'
+                    : registrationStep === 4
+                    ? 'Completar Pago'
+                    : 'Proceso de registro'
+                  }
+                </h2>
                 <p className="text-gray-600 text-sm">
                   {registrationStep === 1 
                     ? 'Completa tus datos personales' 
                     : registrationStep === 2
                     ? 'Busca y selecciona tu negocio'
                     : registrationStep === 3
-                    ? 'Elige tu plan de suscripción'
+                    ? 'Todos los planes incluyen prueba gratis'
                     : registrationStep === 4
-                    ? 'Completa tu pago'
+                    ? 'Añade tu método de pago'
                     : 'Proceso de registro'
                   }
                 </p>
@@ -1603,19 +1614,11 @@ export default function AdminDashboard() {
               {/* Step 3: Plan Selection */}
               {registrationStep === 3 && (
                 <div className="space-y-6">
-                  {/* Header con mensaje claro */}
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      Elige tu plan de suscripción
-                    </h3>
-                    <p className="text-lg text-gray-600 mb-3">
-                      Todos los planes incluyen prueba gratis
-                    </p>
-                    <div className="bg-green-100 text-green-800 px-6 py-3 rounded-lg inline-block">
-                      <div className="flex items-center gap-2 font-semibold">
-                        <span>✅</span>
-                        <span>No se cobra nada hoy • Cancela cuando quieras</span>
-                      </div>
+                  {/* Mensaje unificado arriba */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-center gap-2 text-green-800">
+                      <span className="text-green-600">✓</span>
+                      <span className="font-medium">7 días gratis en todos los planes • No se cobra nada hoy • Cancela cuando quieras</span>
                     </div>
                   </div>
 
@@ -1673,20 +1676,9 @@ export default function AdminDashboard() {
                           >
                             {plan.popular && (
                               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
-                                  Más Popular
+                                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                  Recomendado
                                 </span>
-                              </div>
-                            )}
-                            
-                            {/* Badge de días gratis */}
-                            {plan.trialDays > 0 && (
-                              <div className="text-center mb-4">
-                                <div className="bg-green-500 text-white px-4 py-2 rounded-full inline-block">
-                                  <span className="font-bold text-lg">
-                                    {plan.trialDays} {plan.trialDays === 1 ? 'DÍA' : 'DÍAS'} GRATIS
-                                  </span>
-                                </div>
                               </div>
                             )}
                             
