@@ -1697,60 +1697,54 @@ export default function AdminDashboard() {
                                 </span>
                               </div>
                               
-                              {/* Precio con formato europeo */}
-                              <div className="mb-6">
-                                {plan.trialDays > 0 && (
-                                  <p className="text-gray-600 text-sm mb-1">después</p>
-                                )}
+                              {/* Precio con formato europeo - SIMPLIFICADO Y ALINEADO */}
+                              <div className="mb-4">
+                                {/* Contenedor con altura fija para mantener alineación */}
+                                <div className="h-12 flex flex-col justify-center mb-2">
+                                  {plan.trialDays > 0 ? (
+                                    <>
+                                      <p className="text-gray-500 text-sm">7 días a 0€</p>
+                                      <p className="text-gray-600 text-xs">después</p>
+                                    </>
+                                  ) : (
+                                    <p className="text-gray-600 text-sm">Pago inmediato</p>
+                                  )}
+                                </div>
                                 
-                                {/* NUEVO: Badge de ahorro dinámico vs plan mensual */}
-                                {savingsData && savingsData.savings > 0 && (
-                                  <div className="mb-3 space-y-2">
-                                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg animate-pulse">
-                                      ¡AHORRA {savingsData.savings}€!
-                                    </div>
-                                    <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
-                                      {savingsData.percentage}% menos que pago mensual
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {/* Badge de descuento si hay precio original */}
-                                {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
-                                  <div className="mb-3">
-                                    <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                                      ¡{Math.round(((plan.originalPrice - plan.recurringPrice) / plan.originalPrice) * 100)}% DESCUENTO!
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                {/* NUEVO: Comparación de precios vs mensual */}
-                                {savingsData && (
-                                  <div className="text-gray-500 text-sm mb-2">
-                                    <span className="line-through">
-                                      {savingsData.equivalentCost}€ si pagas mensual
-                                    </span>
-                                    <span className="ml-2 text-green-600 font-semibold">
-                                      → {plan.recurringPrice}€ {plan.interval === 'quarter' ? 'trimestral' : 'semestral'}
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                {/* Precio original tachado si existe */}
-                                {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
-                                  <div className="text-gray-500 line-through text-xl mb-1">
-                                    {plan.originalPrice} €/{plan.interval === 'month' ? 'mes' : 'año'}
-                                  </div>
-                                )}
-                                
+                                {/* Precio principal - GRANDE Y CLARO */}
                                 <div className={`text-4xl font-bold ${
                                   isGreen ? 'text-green-600' : isBlue ? 'text-blue-600' : isPurple ? 'text-purple-600' : 'text-gray-900'
                                 }`}>
                                   {plan.recurringPrice} €
                                   <span className="text-lg font-normal text-gray-600">
-                                    /{plan.interval === 'month' ? 'mes' : 'año'}
+                                    /{plan.interval === 'month' ? 'mes' : 
+                                     plan.interval === 'quarter' ? '3 meses' :
+                                     plan.interval === 'semester' ? '6 meses' : 
+                                     'año'}
                                   </span>
                                 </div>
+                                
+                                {/* Información de ahorro - SUTIL Y SIMPLE */}
+                                {savingsData && savingsData.savings > 0 && (
+                                  <p className="text-sm text-green-600 mt-2">
+                                    Ahorras {savingsData.savings}€ vs. pago mensual
+                                  </p>
+                                )}
+                                
+                                {/* Precio original tachado si existe - MÁS SUTIL */}
+                                {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
+                                  <p className="text-sm text-gray-400 line-through mt-1">
+                                    Antes: {plan.originalPrice}€
+                                  </p>
+                                )}
+                                
+                                {/* Información del primer cobro - INTEGRADA */}
+                                {plan.trialDays > 0 && (
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    Primer cobro: {formattedDate}
+                                  </p>
+                                )}
+                                
                                 {plan.setupPrice > 0 && (
                                   <p className="text-sm text-gray-500 mt-1">
                                     + {plan.setupPrice} € de configuración inicial
@@ -1758,112 +1752,45 @@ export default function AdminDashboard() {
                                 )}
                               </div>
                               
-                              {/* Features */}
-                              <ul className="text-sm text-gray-600 space-y-2 text-left mb-6">
-                                {plan.features?.map((feature: string | { name: string; included: boolean }, index: number) => {
-                                  // Manejar tanto strings como objetos para compatibilidad
-                                  const featureName = typeof feature === 'string' ? feature : feature.name;
-                                  const isIncluded = typeof feature === 'string' ? true : feature.included;
-                                  
-                                  return (
-                                    <li key={index} className="flex items-start gap-2">
-                                      {isIncluded ? (
-                                        <span className="mt-0.5 text-green-500">✓</span>
-                                      ) : (
-                                        <span className="mt-0.5 text-red-500">✗</span>
-                                      )}
-                                      <span className={isIncluded ? '' : 'text-gray-500'}>{featureName}</span>
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                              
-                              {/* Información sobre el cobro */}
-                              {plan.trialDays > 0 && (
-                                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-left">
-                                  <div className="text-xs space-y-1">
-                                    <div className="flex items-center gap-2 text-blue-800">
-                                      <span>📅</span>
-                                      <span className="font-semibold">
-                                        Primer cobro: {formattedDate}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-blue-700">
-                                      <span>💳</span>
-                                      <span>Tarjeta requerida (no se cobra hoy)</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-blue-700">
-                                      <span>❌</span>
-                                      <span>Cancela gratis cuando quieras</span>
-                                    </div>
-                                    {/* NUEVO: Información adicional de ahorro */}
-                                    {savingsData && savingsData.savings > 0 && (
-                                      <div className="flex items-center gap-2 text-green-700 font-semibold">
-                                        <span>💰</span>
-                                        <span>Te ahorras {savingsData.savings}€ cada {savingsData.months} meses</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* NUEVO: Información de ahorro para planes sin trial */}
-                              {plan.trialDays === 0 && savingsData && savingsData.savings > 0 && (
-                                <div className="bg-green-50 border border-green-200 p-3 rounded-lg mb-4 text-left">
-                                  <div className="text-xs space-y-1">
-                                    <div className="flex items-center gap-2 text-green-800 font-semibold">
-                                      <span>💰</span>
-                                      <span>Ahorro inmediato: {savingsData.savings}€</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-green-700">
-                                      <span>📊</span>
-                                      <span>Pagas {savingsData.percentage}% menos que mensual</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-green-700">
-                                      <span>🎯</span>
-                                      <span>Precio fijo por {savingsData.months} meses</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* Botón CTA individual para cada plan */}
+                              {/* Botón CTA - MOVIDO JUSTO DESPUÉS DEL PRECIO */}
                               <button
                                 type="button"
                                 onClick={() => handleSelectPlan(plan)}
                                 disabled={isCreatingBusiness}
-                                className={`w-full py-3.5 px-6 rounded-full font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg cursor-pointer ${
-                                  isGreen 
-                                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
-                                    : isBlue
+                                className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md mb-6 ${
+                                  plan.popular
                                     ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-                                    : isPurple
-                                    ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-                                    : 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800'
+                                    : 'bg-white text-gray-900 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                                 }`}
                               >
-                                {plan.trialDays > 0 ? (
-                                  <div className="text-center">
-                                    <div className="text-base font-semibold">Prueba gratuita</div>
-                                    <div className="text-xs font-normal opacity-90 mt-0.5">
-                                      {plan.trialDays} días gratis, luego {plan.recurringPrice} € {
-                                        plan.interval === 'month' ? 'al mes' : 
-                                        plan.interval === 'quarter' ? 'al trimestre' :
-                                        plan.interval === 'semester' ? 'al semestre' : 
-                                        plan.interval === 'year' ? 'al año' : 
-                                        `/${plan.interval}`
-                                      }.
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="text-center">
-                                    <div className="text-base font-semibold">Suscribirse</div>
-                                    <div className="text-xs font-normal opacity-90 mt-0.5">
-                                      {plan.recurringPrice} € al {plan.interval === 'month' ? 'mes' : 'año'}
-                                    </div>
-                                  </div>
-                                )}
+                                {plan.trialDays > 0 ? 'Empezar prueba gratis' : 'Seleccionar plan'}
                               </button>
+                              
+                              {/* Separador visual */}
+                              <div className="border-t border-gray-200 mb-4"></div>
+                              
+                              {/* Features - AHORA DESPUÉS DEL BOTÓN */}
+                              <div className="text-left">
+                                <p className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Características:</p>
+                                <ul className="text-sm text-gray-600 space-y-2">
+                                  {plan.features?.map((feature: string | { name: string; included: boolean }, index: number) => {
+                                    // Manejar tanto strings como objetos para compatibilidad
+                                    const featureName = typeof feature === 'string' ? feature : feature.name;
+                                    const isIncluded = typeof feature === 'string' ? true : feature.included;
+                                    
+                                    return (
+                                      <li key={index} className="flex items-start gap-2">
+                                        {isIncluded ? (
+                                          <span className="mt-0.5 text-green-500 flex-shrink-0">✓</span>
+                                        ) : (
+                                          <span className="mt-0.5 text-red-500 flex-shrink-0">✗</span>
+                                        )}
+                                        <span className={isIncluded ? '' : 'text-gray-400'}>{featureName}</span>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
                             </div>
                           </div>
                         );
