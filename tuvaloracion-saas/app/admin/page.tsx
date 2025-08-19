@@ -1724,26 +1724,32 @@ export default function AdminDashboard() {
                                   </span>
                                 </div>
                                 
-                                {/* Información de ahorro - SUTIL Y SIMPLE */}
-                                {savingsData && savingsData.savings > 0 && (
-                                  <p className="text-sm text-green-600 mt-2">
-                                    Ahorras {savingsData.savings}€ vs. pago mensual
-                                  </p>
-                                )}
+                                {/* Contenedor con altura fija para información de ahorro - MANTIENE ALINEACIÓN */}
+                                <div className="h-12 flex flex-col justify-center">
+                                  {savingsData && savingsData.savings > 0 ? (
+                                    <>
+                                      <p className="text-sm text-green-600">
+                                        Ahorras {savingsData.savings}€ vs. pago mensual
+                                      </p>
+                                      {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
+                                        <p className="text-xs text-gray-400 line-through">
+                                          Antes: {plan.originalPrice}€
+                                        </p>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <div className="h-full"></div> // Espacio vacío para mantener alineación
+                                  )}
+                                </div>
                                 
-                                {/* Precio original tachado si existe - MÁS SUTIL */}
-                                {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
-                                  <p className="text-sm text-gray-400 line-through mt-1">
-                                    Antes: {plan.originalPrice}€
-                                  </p>
-                                )}
-                                
-                                {/* Información del primer cobro - INTEGRADA */}
-                                {plan.trialDays > 0 && (
-                                  <p className="text-xs text-gray-500 mt-2">
-                                    Primer cobro: {formattedDate}
-                                  </p>
-                                )}
+                                {/* Información del primer cobro - ALINEADA */}
+                                <div className="h-6 flex items-center">
+                                  {plan.trialDays > 0 && (
+                                    <p className="text-xs text-gray-500">
+                                      Primer cobro: {formattedDate}
+                                    </p>
+                                  )}
+                                </div>
                                 
                                 {plan.setupPrice > 0 && (
                                   <p className="text-sm text-gray-500 mt-1">
@@ -1752,15 +1758,15 @@ export default function AdminDashboard() {
                                 )}
                               </div>
                               
-                              {/* Botón CTA - MOVIDO JUSTO DESPUÉS DEL PRECIO */}
+                              {/* Botón CTA - ESTILOS CORREGIDOS */}
                               <button
                                 type="button"
                                 onClick={() => handleSelectPlan(plan)}
                                 disabled={isCreatingBusiness}
-                                className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md mb-6 ${
+                                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md mb-6 ${
                                   plan.popular
-                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-                                    : 'bg-white text-gray-900 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
+                                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                                 }`}
                               >
                                 {plan.trialDays > 0 ? 'Empezar prueba gratis' : 'Seleccionar plan'}
