@@ -193,7 +193,8 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
       product: product.id,
       currency: plan.currency,
       amount: eurosToCents(plan.recurringPrice),
-      interval: plan.interval
+      originalInterval: plan.interval,
+      priceData: priceData
     });
     
     price = await stripe.prices.create(priceData);
