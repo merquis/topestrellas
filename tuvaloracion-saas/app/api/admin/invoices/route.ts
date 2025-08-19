@@ -41,12 +41,34 @@ export async function GET(request: NextRequest) {
     
     // Si el usuario es admin, buscar su business
     if (dbUser.role === 'admin' && dbUser.businessId) {
+      console.log('Buscando business con ID:', dbUser.businessId);
+      
       const business = await db.collection('businesses').findOne({ 
         _id: dbUser.businessId 
       });
       
-      if (business && business.subscription && business.subscription.stripeCustomerId) {
-        stripeCustomerId = business.subscription.stripeCustomerId;
+      console.log('Business encontrado:', business ? 'Sí' : 'No');
+      
+      if (business) {
+        // Buscar stripeCustomerId en diferentes ubicaciones posibles
+        if (business.subscription && business.subscription.stripeCustomerId) {
+          stripeCustomerId = business.subscription.stripeCustomerId;
+          console.log('Stripe Customer ID encontrado en subscription:', stripeCustomerId);
+        } else if (business.billing && business.billing.stripeCustomerId) {
+          stripeCustomerId = business.billing.stripeCustomerId;
+          console.log('Stripe Customer ID encontrado en billing:', stripeCustomerId);
+        } else if (business.stripeCustomerId) {
+          stripeCustomerId = business.stripeCustomerId;
+          console.log('Stripe Customer ID encontrado directamente:', stripeCustomerId);
+        }
+        
+        // Log para depuración
+        console.log('Estructura del business:', {
+          hasSubscription: !!business.subscription,
+          hasBilling: !!business.billing,
+          subscriptionKeys: business.subscription ? Object.keys(business.subscription) : [],
+          billingKeys: business.billing ? Object.keys(business.billing) : []
+        });
       }
     }
     
@@ -64,6 +86,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!stripeCustomerId) {
+      console.log('No se encontró stripeCustomerId para el usuario:', user.email);
       return NextResponse.json({ 
         invoices: [],
         hasMore: false,
@@ -73,6 +96,8 @@ export async function GET(request: NextRequest) {
         message: 'No se encontró información de facturación para este negocio'
       });
     }
+    
+    console.log('Obteniendo facturas para customer:', stripeCustomerId);
 
     // Configurar filtros de fecha
     const now = new Date();
