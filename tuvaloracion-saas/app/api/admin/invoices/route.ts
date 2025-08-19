@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import Stripe from 'stripe';
 import clientPromise from '@/lib/mongodb';
+import { verifyAuth } from '@/lib/auth';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -11,8 +10,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const cookieHeader = request.headers.get('cookie') || '';
+    const user = verifyAuth(cookieHeader);
+    
+    if (!user?.email) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
@@ -26,12 +27,12 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db('topestrellas');
     
-    // Buscar el usuario
-    const user = await db.collection('users').findOne({ 
-      email: session.user.email 
+    // Buscar el usuario en la base de datos
+    const dbUser = await db.collection('users').findOne({ 
+      email: user.email 
     });
 
-    if (!user || !user.stripeCustomerId) {
+    if (!dbUser || !dbUser.stripeCustomerId) {
       return NextResponse.json({ 
         invoices: [],
         hasMore: false,
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
 
     // Obtener facturas de Stripe
     const invoicesResponse = await stripe.invoices.list({
-      customer: user.stripeCustomerId,
+      customer: dbUser.stripeCustomerId,
       limit: limit,
       created: dateFilter,
       expand: ['data.subscription', 'data.payment_intent']
@@ -152,8 +153,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticación
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const cookieHeader = request.headers.get('cookie') || '';
+    const user = verifyAuth(cookieHeader);
+    
+    if (!user?.email) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
@@ -167,11 +170,11 @@ export async function POST(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db('topestrellas');
     
-    const user = await db.collection('users').findOne({ 
-      email: session.user.email 
+    const dbUser = await db.collection('users').findOne({ 
+      email: user.email 
     });
 
-    if (!user || !user.stripeCustomerId) {
+    if (!dbUser || !dbUser.stripeCustomerId) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
@@ -179,7 +182,7 @@ export async function POST(request: NextRequest) {
     const invoice = await stripe.invoices.retrieve(invoiceId);
 
     // Verificar que la factura pertenece al cliente
-    if (invoice.customer !== user.stripeCustomerId) {
+    if (invoice.customer !== dbUser.stripeCustomerId) {
       return NextResponse.json({ error: 'Factura no autorizada' }, { status: 403 });
     }
 

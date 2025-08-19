@@ -37,6 +37,8 @@ interface InvoicesResponse {
   totalCount?: number;
   unpaidCount?: number;
   unpaidAmount?: number;
+  error?: string;
+  message?: string;
 }
 
 export default function InvoicesPage() {
