@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { AuthUser, getAuthFromCookie } from '@/lib/auth';
+import { AuthUser, checkAuth } from '@/lib/auth';
 
 interface Invoice {
   id: string;
@@ -500,7 +500,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const authUser = getAuthFromCookie();
+    const authUser = checkAuth();
     setUser(authUser);
     setLoading(false);
   }, []);
