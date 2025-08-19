@@ -324,15 +324,7 @@ export default function InvoicesPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: index * 0.02 }}
-                        style={{
-                          transition: 'background-color 0.2s'
-                        }}
-                        onMouseEnter={(e: any) => {
-                          e.currentTarget.style.backgroundColor = '#f9fafb';
-                        }}
-                        onMouseLeave={(e: any) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
+                        className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {invoice.number || invoice.id.slice(-8).toUpperCase()}
