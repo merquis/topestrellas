@@ -118,19 +118,19 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (!stripeCustomerId) {
-      console.log('No se encontró stripeCustomerId para el usuario:', user.email);
+    if (!stripeSubscriptionId) {
+      console.log('No se encontró stripeSubscriptionId para el negocio:', businessId || 'por defecto');
       return NextResponse.json({ 
         invoices: [],
         hasMore: false,
         totalCount: 0,
         unpaidCount: 0,
         unpaidAmount: 0,
-        message: 'No se encontró información de facturación para este negocio'
+        message: 'No se encontró información de suscripción para este negocio'
       });
     }
     
-    console.log('Obteniendo facturas para customer:', stripeCustomerId);
+    console.log('Obteniendo facturas para subscription:', stripeSubscriptionId);
 
     // Configurar filtros de fecha
     const now = new Date();
@@ -152,9 +152,9 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Obtener facturas de Stripe
+    // Obtener facturas de Stripe filtradas por suscripción específica
     const invoicesResponse = await stripe.invoices.list({
-      customer: stripeCustomerId,
+      subscription: stripeSubscriptionId,
       limit: limit,
       created: dateFilter,
       expand: ['data.subscription', 'data.payment_intent']
