@@ -46,6 +46,12 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
       show: user.role === 'admin' || user.role === 'super_admin'
     },
     {
+      title: 'Mis Facturas',
+      icon: '📄',
+      href: '/admin/invoices',
+      show: user.role === 'admin' // Solo para admins normales, no super_admin
+    },
+    {
       title: 'Opiniones',
       icon: '⭐',
       href: '/admin/opinions',
