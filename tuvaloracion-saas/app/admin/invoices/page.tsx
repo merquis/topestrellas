@@ -273,7 +273,7 @@ export default function InvoicesPage() {
           </div>
         </div>
 
-        {/* Lista de facturas */}
+        {/* Tabla de facturas */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {loading ? (
             <div className="p-8 text-center">
@@ -289,108 +289,121 @@ export default function InvoicesPage() {
               <p>No se encontraron facturas para el período seleccionado</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              <AnimatePresence>
-                {invoices.map((invoice, index) => (
-                  <motion.div
-                    key={invoice.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        {/* Icono de factura */}
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                          invoice.status === 'paid' ? 'bg-green-100' :
-                          invoice.status === 'open' ? 'bg-yellow-100' :
-                          'bg-red-100'
-                        }`}>
-                          <span className="text-2xl">📄</span>
-                        </div>
-
-                        {/* Información de la factura */}
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            Factura {invoice.number || `#${invoice.id.slice(-8)}`}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {formatDate(invoice.created)} • {formatAmount(invoice.amount_paid || invoice.amount_due)}
-                          </p>
-                          {invoice.description && (
-                            <p className="text-xs text-gray-500 mt-1">{invoice.description}</p>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Factura N°
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Fecha de la Factura
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Fecha de Vencimiento
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <AnimatePresence>
+                    {invoices.map((invoice, index) => (
+                      <motion.tr
+                        key={invoice.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.02 }}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {invoice.number || invoice.id.slice(-8).toUpperCase()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {formatDate(invoice.created)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {formatDate(invoice.period_end || invoice.created + 2592000)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                          {formatAmount(invoice.amount_paid || invoice.amount_due)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {invoice.status === 'paid' ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-sm text-green-700 font-medium">Pagada</span>
+                            </div>
+                          ) : invoice.status === 'open' ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                              <span className="text-sm text-yellow-700 font-medium">Pendiente</span>
+                            </div>
+                          ) : invoice.status === 'uncollectible' ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                              <span className="text-sm text-red-700 font-medium">Impagada</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                              <span className="text-sm text-gray-700 font-medium">Anulada</span>
+                            </div>
                           )}
-                        </div>
-                      </div>
-
-                      {/* Estado y acciones */}
-                      <div className="flex items-center gap-4">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(invoice.status)}`}>
-                          {getStatusText(invoice.status)}
-                        </span>
-                        
-                        <div className="flex gap-2">
-                          {invoice.status === 'open' && (
-                            <button
-                              onClick={() => handlePayInvoice(invoice)}
-                              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
-                            >
-                              💳 Pagar
-                            </button>
-                          )}
-                          {invoice.status === 'uncollectible' && (
-                            <>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex justify-center gap-2">
+                            {invoice.status === 'open' && (
                               <button
                                 onClick={() => handlePayInvoice(invoice)}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm animate-pulse"
+                                className="text-yellow-600 hover:text-yellow-800 font-medium text-sm"
+                                title="Pagar factura"
                               >
-                                🚨 Resolver Ahora
+                                Pagar
                               </button>
+                            )}
+                            {invoice.status === 'uncollectible' && (
                               <button
-                                onClick={handleUpdatePaymentMethod}
-                                className="px-4 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm"
+                                onClick={() => handlePayInvoice(invoice)}
+                                className="text-red-600 hover:text-red-800 font-medium text-sm animate-pulse"
+                                title="Resolver pago"
                               >
-                                🔄 Cambiar Tarjeta
+                                Resolver
                               </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleViewInvoice(invoice)}
-                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                          >
-                            👁️ Ver
-                          </button>
-                          {invoice.status === 'paid' && (
+                            )}
                             <button
-                              onClick={() => handleDownloadInvoice(invoice)}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                              onClick={() => handleViewInvoice(invoice)}
+                              className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                              title="Ver factura"
                             >
-                              📥 Descargar
+                              Ver
                             </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Información adicional para facturas con problemas */}
-                    {invoice.status === 'open' && invoice.next_payment_attempt && (
-                      <div className="mt-3 p-3 bg-yellow-50 rounded-lg">
-                        <p className="text-sm text-yellow-800">
-                          ⏰ Próximo intento de cobro: {formatDate(invoice.next_payment_attempt)}
-                        </p>
-                      </div>
-                    )}
-                    {invoice.status === 'uncollectible' && (
-                      <div className="mt-3 p-3 bg-red-50 rounded-lg">
-                        <p className="text-sm text-red-800 font-semibold">
-                          ⚠️ Pago fallido - Tu servicio podría ser suspendido
-                        </p>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                            {invoice.status === 'paid' && (
+                              <>
+                                <span className="text-gray-300">|</span>
+                                <button
+                                  onClick={() => handleDownloadInvoice(invoice)}
+                                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                                  title="Descargar PDF"
+                                >
+                                  Descargar
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
             </div>
           )}
         </div>
