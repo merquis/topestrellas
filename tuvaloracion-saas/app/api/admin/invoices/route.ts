@@ -25,12 +25,23 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year');
 
     // Conectar a MongoDB para obtener el customerId
-    const db = await getDatabase();
+    const primaryDb = await getDatabase();
+    let activeDb = primaryDb;
     
-    // Buscar el usuario en la base de datos
-    const dbUser = await db.collection('users').findOne({ 
+    // Buscar el usuario en la base de datos con fallback a 'topestrellas'
+    let dbUser = await activeDb.collection('users').findOne({ 
       email: user.email 
     });
+
+    if (!dbUser) {
+      const client = await clientPromise;
+      const fallbackDb = client.db('topestrellas');
+      const foundInFallback = await fallbackDb.collection('users').findOne({ email: user.email });
+      if (foundInFallback) {
+        dbUser = foundInFallback;
+        activeDb = fallbackDb;
+      }
+    }
 
     if (!dbUser) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
@@ -48,16 +59,16 @@ export async function GET(request: NextRequest) {
       let business = null as any;
       try {
         if (businessIdCandidate && ObjectId.isValid(String(businessIdCandidate))) {
-          business = await db.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
+          business = await activeDb.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
           console.log('Buscando con ObjectId:', businessIdCandidate);
         }
       } catch {}
       if (!business && businessIdCandidate) {
-        business = await db.collection('businesses').findOne({ _id: String(businessIdCandidate) });
+        business = await activeDb.collection('businesses').findOne({ _id: String(businessIdCandidate) });
         console.log('Buscando como string:', businessIdCandidate);
       }
       if (!business) {
-        business = await db.collection('businesses').findOne({ 'contact.email': user.email });
+        business = await activeDb.collection('businesses').findOne({ 'contact.email': user.email });
         console.log('Buscando por contact.email:', user.email);
       }
       
@@ -142,7 +153,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Ordenar por fecha más reciente primero
-    const sortedInvoices = invoicesResponse.data.sort((a, b) => b.created - a.created);
+    const sortedInvoices = invoicesResponse.data.sort((a: any, b: any) => (b.created as number) - (a.created as number));
 
     // Implementar paginación manual
     const startIndex = (page - 1) * limit;
@@ -151,11 +162,11 @@ export async function GET(request: NextRequest) {
 
     // Calcular estadísticas de facturas impagadas
     const unpaidInvoices = invoicesResponse.data.filter(
-      inv => inv.status === 'open' || inv.status === 'uncollectible'
+      (inv: any) => inv.status === 'open' || inv.status === 'uncollectible'
     );
     const unpaidCount = unpaidInvoices.length;
     const unpaidAmount = unpaidInvoices.reduce(
-      (sum, inv) => sum + (inv.amount_due || 0), 
+      (sum: number, inv: any) => sum + (inv.amount_due || 0), 
       0
     );
 
@@ -243,11 +254,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Conectar a MongoDB para verificar el usuario
-    const db = await getDatabase();
+    const primaryDbPost = await getDatabase();
+    let activeDbPost = primaryDbPost;
     
-    const dbUser = await db.collection('users').findOne({ 
+    let dbUser = await activeDbPost.collection('users').findOne({ 
       email: user.email 
     });
+
+    if (!dbUser) {
+      const client = await clientPromise;
+      const fallbackDb = client.db('topestrellas');
+      const foundInFallback = await fallbackDb.collection('users').findOne({ email: user.email });
+      if (foundInFallback) {
+        dbUser = foundInFallback;
+        activeDbPost = fallbackDb;
+      }
+    }
 
     if (!dbUser) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
@@ -262,14 +284,14 @@ export async function POST(request: NextRequest) {
       let business = null as any;
       try {
         if (businessIdCandidate && ObjectId.isValid(String(businessIdCandidate))) {
-          business = await db.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
+          business = await activeDbPost.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
         }
       } catch {}
       if (!business && businessIdCandidate) {
-        business = await db.collection('businesses').findOne({ _id: String(businessIdCandidate) });
+        business = await activeDbPost.collection('businesses').findOne({ _id: String(businessIdCandidate) });
       }
       if (!business) {
-        business = await db.collection('businesses').findOne({ 'contact.email': user.email });
+        business = await activeDbPost.collection('businesses').findOne({ 'contact.email': user.email });
       }
       
       if (business) {
