@@ -219,11 +219,11 @@ export default function CancelSubscriptionModal({
   // Tabla de precios de competencia (precio medio de comprar reseñas online)
   const COMPETENCIA_PRICES = {
     1: 7.19,
-    5: 29.99,
-    10: 55.99,
-    20: 89.99,
-    50: 199.99,
-    100: 349.99
+    5: 35.99,
+    10: 65.99,
+    20: 119.99,
+    50: 249.99,
+    100: 449.99
   };
 
   // Función para calcular precio de competencia según volumen

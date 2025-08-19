@@ -114,7 +114,7 @@ NEXT_PUBLIC_APP_URL=https://admin.topestrellas.com
    - Hasta 100 reseñas
 
 2. Plan Básico
-   - 29€/mes
+   - 129€/mes
    - Hasta 500 reseñas
    - Soporte prioritario
 
@@ -177,7 +177,7 @@ El sistema implementa un mecanismo híbrido de reintentos:
   _id: ObjectId,
   key: "basic",
   name: "Plan Básico",
-  recurringPrice: 29,
+  recurringPrice: 129,
   setupPrice: 0,
   currency: "EUR",
   interval: "month",
@@ -237,7 +237,7 @@ const { clientSecret, subscriptionId } = await response.json();
   businessId={businessId}
   planDetails={{
     name: 'Plan Básico',
-    price: 29,
+    price: 129,
     currency: 'EUR',
     interval: 'month'
   }}
