@@ -65,15 +65,40 @@ function InvoicesContent() {
     fetchInvoices();
   }, [selectedYear, currentPage]);
 
+  // Escuchar cambios en el negocio seleccionado
+  useEffect(() => {
+    const handleBusinessChange = () => {
+      console.log('Negocio cambiado, recargando facturas...');
+      fetchInvoices();
+    };
+    
+    window.addEventListener('businessChanged', handleBusinessChange);
+    return () => window.removeEventListener('businessChanged', handleBusinessChange);
+  }, [selectedYear, currentPage]);
+
   const fetchInvoices = async () => {
     setLoading(true);
     setError('');
 
     try {
+      // Obtener negocio seleccionado del localStorage
+      const selectedBusiness = localStorage.getItem('selectedBusiness');
+      let businessId = '';
+      
+      if (selectedBusiness) {
+        try {
+          const business = JSON.parse(selectedBusiness);
+          businessId = business._id;
+        } catch (error) {
+          console.error('Error parsing selected business:', error);
+        }
+      }
+
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: ITEMS_PER_PAGE.toString(),
-        ...(selectedYear !== 'all' && { year: selectedYear })
+        ...(selectedYear !== 'all' && { year: selectedYear }),
+        ...(businessId && { businessId })
       });
 
       const response = await fetch(`/api/admin/invoices?${params}`);
