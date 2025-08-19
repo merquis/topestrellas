@@ -830,9 +830,11 @@ export default function AdminDashboard() {
                     ? 'Completa tus datos personales' 
                     : registrationStep === 2
                     ? 'Busca y selecciona tu negocio'
+                    : registrationStep === 3
+                    ? 'Elige tu plan de suscripción'
                     : registrationStep === 4
                     ? 'Completa tu pago'
-                    : 'Elige tu plan de suscripción'
+                    : 'Proceso de registro'
                   }
                 </p>
               </div>
@@ -1633,6 +1635,36 @@ export default function AdminDashboard() {
                           month: 'long',
                           year: 'numeric'
                         });
+
+                        // NUEVO: Calcular ahorros dinámicos comparando con plan mensual
+                        const calculateSavings = () => {
+                          // Buscar el plan mensual para comparar
+                          const monthlyPlan = subscriptionPlans.find(p => p.interval === 'month');
+                          if (!monthlyPlan || plan.interval === 'month') {
+                            return null; // No mostrar ahorros para el plan mensual o si no hay plan mensual
+                          }
+
+                          const monthlyPrice = monthlyPlan.recurringPrice;
+                          let months = 1;
+                          
+                          // Determinar cuántos meses cubre este plan
+                          if (plan.interval === 'quarter') months = 3;
+                          else if (plan.interval === 'semester') months = 6;
+                          else if (plan.interval === 'year') months = 12;
+                          
+                          const equivalentMonthlyCost = monthlyPrice * months;
+                          const savings = equivalentMonthlyCost - plan.recurringPrice;
+                          const savingsPercentage = Math.round((savings / equivalentMonthlyCost) * 100);
+                          
+                          return {
+                            savings: savings,
+                            percentage: savingsPercentage,
+                            equivalentCost: equivalentMonthlyCost,
+                            months: months
+                          };
+                        };
+
+                        const savingsData = calculateSavings();
                         
                         return (
                           <div
@@ -1679,11 +1711,35 @@ export default function AdminDashboard() {
                                   <p className="text-gray-600 text-sm mb-1">después</p>
                                 )}
                                 
+                                {/* NUEVO: Badge de ahorro dinámico vs plan mensual */}
+                                {savingsData && savingsData.savings > 0 && (
+                                  <div className="mb-3 space-y-2">
+                                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg animate-pulse">
+                                      ¡AHORRA {savingsData.savings}€!
+                                    </div>
+                                    <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
+                                      {savingsData.percentage}% menos que pago mensual
+                                    </div>
+                                  </div>
+                                )}
+                                
                                 {/* Badge de descuento si hay precio original */}
                                 {plan.originalPrice && plan.originalPrice > plan.recurringPrice && (
                                   <div className="mb-3">
                                     <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
                                       ¡{Math.round(((plan.originalPrice - plan.recurringPrice) / plan.originalPrice) * 100)}% DESCUENTO!
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                {/* NUEVO: Comparación de precios vs mensual */}
+                                {savingsData && (
+                                  <div className="text-gray-500 text-sm mb-2">
+                                    <span className="line-through">
+                                      {savingsData.equivalentCost}€ si pagas mensual
+                                    </span>
+                                    <span className="ml-2 text-green-600 font-semibold">
+                                      → {plan.recurringPrice}€ {plan.interval === 'quarter' ? 'trimestral' : 'semestral'}
                                     </span>
                                   </div>
                                 )}
@@ -1747,6 +1803,33 @@ export default function AdminDashboard() {
                                     <div className="flex items-center gap-2 text-blue-700">
                                       <span>❌</span>
                                       <span>Cancela gratis cuando quieras</span>
+                                    </div>
+                                    {/* NUEVO: Información adicional de ahorro */}
+                                    {savingsData && savingsData.savings > 0 && (
+                                      <div className="flex items-center gap-2 text-green-700 font-semibold">
+                                        <span>💰</span>
+                                        <span>Te ahorras {savingsData.savings}€ cada {savingsData.months} meses</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* NUEVO: Información de ahorro para planes sin trial */}
+                              {plan.trialDays === 0 && savingsData && savingsData.savings > 0 && (
+                                <div className="bg-green-50 border border-green-200 p-3 rounded-lg mb-4 text-left">
+                                  <div className="text-xs space-y-1">
+                                    <div className="flex items-center gap-2 text-green-800 font-semibold">
+                                      <span>💰</span>
+                                      <span>Ahorro inmediato: {savingsData.savings}€</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-green-700">
+                                      <span>📊</span>
+                                      <span>Pagas {savingsData.percentage}% menos que mensual</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-green-700">
+                                      <span>🎯</span>
+                                      <span>Precio fijo por {savingsData.months} meses</span>
                                     </div>
                                   </div>
                                 </div>
