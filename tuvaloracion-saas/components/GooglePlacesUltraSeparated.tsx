@@ -587,15 +587,14 @@ export function GooglePlacesUltraSeparated({
 
       {/* Vista previa del lugar seleccionado */}
       {selectedPlace && (
-        <div className="mt-4 p-6 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-xl shadow-lg">
-          <div className="flex items-start gap-6">
+        <div className="mt-4 p-4 sm:p-6 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-xl shadow-lg">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             {showPhoto && selectedPhotoUrl && (
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 w-full sm:w-auto flex justify-center sm:justify-start">
                 <img
                   src={selectedPhotoUrl}
                   alt={selectedPlace.name}
-                  className="rounded-xl object-cover shadow-md border-2 border-white"
-                  style={{ width: photoSize, height: photoSize }}
+                  className="rounded-xl object-cover shadow-md border-2 border-white w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -603,7 +602,7 @@ export function GooglePlacesUltraSeparated({
               </div>
             )}
             
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 w-full">
               <div className="flex items-start gap-3 mb-4">
                 <span className="text-green-500 mt-1 text-xl">✅</span>
                 <div className="flex-1">
@@ -616,37 +615,37 @@ export function GooglePlacesUltraSeparated({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 {selectedPlace.rating && (
-                  <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-white/80 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1 sm:mb-0">
                       <span className="text-yellow-500 text-lg">⭐</span>
-                      <span className="font-semibold text-gray-700">Puntuación:</span>
+                      <span className="font-semibold text-gray-700 text-sm sm:text-base">Puntuación:</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl font-bold text-yellow-600">{selectedPlace.rating}</span>
-                      <span className="text-gray-500">/5</span>
+                      <span className="text-lg sm:text-xl font-bold text-yellow-600">{selectedPlace.rating}</span>
+                      <span className="text-gray-500 text-sm">/5</span>
                     </div>
                   </div>
                 )}
                 
                 {selectedPlace.user_ratings_total !== undefined && (
-                  <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-white/80 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1 sm:mb-0">
                       <span className="text-blue-500 text-lg">📊</span>
-                      <span className="font-semibold text-gray-700">Reseñas:</span>
+                      <span className="font-semibold text-gray-700 text-sm sm:text-base">Reseñas:</span>
                     </div>
-                    <span className="text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
+                    <span className="text-lg sm:text-xl font-bold text-blue-600">{selectedPlace.user_ratings_total}</span>
                   </div>
                 )}
                 
                 {selectedPlace.formatted_address && (
-                  <div className="p-3 bg-white/80 rounded-lg">
+                  <div className="p-3 bg-white/80 rounded-lg sm:col-span-2">
                     <div className="flex items-start gap-2 mb-2">
-                      <span className="text-red-500 text-lg mt-0.5">📍</span>
-                      <span className="font-semibold text-gray-700">Dirección:</span>
+                      <span className="text-red-500 text-lg mt-0.5 flex-shrink-0">📍</span>
+                      <span className="font-semibold text-gray-700 text-sm sm:text-base">Dirección:</span>
                     </div>
-                    <p className="text-gray-600 leading-relaxed pl-6 break-words">
+                    <p className="text-gray-600 leading-relaxed pl-6 break-words text-sm sm:text-base">
                       {selectedPlace.formatted_address}
                     </p>
                   </div>
