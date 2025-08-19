@@ -30,7 +30,7 @@ interface Business {
     validUntil?: Date;
     stripeSubscriptionId?: string;
     trialDays?: number;
-    pauseStatus?: boolean;
+    pauseStatus?: boolean | string;
   };
   stripeDetails?: {
     status: string;
@@ -86,7 +86,7 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const isActive = (business.subscription?.status === 'active' || business.subscription?.status === 'trialing') 
                    && !business.subscription?.pauseStatus;
   const isCanceled = business.subscription?.status === 'canceled';
-  const isPaused = business.subscription?.pauseStatus === true;
+  const isPaused = business.subscription?.pauseStatus === true || business.subscription?.pauseStatus === 'paused';
 
   // Cargar estadísticas iniciales desde stats (valores cuando se creó el negocio)
   useEffect(() => {
