@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { getDatabase } from '@/lib/mongodb';
 import { verifyAuth } from '@/lib/auth';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -25,8 +25,7 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year');
 
     // Conectar a MongoDB para obtener el customerId
-    const client = await clientPromise;
-    const db = client.db('topestrellas');
+    const db = await getDatabase();
     
     // Buscar el usuario en la base de datos
     const dbUser = await db.collection('users').findOne({ 
@@ -41,22 +40,26 @@ export async function GET(request: NextRequest) {
     let stripeCustomerId = null;
     
     // Si el usuario es admin, buscar su business
-    if (dbUser.role === 'admin' && dbUser.businessId) {
-      console.log('Buscando business con ID:', dbUser.businessId);
+    if (dbUser.role === 'admin' && (dbUser.businessId || (user as any).businessId)) {
+      const businessIdCandidate = (dbUser.businessId as any) ?? (user as any).businessId;
+      console.log('Buscando business con ID:', businessIdCandidate);
       
-      // Convertir businessId a ObjectId si es necesario
-      let businessQuery;
+      // Intentar localizar el business por _id como ObjectId, luego como string y, por último, por email de contacto
+      let business = null as any;
       try {
-        // Intentar convertir a ObjectId si es un string válido
-        businessQuery = { _id: new ObjectId(dbUser.businessId) };
-        console.log('Buscando con ObjectId:', dbUser.businessId);
-      } catch (error) {
-        // Si falla, buscar como string
-        businessQuery = { _id: dbUser.businessId };
-        console.log('Buscando como string:', dbUser.businessId);
+        if (businessIdCandidate && ObjectId.isValid(String(businessIdCandidate))) {
+          business = await db.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
+          console.log('Buscando con ObjectId:', businessIdCandidate);
+        }
+      } catch {}
+      if (!business && businessIdCandidate) {
+        business = await db.collection('businesses').findOne({ _id: String(businessIdCandidate) });
+        console.log('Buscando como string:', businessIdCandidate);
       }
-      
-      const business = await db.collection('businesses').findOne(businessQuery);
+      if (!business) {
+        business = await db.collection('businesses').findOne({ 'contact.email': user.email });
+        console.log('Buscando por contact.email:', user.email);
+      }
       
       console.log('Business encontrado:', business ? 'Sí' : 'No');
       
@@ -240,8 +243,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Conectar a MongoDB para verificar el usuario
-    const client = await clientPromise;
-    const db = client.db('topestrellas');
+    const db = await getDatabase();
     
     const dbUser = await db.collection('users').findOne({ 
       email: user.email 
@@ -254,16 +256,21 @@ export async function POST(request: NextRequest) {
     // Buscar el business asociado al usuario
     let stripeCustomerId = null;
     
-    if (dbUser.role === 'admin' && dbUser.businessId) {
-      // Convertir businessId a ObjectId si es necesario
-      let businessQuery;
+    if (dbUser.role === 'admin' && (dbUser.businessId || (user as any).businessId)) {
+      const businessIdCandidate = (dbUser.businessId as any) ?? (user as any).businessId;
+      // Intentar localizar el business por múltiples criterios
+      let business = null as any;
       try {
-        businessQuery = { _id: new ObjectId(dbUser.businessId) };
-      } catch (error) {
-        businessQuery = { _id: dbUser.businessId };
+        if (businessIdCandidate && ObjectId.isValid(String(businessIdCandidate))) {
+          business = await db.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
+        }
+      } catch {}
+      if (!business && businessIdCandidate) {
+        business = await db.collection('businesses').findOne({ _id: String(businessIdCandidate) });
       }
-      
-      const business = await db.collection('businesses').findOne(businessQuery);
+      if (!business) {
+        business = await db.collection('businesses').findOne({ 'contact.email': user.email });
+      }
       
       if (business) {
         // Buscar stripeCustomerId en diferentes ubicaciones
@@ -271,6 +278,8 @@ export async function POST(request: NextRequest) {
           stripeCustomerId = business.subscription.stripeCustomerId;
         } else if (business.billing && business.billing.stripeCustomerId) {
           stripeCustomerId = business.billing.stripeCustomerId;
+        } else if (business.stripeCustomerId) {
+          stripeCustomerId = business.stripeCustomerId;
         }
       }
     }
