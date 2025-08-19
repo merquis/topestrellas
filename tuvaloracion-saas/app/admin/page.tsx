@@ -1183,16 +1183,25 @@ export default function AdminDashboard() {
                                   {(showAllFeatures 
                                     ? selectedPlanData.features 
                                     : selectedPlanData.features.slice(0, 3)
-                                  ).map((feature: string, index: number) => (
-                                    <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
-                                      <span className="text-green-500 mt-0.5 flex-shrink-0">
-                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                      </span>
-                                      <span className="leading-relaxed">{feature}</span>
-                                    </li>
-                                  ))}
+                                  ).map((feature: string | { name: string; included: boolean }, index: number) => {
+                                    // Manejar tanto strings como objetos para compatibilidad
+                                    const featureName = typeof feature === 'string' ? feature : feature.name;
+                                    const isIncluded = typeof feature === 'string' ? true : feature.included;
+                                    
+                                    // Solo mostrar características incluidas en el paso 4
+                                    if (!isIncluded) return null;
+                                    
+                                    return (
+                                      <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
+                                        <span className="text-green-500 mt-0.5 flex-shrink-0">
+                                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                          </svg>
+                                        </span>
+                                        <span className="leading-relaxed">{featureName}</span>
+                                      </li>
+                                    );
+                                  })}
                                 </ul>
                                 
                                 {/* Botón Ver más/menos */}
