@@ -855,33 +855,33 @@ export default function AdminDashboard() {
               </div>
 
               {/* Progress Indicator */}
-              <div className="flex items-center justify-center mb-8 px-4">
-                <div className="flex items-center space-x-2 sm:space-x-4 max-w-full overflow-hidden">
-                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+              <div className="flex items-center justify-center mb-8 px-2 sm:px-4">
+                <div className="flex items-center justify-center w-full max-w-sm sm:max-w-md">
+                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 1 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 1 ? '✓' : '1'}
                   </div>
-                  <div className={`w-6 sm:w-12 h-1 rounded-full transition-all flex-shrink-0 ${
+                  <div className={`w-4 sm:w-8 h-1 rounded-full transition-all flex-shrink-0 ${
                     registrationStep >= 2 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 2 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 2 ? '✓' : '2'}
                   </div>
-                  <div className={`w-6 sm:w-12 h-1 rounded-full transition-all flex-shrink-0 ${
+                  <div className={`w-4 sm:w-8 h-1 rounded-full transition-all flex-shrink-0 ${
                     registrationStep >= 3 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 3 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 3 ? '✓' : '3'}
                   </div>
-                  <div className={`w-6 sm:w-12 h-1 rounded-full transition-all flex-shrink-0 ${
+                  <div className={`w-4 sm:w-8 h-1 rounded-full transition-all flex-shrink-0 ${
                     registrationStep >= 4 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
+                  <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 4 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     4
@@ -1126,7 +1126,9 @@ export default function AdminDashboard() {
                                 alt={selectedBusiness?.name || 'Foto del negocio'}
                                 className="aspect-square w-full object-cover rounded-lg border"
                                 loading="lazy"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => { 
+                                  (e.target as HTMLImageElement).style.display = 'none'; 
+                                }}
                               />
                             </div>
                           )}
@@ -1286,8 +1288,8 @@ export default function AdminDashboard() {
                             <label className="block text-sm font-medium text-gray-700 mb-3">
                               Tipo de cliente *
                             </label>
-                            <div className="grid grid-cols-2 gap-4">
-                              <label className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                              <label className={`border-2 rounded-lg p-3 sm:p-4 cursor-pointer transition-all ${
                                 customerType === 'autonomo' 
                                   ? 'border-blue-500 bg-blue-50' 
                                   : 'border-gray-300 hover:border-blue-300'
@@ -1300,8 +1302,8 @@ export default function AdminDashboard() {
                                   onChange={(e) => setCustomerType(e.target.value as 'autonomo' | 'empresa')}
                                   className="sr-only"
                                 />
-                                <div className="flex items-center">
-                                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                                <div className="flex items-center justify-center sm:justify-start">
+                                  <div className={`hidden sm:block w-4 h-4 rounded-full border-2 mr-3 ${
                                     customerType === 'autonomo'
                                       ? 'border-blue-500 bg-blue-500'
                                       : 'border-gray-400'
@@ -1310,11 +1312,11 @@ export default function AdminDashboard() {
                                       <div className="w-2 h-2 bg-white rounded-full m-auto mt-0.5"></div>
                                     )}
                                   </div>
-                                  <span className="font-medium">Autónomo</span>
+                                  <span className="font-medium text-sm sm:text-base">Autónomo</span>
                                 </div>
                               </label>
                               
-                              <label className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                              <label className={`border-2 rounded-lg p-3 sm:p-4 cursor-pointer transition-all ${
                                 customerType === 'empresa' 
                                   ? 'border-blue-500 bg-blue-50' 
                                   : 'border-gray-300 hover:border-blue-300'
@@ -1327,8 +1329,8 @@ export default function AdminDashboard() {
                                   onChange={(e) => setCustomerType(e.target.value as 'autonomo' | 'empresa')}
                                   className="sr-only"
                                 />
-                                <div className="flex items-center">
-                                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                                <div className="flex items-center justify-center sm:justify-start">
+                                  <div className={`hidden sm:block w-4 h-4 rounded-full border-2 mr-3 ${
                                     customerType === 'empresa'
                                       ? 'border-blue-500 bg-blue-500'
                                       : 'border-gray-400'
@@ -1337,7 +1339,7 @@ export default function AdminDashboard() {
                                       <div className="w-2 h-2 bg-white rounded-full m-auto mt-0.5"></div>
                                     )}
                                   </div>
-                                  <span className="font-medium">Empresa</span>
+                                  <span className="font-medium text-sm sm:text-base">Empresa</span>
                                 </div>
                               </label>
                             </div>
