@@ -1787,9 +1787,9 @@ export default function AdminDashboard() {
                                     return (
                                       <li key={index} className="flex items-start gap-2">
                                         {isIncluded ? (
-                                          <span className="mt-0.5 text-green-500 flex-shrink-0">✓</span>
+                                          <span className="text-green-600 text-lg font-bold flex-shrink-0">✓</span>
                                         ) : (
-                                          <span className="mt-0.5 text-red-500 flex-shrink-0">✗</span>
+                                          <span className="text-red-600 text-lg font-bold flex-shrink-0">✗</span>
                                         )}
                                         <span className={isIncluded ? '' : 'text-gray-400'}>{featureName}</span>
                                       </li>
