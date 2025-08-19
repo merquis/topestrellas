@@ -83,10 +83,10 @@ export default function SubscriptionCard({ business, plans, onUpdate }: Subscrip
   const currentPlan = plans.find(p => p.key === business.subscription?.plan);
   
   // Nueva lógica que considera tanto el status principal como el pauseStatus
-  const isActive = (business.subscription?.status === 'active' || business.subscription?.status === 'trialing') 
-                   && !business.subscription?.pauseStatus;
-  const isCanceled = business.subscription?.status === 'canceled';
   const isPaused = business.subscription?.pauseStatus === true || business.subscription?.pauseStatus === 'paused';
+  const isActive = (business.subscription?.status === 'active' || business.subscription?.status === 'trialing') 
+                   && !isPaused;
+  const isCanceled = business.subscription?.status === 'canceled';
 
   // Cargar estadísticas iniciales desde stats (valores cuando se creó el negocio)
   useEffect(() => {
