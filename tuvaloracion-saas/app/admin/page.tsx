@@ -855,33 +855,33 @@ export default function AdminDashboard() {
               </div>
 
               {/* Progress Indicator */}
-              <div className="flex items-center justify-center mb-8">
-                <div className="flex items-center space-x-4">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+              <div className="flex items-center justify-center mb-8 px-4">
+                <div className="flex items-center space-x-2 sm:space-x-4 max-w-full overflow-hidden">
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 1 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 1 ? '✓' : '1'}
                   </div>
-                  <div className={`w-12 h-1 rounded-full transition-all ${
+                  <div className={`w-6 sm:w-12 h-1 rounded-full transition-all flex-shrink-0 ${
                     registrationStep >= 2 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 2 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 2 ? '✓' : '2'}
                   </div>
-                  <div className={`w-12 h-1 rounded-full transition-all ${
+                  <div className={`w-6 sm:w-12 h-1 rounded-full transition-all flex-shrink-0 ${
                     registrationStep >= 3 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 3 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     {registrationStep > 3 ? '✓' : '3'}
                   </div>
-                  <div className={`w-12 h-1 rounded-full transition-all ${
+                  <div className={`w-6 sm:w-12 h-1 rounded-full transition-all flex-shrink-0 ${
                     registrationStep >= 4 ? 'bg-green-600' : 'bg-gray-300'
                   }`}></div>
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all ${
+                  <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold transition-all text-sm sm:text-base flex-shrink-0 ${
                     registrationStep >= 4 ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-300 text-gray-600'
                   }`}>
                     4
