@@ -180,12 +180,12 @@ export default function InvoicesPage() {
 
         {/* Alerta de facturas impagadas */}
         {unpaidInvoices > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg"
-          >
-            <div className="flex items-center justify-between">
+          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between"
+            >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">⚠️</span>
                 <div>
@@ -211,8 +211,8 @@ export default function InvoicesPage() {
                   🔄 Actualizar Método de Pago
                 </button>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
 
         {/* Estadísticas */}
