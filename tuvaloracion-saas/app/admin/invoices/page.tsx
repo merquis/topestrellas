@@ -319,18 +319,16 @@ export default function InvoicesPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   <AnimatePresence>
                     {invoices.map((invoice, index) => (
-                      <tr
+                      <motion.tr
                         key={invoice.id}
                         className="hover:bg-gray-50 transition-colors"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.02 }}
                       >
-                        <motion.td 
-                          className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: index * 0.02 }}
-                        >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {invoice.number || invoice.id.slice(-8).toUpperCase()}
-                        </motion.td>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {formatDate(invoice.created)}
                         </td>
@@ -404,7 +402,7 @@ export default function InvoicesPage() {
                             )}
                           </div>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))}
                   </AnimatePresence>
                 </tbody>
