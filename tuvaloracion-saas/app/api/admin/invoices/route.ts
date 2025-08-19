@@ -32,14 +32,45 @@ export async function GET(request: NextRequest) {
       email: user.email 
     });
 
-    if (!dbUser || !dbUser.stripeCustomerId) {
+    if (!dbUser) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    // Buscar el business asociado al usuario
+    let stripeCustomerId = null;
+    
+    // Si el usuario es admin, buscar su business
+    if (dbUser.role === 'admin' && dbUser.businessId) {
+      const business = await db.collection('businesses').findOne({ 
+        _id: dbUser.businessId 
+      });
+      
+      if (business && business.subscription && business.subscription.stripeCustomerId) {
+        stripeCustomerId = business.subscription.stripeCustomerId;
+      }
+    }
+    
+    // Si el usuario es super_admin, puede ver todas las facturas (implementar lógica específica si es necesario)
+    if (dbUser.role === 'super_admin') {
+      // Por ahora, retornar vacío para super_admin
       return NextResponse.json({ 
         invoices: [],
         hasMore: false,
         totalCount: 0,
         unpaidCount: 0,
         unpaidAmount: 0,
-        message: 'No se encontró información de facturación'
+        message: 'Vista de super administrador no implementada'
+      });
+    }
+
+    if (!stripeCustomerId) {
+      return NextResponse.json({ 
+        invoices: [],
+        hasMore: false,
+        totalCount: 0,
+        unpaidCount: 0,
+        unpaidAmount: 0,
+        message: 'No se encontró información de facturación para este negocio'
       });
     }
 
@@ -65,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     // Obtener facturas de Stripe
     const invoicesResponse = await stripe.invoices.list({
-      customer: dbUser.stripeCustomerId,
+      customer: stripeCustomerId,
       limit: limit,
       created: dateFilter,
       expand: ['data.subscription', 'data.payment_intent']
@@ -180,15 +211,32 @@ export async function POST(request: NextRequest) {
       email: user.email 
     });
 
-    if (!dbUser || !dbUser.stripeCustomerId) {
+    if (!dbUser) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    // Buscar el business asociado al usuario
+    let stripeCustomerId = null;
+    
+    if (dbUser.role === 'admin' && dbUser.businessId) {
+      const business = await db.collection('businesses').findOne({ 
+        _id: dbUser.businessId 
+      });
+      
+      if (business && business.subscription && business.subscription.stripeCustomerId) {
+        stripeCustomerId = business.subscription.stripeCustomerId;
+      }
+    }
+
+    if (!stripeCustomerId) {
+      return NextResponse.json({ error: 'No se encontró información de facturación' }, { status: 404 });
     }
 
     // Obtener la factura de Stripe
     const invoice = await stripe.invoices.retrieve(invoiceId);
 
     // Verificar que la factura pertenece al cliente
-    if (invoice.customer !== dbUser.stripeCustomerId) {
+    if (invoice.customer !== stripeCustomerId) {
       return NextResponse.json({ error: 'Factura no autorizada' }, { status: 403 });
     }
 

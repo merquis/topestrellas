@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import AdminLayout from '@/components/admin/AdminLayout';
+import { AuthUser, getAuthFromCookie } from '@/lib/auth';
 
 interface Invoice {
   id: string;
@@ -41,7 +43,7 @@ interface InvoicesResponse {
   message?: string;
 }
 
-export default function InvoicesPage() {
+function InvoicesContent() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,299 +168,297 @@ export default function InvoicesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <span>📄</span> Mis Facturas
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Gestiona y descarga todas tus facturas de los últimos 5 años
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <span>📄</span> Mis Facturas
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Gestiona y descarga todas tus facturas de los últimos 5 años
+        </p>
+      </div>
 
-        {/* Alerta de facturas impagadas */}
-        {unpaidInvoices > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">⚠️</span>
-                  <div>
-                    <p className="font-semibold text-red-800">
-                      ATENCIÓN: Tienes {unpaidInvoices} factura{unpaidInvoices > 1 ? 's' : ''} pendiente{unpaidInvoices > 1 ? 's' : ''} de pago
-                    </p>
-                    <p className="text-sm text-red-600 mt-1">
-                      Importe total pendiente: {formatAmount(unpaidAmount)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSelectedYear('all')}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    💳 Pagar Ahora
-                  </button>
-                  <button
-                    onClick={handleUpdatePaymentMethod}
-                    className="px-4 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                  >
-                    🔄 Actualizar Método de Pago
-                  </button>
+      {/* Alerta de facturas impagadas */}
+      {unpaidInvoices > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <p className="font-semibold text-red-800">
+                    ATENCIÓN: Tienes {unpaidInvoices} factura{unpaidInvoices > 1 ? 's' : ''} pendiente{unpaidInvoices > 1 ? 's' : ''} de pago
+                  </p>
+                  <p className="text-sm text-red-600 mt-1">
+                    Importe total pendiente: {formatAmount(unpaidAmount)}
+                  </p>
                 </div>
               </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedYear('all')}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  💳 Pagar Ahora
+                </button>
+                <button
+                  onClick={handleUpdatePaymentMethod}
+                  className="px-4 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  🔄 Actualizar Método de Pago
+                </button>
+              </div>
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
+      )}
 
-        {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">Total Facturas</p>
-            <p className="text-2xl font-bold text-gray-900">{invoices.length}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">Facturas Pagadas</p>
-            <p className="text-2xl font-bold text-green-600">
-              {invoices.filter(i => i.status === 'paid').length}
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">Pendientes</p>
-            <p className="text-2xl font-bold text-yellow-600">{unpaidInvoices}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">Total Pendiente</p>
-            <p className="text-2xl font-bold text-red-600">{formatAmount(unpaidAmount)}</p>
-          </div>
+      {/* Estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <p className="text-sm text-gray-600">Total Facturas</p>
+          <p className="text-2xl font-bold text-gray-900">{invoices.length}</p>
         </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <p className="text-sm text-gray-600">Facturas Pagadas</p>
+          <p className="text-2xl font-bold text-green-600">
+            {invoices.filter(i => i.status === 'paid').length}
+          </p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <p className="text-sm text-gray-600">Pendientes</p>
+          <p className="text-2xl font-bold text-yellow-600">{unpaidInvoices}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <p className="text-sm text-gray-600">Total Pendiente</p>
+          <p className="text-2xl font-bold text-red-600">{formatAmount(unpaidAmount)}</p>
+        </div>
+      </div>
 
-        {/* Filtros */}
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-          <div className="flex flex-wrap gap-4 items-center">
-            <label className="text-sm font-medium text-gray-700">Filtrar por año:</label>
-            <div className="flex gap-2">
+      {/* Filtros */}
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex flex-wrap gap-4 items-center">
+          <label className="text-sm font-medium text-gray-700">Filtrar por año:</label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setSelectedYear('all');
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                selectedYear === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Todos
+            </button>
+            {years.map(year => (
               <button
+                key={year}
                 onClick={() => {
-                  setSelectedYear('all');
+                  setSelectedYear(year.toString());
                   setCurrentPage(1);
                 }}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  selectedYear === 'all'
+                  selectedYear === year.toString()
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Todos
+                {year}
               </button>
-              {years.map(year => (
-                <button
-                  key={year}
-                  onClick={() => {
-                    setSelectedYear(year.toString());
-                    setCurrentPage(1);
-                  }}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    selectedYear === year.toString()
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {year}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Tabla de facturas */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Cargando facturas...</p>
-            </div>
-          ) : error ? (
-            <div className="p-8 text-center text-red-600">
-              <p>❌ {error}</p>
-            </div>
-          ) : invoices.length === 0 ? (
-            <div className="p-8 text-center text-gray-600">
-              <p>No se encontraron facturas para el período seleccionado</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Factura N°
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha de la Factura
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha de Vencimiento
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <AnimatePresence>
-                    {invoices.map((invoice, index) => (
-                      <motion.tr
-                        key={invoice.id}
-                        className="hover:bg-gray-50 transition-colors"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: index * 0.02 }}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {invoice.number || invoice.id.slice(-8).toUpperCase()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {formatDate(invoice.created)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {formatDate(invoice.period_end || invoice.created + 2592000)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                          {formatAmount(invoice.amount_paid || invoice.amount_due)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {invoice.status === 'paid' ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span className="text-sm text-green-700 font-medium">Pagada</span>
-                            </div>
-                          ) : invoice.status === 'open' ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                              <span className="text-sm text-yellow-700 font-medium">Pendiente</span>
-                            </div>
-                          ) : invoice.status === 'uncollectible' ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                              <span className="text-sm text-red-700 font-medium">Impagada</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                              <span className="text-sm text-gray-700 font-medium">Anulada</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="flex justify-center gap-2">
-                            {invoice.status === 'open' && (
-                              <button
-                                onClick={() => handlePayInvoice(invoice)}
-                                className="text-yellow-600 hover:text-yellow-800 font-medium text-sm"
-                                title="Pagar factura"
-                              >
-                                Pagar
-                              </button>
-                            )}
-                            {invoice.status === 'uncollectible' && (
-                              <button
-                                onClick={() => handlePayInvoice(invoice)}
-                                className="text-red-600 hover:text-red-800 font-medium text-sm animate-pulse"
-                                title="Resolver pago"
-                              >
-                                Resolver
-                              </button>
-                            )}
-                            <button
-                              onClick={() => handleViewInvoice(invoice)}
-                              className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                              title="Ver factura"
-                            >
-                              Ver
-                            </button>
-                            {invoice.status === 'paid' && (
-                              <>
-                                <span className="text-gray-300">|</span>
-                                <button
-                                  onClick={() => handleDownloadInvoice(invoice)}
-                                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                                  title="Descargar PDF"
-                                >
-                                  Descargar
-                                </button>
-                              </>
-                            )}
+      {/* Tabla de facturas */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando facturas...</p>
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center text-red-600">
+            <p>❌ {error}</p>
+          </div>
+        ) : invoices.length === 0 ? (
+          <div className="p-8 text-center text-gray-600">
+            <p>No se encontraron facturas para el período seleccionado</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Factura N°
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha de la Factura
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha de Vencimiento
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                <AnimatePresence>
+                  {invoices.map((invoice, index) => (
+                    <motion.tr
+                      key={invoice.id}
+                      className="hover:bg-gray-50 transition-colors"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.02 }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {invoice.number || invoice.id.slice(-8).toUpperCase()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {formatDate(invoice.created)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {formatDate(invoice.period_end || invoice.created + 2592000)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        {formatAmount(invoice.amount_paid || invoice.amount_due)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {invoice.status === 'paid' ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm text-green-700 font-medium">Pagada</span>
                           </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Paginación */}
-        {!loading && invoices.length > 0 && totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  currentPage === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                }`}
-              >
-                ← Anterior
-              </button>
-              
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
-                      currentPage === pageNum
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              
-              <button
-                onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
-                disabled={!hasMore}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  !hasMore
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                }`}
-              >
-                Siguiente →
-              </button>
-            </div>
+                        ) : invoice.status === 'open' ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                            <span className="text-sm text-yellow-700 font-medium">Pendiente</span>
+                          </div>
+                        ) : invoice.status === 'uncollectible' ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-sm text-red-700 font-medium">Impagada</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                            <span className="text-sm text-gray-700 font-medium">Anulada</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex justify-center gap-2">
+                          {invoice.status === 'open' && (
+                            <button
+                              onClick={() => handlePayInvoice(invoice)}
+                              className="text-yellow-600 hover:text-yellow-800 font-medium text-sm"
+                              title="Pagar factura"
+                            >
+                              Pagar
+                            </button>
+                          )}
+                          {invoice.status === 'uncollectible' && (
+                            <button
+                              onClick={() => handlePayInvoice(invoice)}
+                              className="text-red-600 hover:text-red-800 font-medium text-sm animate-pulse"
+                              title="Resolver pago"
+                            >
+                              Resolver
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleViewInvoice(invoice)}
+                            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                            title="Ver factura"
+                          >
+                            Ver
+                          </button>
+                          {invoice.status === 'paid' && (
+                            <>
+                              <span className="text-gray-300">|</span>
+                              <button
+                                onClick={() => handleDownloadInvoice(invoice)}
+                                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                                title="Descargar PDF"
+                              >
+                                Descargar
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </tbody>
+            </table>
           </div>
         )}
       </div>
+
+      {/* Paginación */}
+      {!loading && invoices.length > 0 && totalPages > 1 && (
+        <div className="flex justify-center">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+              }`}
+            >
+              ← Anterior
+            </button>
+            
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    currentPage === pageNum
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            
+            <button
+              onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
+              disabled={!hasMore}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                !hasMore
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+              }`}
+            >
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal de pago (placeholder) */}
       {showPaymentModal && selectedInvoice && (
@@ -492,5 +492,43 @@ export default function InvoicesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function InvoicesPage() {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const authUser = getAuthFromCookie();
+    setUser(authUser);
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">No autorizado</p>
+          <a href="/admin" className="text-blue-600 hover:underline">
+            Iniciar sesión
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AdminLayout user={user}>
+      <InvoicesContent />
+    </AdminLayout>
   );
 }
