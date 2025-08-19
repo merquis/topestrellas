@@ -1763,7 +1763,7 @@ export default function AdminDashboard() {
                                 type="button"
                                 onClick={() => handleSelectPlan(plan)}
                                 disabled={isCreatingBusiness}
-                                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md mb-6 ${
+                                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md mb-6 cursor-pointer ${
                                   plan.popular
                                     ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
                                     : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
