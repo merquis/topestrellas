@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '24');
     const year = searchParams.get('year');
+    const businessId = searchParams.get('businessId');
 
     // Conectar a MongoDB para obtener el customerId
     const primaryDb = await getDatabase();
@@ -47,53 +48,60 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
-    // Buscar el business asociado al usuario
-    let stripeCustomerId = null;
+    // Buscar el business específico si se proporciona businessId
+    let targetBusiness = null as any;
+    let stripeSubscriptionId = null;
     
-    // Si el usuario es admin, buscar su business
-    if (dbUser.role === 'admin' && (dbUser.businessId || (user as any).businessId)) {
-      const businessIdCandidate = (dbUser.businessId as any) ?? (user as any).businessId;
-      console.log('Buscando business con ID:', businessIdCandidate);
+    if (businessId) {
+      // Buscar el business específico por ID
+      console.log('Buscando business específico con ID:', businessId);
       
-      // Intentar localizar el business por _id como ObjectId, luego como string y, por último, por email de contacto
-      let business = null as any;
       try {
-        if (businessIdCandidate && ObjectId.isValid(String(businessIdCandidate))) {
-          business = await activeDb.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
-          console.log('Buscando con ObjectId:', businessIdCandidate);
+        if (ObjectId.isValid(String(businessId))) {
+          targetBusiness = await activeDb.collection('businesses').findOne({ _id: new ObjectId(String(businessId)) });
         }
       } catch {}
-      if (!business && businessIdCandidate) {
-        business = await activeDb.collection('businesses').findOne({ _id: String(businessIdCandidate) } as any);
-        console.log('Buscando como string:', businessIdCandidate);
-      }
-      if (!business) {
-        business = await activeDb.collection('businesses').findOne({ 'contact.email': user.email });
-        console.log('Buscando por contact.email:', user.email);
+      if (!targetBusiness) {
+        targetBusiness = await activeDb.collection('businesses').findOne({ _id: String(businessId) } as any);
       }
       
-      console.log('Business encontrado:', business ? 'Sí' : 'No');
-      
-      if (business) {
-        // Buscar stripeCustomerId en diferentes ubicaciones posibles
-        if (business.subscription && business.subscription.stripeCustomerId) {
-          stripeCustomerId = business.subscription.stripeCustomerId;
-          console.log('Stripe Customer ID encontrado en subscription:', stripeCustomerId);
-        } else if (business.billing && business.billing.stripeCustomerId) {
-          stripeCustomerId = business.billing.stripeCustomerId;
-          console.log('Stripe Customer ID encontrado en billing:', stripeCustomerId);
-        } else if (business.stripeCustomerId) {
-          stripeCustomerId = business.stripeCustomerId;
-          console.log('Stripe Customer ID encontrado directamente:', stripeCustomerId);
+      // Validación de seguridad: verificar que el usuario tiene acceso a este business
+      if (targetBusiness) {
+        const hasAccess = dbUser.role === 'super_admin' || 
+                         (dbUser.role === 'admin' && 
+                          (String(targetBusiness._id) === String(dbUser.businessId) || 
+                           targetBusiness.contact?.email === user.email));
+        
+        if (!hasAccess) {
+          return NextResponse.json({ error: 'No tienes acceso a este negocio' }, { status: 403 });
         }
         
-        // Log para depuración
-        console.log('Estructura del business:', {
-          hasSubscription: !!business.subscription,
-          hasBilling: !!business.billing,
-          subscriptionKeys: business.subscription ? Object.keys(business.subscription) : [],
-          billingKeys: business.billing ? Object.keys(business.billing) : []
-        });
+        // Obtener stripeSubscriptionId del business específico
+        if (targetBusiness.subscription && targetBusiness.subscription.stripeSubscriptionId) {
+          stripeSubscriptionId = targetBusiness.subscription.stripeSubscriptionId;
+          console.log('Stripe Subscription ID encontrado:', stripeSubscriptionId);
+        }
+      }
+    } else if (dbUser.role === 'admin' && (dbUser.businessId || (user as any).businessId)) {
+      // Fallback al business por defecto del usuario si no se especifica businessId
+      const businessIdCandidate = (dbUser.businessId as any) ?? (user as any).businessId;
+      console.log('Buscando business por defecto con ID:', businessIdCandidate);
+      
+      try {
+        if (businessIdCandidate && ObjectId.isValid(String(businessIdCandidate))) {
+          targetBusiness = await activeDb.collection('businesses').findOne({ _id: new ObjectId(String(businessIdCandidate)) });
+        }
+      } catch {}
+      if (!targetBusiness && businessIdCandidate) {
+        targetBusiness = await activeDb.collection('businesses').findOne({ _id: String(businessIdCandidate) } as any);
+      }
+      if (!targetBusiness) {
+        targetBusiness = await activeDb.collection('businesses').findOne({ 'contact.email': user.email });
+      }
+      
+      if (targetBusiness && targetBusiness.subscription && targetBusiness.subscription.stripeSubscriptionId) {
+        stripeSubscriptionId = targetBusiness.subscription.stripeSubscriptionId;
+        console.log('Stripe Subscription ID encontrado (fallback):', stripeSubscriptionId);
       }
     }
     
