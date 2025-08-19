@@ -108,9 +108,11 @@ export async function GET(request: NextRequest) {
         period_end: invoice.period_end,
         invoice_pdf: invoice.invoice_pdf,
         hosted_invoice_url: invoice.hosted_invoice_url,
-        subscription: typeof invoice.subscription === 'string' 
-          ? invoice.subscription 
-          : invoice.subscription?.id,
+        subscription: invoice.subscription 
+          ? (typeof invoice.subscription === 'string' 
+            ? invoice.subscription 
+            : invoice.subscription.id)
+          : null,
         description: description,
         payment_intent: invoice.payment_intent 
           ? {
@@ -121,7 +123,7 @@ export async function GET(request: NextRequest) {
           : undefined,
         next_payment_attempt: invoice.next_payment_attempt,
         lines: invoice.lines ? {
-          data: invoice.lines.data.map(line => ({
+          data: invoice.lines.data.map((line: any) => ({
             description: line.description || '',
             amount: line.amount
           }))
