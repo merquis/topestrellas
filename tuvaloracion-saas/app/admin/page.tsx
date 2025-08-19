@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import FunctionalDashboard from '@/components/admin/FunctionalDashboard';
@@ -50,6 +50,7 @@ export default function AdminDashboard() {
   const [pendingBusinessId, setPendingBusinessId] = useState('');
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [showBillingForm, setShowBillingForm] = useState(true);
   
   // Billing fields
   const [companyName, setCompanyName] = useState('');
@@ -581,6 +582,9 @@ export default function AdminDashboard() {
 
       // Establecer el clientSecret para el formulario de pago
       setClientSecret(clientSecret);
+      
+      // Ocultar automáticamente el formulario de facturación cuando se muestra el formulario de pago
+      setShowBillingForm(false);
       
     } catch (error: any) {
       console.error('Error preparando el pago:', error);
@@ -1147,10 +1151,10 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      {/* Plan seleccionado */}
+                      {/* Plan seleccionado - MOVIDO A LA PRIMERA POSICIÓN */}
                       <div className="bg-gradient-to-br from-green-50 to-blue-50 p-6 rounded-xl border border-gray-200 shadow-sm">
                         <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                          <span>📦</span>
+                          <span className="text-2xl">{selectedPlanData?.icon || '📦'}</span>
                           <span>Plan Seleccionado</span>
                         </h4>
                         <div className="space-y-4">
@@ -1169,7 +1173,11 @@ export default function AdminDashboard() {
                                 {selectedPlanData?.recurringPrice} €
                               </p>
                               <p className="text-sm text-gray-600">
-                                /{selectedPlanData?.interval === 'month' ? 'mes' : 'año'}
+                                /{selectedPlanData?.interval === 'month' ? 'mes' : 
+                                 selectedPlanData?.interval === 'quarter' ? '3 meses' :
+                                 selectedPlanData?.interval === 'semester' ? '6 meses' : 
+                                 selectedPlanData?.interval === 'year' ? 'año' : 
+                                 selectedPlanData?.interval}
                               </p>
                             </div>
                           </div>
@@ -1178,74 +1186,101 @@ export default function AdminDashboard() {
                           {selectedPlanData?.features && selectedPlanData.features.length > 0 && (
                             <div className="pt-4 border-t border-gray-200">
                               <p className="text-sm font-semibold text-gray-700 mb-3">Incluye:</p>
-                              <div className="space-y-3">
-                                <ul className="space-y-2">
-                                  {(showAllFeatures 
-                                    ? selectedPlanData.features 
-                                    : selectedPlanData.features.slice(0, 3)
-                                  ).map((feature: string | { name: string; included: boolean }, index: number) => {
-                                    // Manejar tanto strings como objetos para compatibilidad
-                                    const featureName = typeof feature === 'string' ? feature : feature.name;
-                                    const isIncluded = typeof feature === 'string' ? true : feature.included;
-                                    
-                                    // Solo mostrar características incluidas en el paso 4
-                                    if (!isIncluded) return null;
-                                    
-                                    return (
-                                      <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
-                                        <span className="text-green-500 mt-0.5 flex-shrink-0">
-                                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                          </svg>
-                                        </span>
-                                        <span className="leading-relaxed">{featureName}</span>
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                                
-                                {/* Botón Ver más/menos */}
-                                {selectedPlanData.features.length > 3 && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setShowAllFeatures(!showAllFeatures);
-                                    }}
-                                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-all duration-200 hover:gap-3 group mt-3"
-                                  >
-                                    <span>
-                                      {showAllFeatures 
-                                        ? 'Ver menos características' 
-                                        : `Ver todas las ventajas (+${selectedPlanData.features.length - 3} más)`
-                                      }
-                                    </span>
-                                    <svg 
-                                      className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${
-                                        showAllFeatures ? 'rotate-180' : ''
-                                      }`} 
-                                      fill="none" 
-                                      stroke="currentColor" 
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                  </button>
-                                )}
-                              </div>
+                              <ul className="space-y-2">
+                                {selectedPlanData.features.map((feature: string | { name: string; included: boolean }, index: number) => {
+                                  // Manejar tanto strings como objetos para compatibilidad
+                                  const featureName = typeof feature === 'string' ? feature : feature.name;
+                                  const isIncluded = typeof feature === 'string' ? true : feature.included;
+                                  
+                                  // Solo mostrar características incluidas en el paso 4
+                                  if (!isIncluded) return null;
+                                  
+                                  return (
+                                    <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
+                                      <span className="text-green-500 mt-0.5 flex-shrink-0">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                      </span>
+                                      <span className="leading-relaxed">{featureName}</span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Formulario de datos de facturación */}
+                    </div>
+
+                    {/* Columna Derecha - Formulario de pago y facturación */}
+                    <div className="space-y-6">
+                      {/* Formulario de datos de facturación - MOVIDO AQUÍ */}
                       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                          <span>📋</span>
-                          <span>Datos de facturación</span>
-                        </h4>
-                        <p className="text-gray-600 text-sm mb-6">Información que aparecerá en tus facturas</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <span>📋</span>
+                            <span>Datos de facturación</span>
+                          </h4>
+                          {clientSecret && (
+                            <button
+                              onClick={() => setShowBillingForm(!showBillingForm)}
+                              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                            >
+                              {showBillingForm ? (
+                                <>
+                                  <span>Ocultar</span>
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                  </svg>
+                                </>
+                              ) : (
+                                <>
+                                  <span>Editar</span>
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
                         
-                        <div className="space-y-4">
+                        {/* Mostrar resumen cuando está colapsado */}
+                        {!showBillingForm && clientSecret ? (
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-gray-600">Nombre fiscal:</p>
+                                <p className="font-medium text-gray-900">
+                                  {legalName || (customerType === 'autonomo' ? tempUserData?.name : selectedBusiness?.name) || 'No especificado'}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-gray-600">{customerType === 'empresa' ? 'CIF:' : 'NIF:'}</p>
+                                <p className="font-medium text-gray-900">{companyNIF || 'No especificado'}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-600">Email facturas:</p>
+                                <p className="font-medium text-gray-900">{billingEmail || tempUserData?.email || 'No especificado'}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-600">Dirección:</p>
+                                <p className="font-medium text-gray-900">
+                                  {billingAddress ? `${billingAddress}, ${billingPostalCode} ${billingCity}` : 'No especificada'}
+                                </p>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-3 text-center">
+                              ✅ Datos guardados correctamente. Haz clic en "Editar" si necesitas modificarlos.
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-gray-600 text-sm mb-6">Información que aparecerá en tus facturas</p>
+                            
+                            <div className="space-y-4">
                           {/* Tipo de cliente */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1478,20 +1513,19 @@ export default function AdminDashboard() {
                             />
                           </div>
 
-                          {/* Mensaje informativo */}
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <p className="text-sm text-blue-800">
-                              <span className="font-semibold">ℹ️ Importante:</span> Estos datos aparecerán en todas tus facturas. 
-                              Asegúrate de que coinciden exactamente con tu información fiscal oficial.
-                            </p>
-                          </div>
-                        </div>
+                              {/* Mensaje informativo */}
+                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p className="text-sm text-blue-800">
+                                  <span className="font-semibold">ℹ️ Importante:</span> Estos datos aparecerán en todas tus facturas. 
+                                  Asegúrate de que coinciden exactamente con tu información fiscal oficial.
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                    </div>
-
-                    {/* Columna Derecha - Formulario de pago */}
-                    <div>
+                      {/* Método de pago - AHORA DEBAJO DE DATOS DE FACTURACIÓN */}
                       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <h4 className="text-lg font-bold text-gray-900 mb-6">
                           Método de pago
@@ -1554,8 +1588,9 @@ export default function AdminDashboard() {
                           </div>
                         ) : (
                           /* Componente de Stripe - solo se muestra cuando hay clientSecret */
-                          <StripePaymentForm
-                          businessId={pendingBusinessId}
+                          <div className="animate-fadeIn">
+                            <StripePaymentForm
+                            businessId={pendingBusinessId}
                           businessName={selectedBusiness?.name || 'Tu Negocio'}
                           businessPhotoUrl={businessPhotoUrl}
                           planData={selectedPlanData}
@@ -1586,15 +1621,17 @@ export default function AdminDashboard() {
                             // Resetear formularios
                             resetForms();
                             // Redirigir al login
-                            setCurrentView('login');
-                          }}
-                          onCancel={() => {
-                            // Volver al paso 3
-                            setRegistrationStep(3);
-                            setClientSecret('');
-                            setIsLoadingPayment(false);
-                          }}
-                        />
+                              setCurrentView('login');
+                            }}
+                            onCancel={() => {
+                              // Volver al paso 3
+                              setRegistrationStep(3);
+                              setClientSecret('');
+                              setIsLoadingPayment(false);
+                              setShowBillingForm(true); // Restaurar el formulario de facturación
+                            }}
+                          />
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1692,7 +1729,7 @@ export default function AdminDashboard() {
                             )}
                             
                             <div className="text-center">
-                              <div className="text-4xl mb-3">{plan.icon || '📦'}</div>
+                      <div className="text-6xl mb-4">{plan.icon || '📦'}</div>
                               <h4 className="text-xl font-bold text-gray-900">{plan.name}</h4>
                               
                               {/* Duración del intervalo de suscripción */}
