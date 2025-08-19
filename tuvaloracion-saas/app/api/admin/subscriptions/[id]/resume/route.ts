@@ -112,6 +112,7 @@ export async function POST(
       {
         $set: {
           'subscription.status': 'active',
+          'subscription.pauseStatus': false,  // ← NUEVO: marcar como activa
           'subscription.resumedAt': new Date(),
           updatedAt: new Date()
         },

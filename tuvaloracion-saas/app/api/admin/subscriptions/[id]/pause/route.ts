@@ -114,6 +114,7 @@ export async function POST(
       {
         $set: {
           'subscription.status': 'paused',
+          'subscription.pauseStatus': true,  // ← NUEVO: marcar como pausada
           'subscription.pausedAt': new Date(),
           updatedAt: new Date()
         }

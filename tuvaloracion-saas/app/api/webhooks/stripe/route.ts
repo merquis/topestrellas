@@ -248,6 +248,18 @@ export async function POST(request: Request) {
           active: false,
         });
 
+        // También actualizar el pauseStatus en la base de datos
+        const db = await getDatabase();
+        await db.collection('businesses').updateOne(
+          { _id: new ObjectId(businessId) },
+          {
+            $set: {
+              'subscription.pauseStatus': true,
+              updatedAt: new Date()
+            }
+          }
+        );
+
         console.log(`Suscripción pausada para negocio ${businessId}`);
         break;
       }
@@ -265,6 +277,18 @@ export async function POST(request: Request) {
           status: 'active',
           active: true,
         });
+
+        // También actualizar el pauseStatus en la base de datos
+        const db = await getDatabase();
+        await db.collection('businesses').updateOne(
+          { _id: new ObjectId(businessId) },
+          {
+            $set: {
+              'subscription.pauseStatus': false,
+              updatedAt: new Date()
+            }
+          }
+        );
 
         await resetPaymentFailures(businessId);
 
