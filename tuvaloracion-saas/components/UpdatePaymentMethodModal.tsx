@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
-  CardElement,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
@@ -40,8 +42,8 @@ function UpdatePaymentMethodForm({
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) {
       return;
     }
 
@@ -49,10 +51,10 @@ function UpdatePaymentMethodForm({
     setErrorMessage(null);
 
     try {
-      // Confirmar el SetupIntent con CardElement
+      // Confirmar el SetupIntent con los elementos de tarjeta
       const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
         payment_method: {
-          card: cardElement,
+          card: cardNumberElement,
           billing_details: {
             name: customerInfo?.name || undefined,
             email: customerInfo?.email || undefined,
@@ -93,31 +95,132 @@ function UpdatePaymentMethodForm({
       </div>
 
       <div className="space-y-4">
-        <div className="p-4 border border-gray-300 rounded-lg">
-          <CardElement 
-            options={{
-              style: {
-                base: {
-                  fontSize: '16px',
-                  color: '#424770',
-                  '::placeholder': {
-                    color: '#aab7c4',
+        <style jsx global>{`
+          /* Ocultar completamente el botón de Link */
+          .LinkAuthenticationElement,
+          button[aria-label*="Link"],
+          button[title*="Link"],
+          [class*="LinkButton"],
+          [class*="link-button"],
+          #link-authentication-element {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            left: -9999px !important;
+          }
+          
+          /* Asegurar que el CardElement tenga suficiente espacio */
+          .StripeElement {
+            padding: 12px !important;
+            min-height: 44px !important;
+          }
+          
+          /* Ocultar cualquier overlay de Link */
+          [class*="LinkOverlay"],
+          [class*="link-overlay"] {
+            display: none !important;
+          }
+        `}</style>
+        
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Información de la tarjeta
+          </label>
+          
+          {/* Número de tarjeta - línea completa */}
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Número de tarjeta</label>
+            <div className="p-3 border border-gray-300 rounded-lg bg-white">
+              <CardNumberElement 
+                options={{
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: '#424770',
+                      '::placeholder': {
+                        color: '#aab7c4',
+                      },
+                      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontSmoothing: 'antialiased',
+                    },
+                    invalid: {
+                      color: '#ef4444',
+                      iconColor: '#ef4444'
+                    },
+                    complete: {
+                      color: '#10b981',
+                    }
                   },
-                  fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                  fontSmoothing: 'antialiased',
-                },
-                invalid: {
-                  color: '#9e2146',
-                  iconColor: '#9e2146'
-                },
-              },
-              hidePostalCode: false,
-            }}
-          />
+                  showIcon: true,
+                  iconStyle: 'solid' as const,
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* Fecha y CVC - segunda línea */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Fecha de vencimiento</label>
+              <div className="p-3 border border-gray-300 rounded-lg bg-white">
+                <CardExpiryElement 
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: '16px',
+                        color: '#424770',
+                        '::placeholder': {
+                          color: '#aab7c4',
+                        },
+                        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        fontSmoothing: 'antialiased',
+                      },
+                      invalid: {
+                        color: '#ef4444',
+                      },
+                      complete: {
+                        color: '#10b981',
+                      }
+                    },
+                  }}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">CVC</label>
+              <div className="p-3 border border-gray-300 rounded-lg bg-white">
+                <CardCvcElement 
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: '16px',
+                        color: '#424770',
+                        '::placeholder': {
+                          color: '#aab7c4',
+                        },
+                        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        fontSmoothing: 'antialiased',
+                      },
+                      invalid: {
+                        color: '#ef4444',
+                      },
+                      complete: {
+                        color: '#10b981',
+                      }
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          
+          <p className="text-xs text-gray-500 flex items-center gap-1">
+            <span>🔒</span> Los datos de tu tarjeta están seguros y encriptados
+          </p>
         </div>
-        <p className="text-xs text-gray-500">
-          Los datos de tu tarjeta están seguros y encriptados
-        </p>
       </div>
 
       {errorMessage && (
