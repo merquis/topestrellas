@@ -70,11 +70,11 @@ function UpdatePaymentMethodForm({
         // El método de pago se guardó correctamente
         console.log('SetupIntent exitoso:', setupIntent.id);
         setIsSuccess(true);
-        // Esperar 2 segundos para mostrar el mensaje de éxito antes de cerrar
+        // Esperar 5 segundos para mostrar el mensaje de éxito antes de cerrar
         setTimeout(() => {
           onSuccess();  // Refrescar los datos
           onCancel();   // Cerrar el modal después de mostrar el mensaje
-        }, 2000);
+        }, 5000);
       }
     } catch (error) {
       console.error('Error en handleSubmit:', error);
