@@ -133,34 +133,44 @@ function UpdatePaymentMethodForm({
 
       <div className="space-y-4">
         <style jsx global>{`
-          /* Ocultar completamente el botón de Link y cualquier elemento relacionado */
-          .LinkAuthenticationElement,
+          /* OCULTAR COMPLETAMENTE EL BOTÓN LINK DE STRIPE */
+          
+          /* Selectores específicos basados en el HTML proporcionado */
+          .ButtonContainer--pay,
+          .ButtonContainer.ButtonContainer--pay,
+          div.ButtonContainer--pay,
+          #link-pay,
+          button#link-pay,
+          .Button--pay,
+          button.Button--pay,
+          button[aria-label="Autorrellenar con Link"],
           button[aria-label*="Link"],
-          button[aria-label*="link"],
-          button[title*="Link"],
-          button[title*="link"],
-          button:has(span:contains("link")),
+          #link-pay-text,
+          #LinkLogoPay,
+          .LinkLogo--pay,
+          svg.LinkLogo--pay,
+          
+          /* Selectores adicionales para asegurar */
+          .LinkAuthenticationElement,
           [class*="LinkButton"],
           [class*="link-button"],
           [class*="LinkAuthentication"],
           #link-authentication-element,
-          /* Selector más específico para el botón "Utilizar link" */
-          button:has(+ span),
-          button[type="button"]:not([type="submit"]):not(.bg-gradient-to-r),
-          .StripeElement--webkit-autofill ~ button,
-          /* Ocultar el botón verde específicamente */
-          button.bg-green-600,
-          button[style*="background-color: rgb(34, 197, 94)"],
-          button[style*="background: rgb(34, 197, 94)"],
-          /* Ocultar cualquier botón con texto "link" */
-          button:contains("link"),
-          button:contains("Link"),
-          /* Ocultar el contenedor del botón Link si existe */
-          div:has(> button:contains("link")),
-          div:has(> button:contains("Link")),
-          /* Selector por posición - ocultar botón después del input */
+          
+          /* Ocultar por contenido */
+          button:has(svg.LinkLogo--pay),
+          button:has(#LinkLogoPay),
+          div:has(button#link-pay),
+          div:has(.Button--pay),
+          
+          /* Ocultar cualquier elemento con "Utilizar" seguido de logo Link */
+          button:has(span:contains("Utilizar")),
+          
+          /* Selectores más generales */
           .StripeElement + button,
-          .StripeElement + * button {
+          .StripeElement + div button,
+          .StripeElement ~ button,
+          .StripeElement ~ div button {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -170,6 +180,7 @@ function UpdatePaymentMethodForm({
             width: 0 !important;
             height: 0 !important;
             overflow: hidden !important;
+            z-index: -9999 !important;
           }
           
           /* Asegurar que el CardElement tenga suficiente espacio */
@@ -188,6 +199,12 @@ function UpdatePaymentMethodForm({
           /* Forzar que el campo de número de tarjeta use todo el ancho */
           .CardNumberElement .StripeElement {
             width: 100% !important;
+          }
+          
+          /* Ocultar específicamente el contenedor del botón después del input de tarjeta */
+          .CardNumberElement + div,
+          .CardNumberElement ~ div[class*="Button"] {
+            display: none !important;
           }
         `}</style>
         
@@ -222,7 +239,9 @@ function UpdatePaymentMethodForm({
                   },
                   showIcon: true,
                   iconStyle: 'solid' as const,
-                }}
+                  // Intentar deshabilitar Link si la opción existe
+                  disableLink: true,
+                } as any}
               />
             </div>
           </div>
