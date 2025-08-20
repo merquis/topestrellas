@@ -144,14 +144,14 @@ function UpdatePaymentMethodForm({
           type="button"
           onClick={onCancel}
           disabled={isProcessing}
-          className="flex-1 px-4 py-3 text-gray-600 hover:text-gray-800 font-semibold disabled:opacity-50"
+          className="flex-1 px-4 py-3 text-gray-600 hover:text-gray-800 font-semibold disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={!stripe || isProcessing}
-          className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+          className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition font-semibold disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {isProcessing ? (
             <>
@@ -268,13 +268,13 @@ export default function UpdatePaymentMethodModal({
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold"
+                className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold cursor-pointer"
               >
                 Cerrar
               </button>
               <button
                 onClick={createSetupIntent}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold cursor-pointer"
               >
                 Reintentar
               </button>
