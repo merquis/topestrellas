@@ -90,16 +90,12 @@ function UpdatePaymentMethodForm({
         <PaymentElement 
           options={{
             layout: 'tabs',
+            // Solo mostrar tarjeta como método de pago
             paymentMethodOrder: ['card'],
+            // Desactivar wallets digitales
             wallets: {
               applePay: 'never',
               googlePay: 'never'
-            },
-            // Desactivar Link completamente
-            linkAuthenticationElement: {
-              defaultValues: {
-                email: customerInfo?.email || ''
-              }
             },
             // Configurar para que use los datos de facturación existentes del cliente
             defaultValues: {
@@ -114,8 +110,8 @@ function UpdatePaymentMethodForm({
               billingDetails: {
                 // Hacer los campos obligatorios y ocultarlos si ya tenemos los datos
                 name: customerInfo?.name ? 'never' : 'auto',
-                email: customerInfo?.email ? 'never' : 'auto',
-                phone: customerInfo?.phone ? 'never' : 'auto',
+                email: customerInfo?.email ? 'never' : 'auto', 
+                phone: 'never', // Nunca mostrar teléfono
                 address: {
                   country: 'never', // No mostrar país (siempre España)
                   line1: 'never',
@@ -126,7 +122,7 @@ function UpdatePaymentMethodForm({
                 }
               }
             },
-            // Desactivar la opción de guardar para Link
+            // Desactivar términos y condiciones de Link
             terms: {
               card: 'never'
             }
