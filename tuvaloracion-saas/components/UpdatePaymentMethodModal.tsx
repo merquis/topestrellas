@@ -34,6 +34,7 @@ function UpdatePaymentMethodForm({
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -68,7 +69,12 @@ function UpdatePaymentMethodForm({
       } else if (setupIntent && setupIntent.status === 'succeeded') {
         // El método de pago se guardó correctamente
         console.log('SetupIntent exitoso:', setupIntent.id);
-        onSuccess();
+        setIsSuccess(true);
+        // Esperar 2 segundos para mostrar el mensaje de éxito antes de cerrar
+        setTimeout(() => {
+          onSuccess();  // Refrescar los datos
+          onCancel();   // Cerrar el modal después de mostrar el mensaje
+        }, 2000);
       }
     } catch (error) {
       console.error('Error en handleSubmit:', error);
@@ -77,6 +83,30 @@ function UpdatePaymentMethodForm({
       setIsProcessing(false);
     }
   };
+
+  // Si el pago fue exitoso, mostrar mensaje de éxito
+  if (isSuccess) {
+    return (
+      <div className="space-y-6 text-center py-8">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto animate-bounce">
+          <span className="text-4xl">✅</span>
+        </div>
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            ¡Método de pago actualizado!
+          </h3>
+          <p className="text-gray-600">
+            Su método de pago se ha actualizado correctamente para <strong>{businessName}</strong>
+          </p>
+        </div>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <p className="text-sm text-green-800">
+            Los cambios se han guardado y su suscripción continuará sin interrupciones.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
