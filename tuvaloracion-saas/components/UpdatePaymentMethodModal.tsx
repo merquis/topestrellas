@@ -95,6 +95,12 @@ function UpdatePaymentMethodForm({
               applePay: 'never',
               googlePay: 'never'
             },
+            // Desactivar Link completamente
+            linkAuthenticationElement: {
+              defaultValues: {
+                email: customerInfo?.email || ''
+              }
+            },
             // Configurar para que use los datos de facturación existentes del cliente
             defaultValues: {
               billingDetails: customerInfo ? {
@@ -119,6 +125,10 @@ function UpdatePaymentMethodForm({
                   postalCode: 'never'
                 }
               }
+            },
+            // Desactivar la opción de guardar para Link
+            terms: {
+              card: 'never'
             }
           }}
         />
@@ -281,7 +291,6 @@ export default function UpdatePaymentMethodModal({
             stripe={stripePromise} 
             options={{ 
               clientSecret,
-              mode: 'setup',
               appearance: {
                 theme: 'stripe',
                 variables: {
