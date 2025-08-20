@@ -133,19 +133,43 @@ function UpdatePaymentMethodForm({
 
       <div className="space-y-4">
         <style jsx global>{`
-          /* Ocultar completamente el botón de Link */
+          /* Ocultar completamente el botón de Link y cualquier elemento relacionado */
           .LinkAuthenticationElement,
           button[aria-label*="Link"],
+          button[aria-label*="link"],
           button[title*="Link"],
+          button[title*="link"],
+          button:has(span:contains("link")),
           [class*="LinkButton"],
           [class*="link-button"],
-          #link-authentication-element {
+          [class*="LinkAuthentication"],
+          #link-authentication-element,
+          /* Selector más específico para el botón "Utilizar link" */
+          button:has(+ span),
+          button[type="button"]:not([type="submit"]):not(.bg-gradient-to-r),
+          .StripeElement--webkit-autofill ~ button,
+          /* Ocultar el botón verde específicamente */
+          button.bg-green-600,
+          button[style*="background-color: rgb(34, 197, 94)"],
+          button[style*="background: rgb(34, 197, 94)"],
+          /* Ocultar cualquier botón con texto "link" */
+          button:contains("link"),
+          button:contains("Link"),
+          /* Ocultar el contenedor del botón Link si existe */
+          div:has(> button:contains("link")),
+          div:has(> button:contains("Link")),
+          /* Selector por posición - ocultar botón después del input */
+          .StripeElement + button,
+          .StripeElement + * button {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             pointer-events: none !important;
             position: absolute !important;
             left: -9999px !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: hidden !important;
           }
           
           /* Asegurar que el CardElement tenga suficiente espacio */
@@ -156,8 +180,14 @@ function UpdatePaymentMethodForm({
           
           /* Ocultar cualquier overlay de Link */
           [class*="LinkOverlay"],
-          [class*="link-overlay"] {
+          [class*="link-overlay"],
+          [class*="LinkModal"] {
             display: none !important;
+          }
+          
+          /* Forzar que el campo de número de tarjeta use todo el ancho */
+          .CardNumberElement .StripeElement {
+            width: 100% !important;
           }
         `}</style>
         
