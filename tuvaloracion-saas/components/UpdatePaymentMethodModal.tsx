@@ -92,7 +92,7 @@ function UpdatePaymentMethodForm({
             layout: 'tabs',
             // Solo mostrar tarjeta como método de pago
             paymentMethodOrder: ['card'],
-            // Desactivar wallets digitales
+            // Desactivar wallets digitales y Link
             wallets: {
               applePay: 'never',
               googlePay: 'never'
@@ -109,22 +109,24 @@ function UpdatePaymentMethodForm({
             fields: {
               billingDetails: {
                 // Hacer los campos obligatorios y ocultarlos si ya tenemos los datos
-                name: customerInfo?.name ? 'never' : 'auto',
-                email: customerInfo?.email ? 'never' : 'auto', 
+                name: 'auto',
+                email: 'never', // Nunca mostrar email para evitar Link
                 phone: 'never', // Nunca mostrar teléfono
                 address: {
-                  country: 'never', // No mostrar país (siempre España)
+                  country: 'never', // No mostrar país
                   line1: 'never',
                   line2: 'never',
                   city: 'never',
                   state: 'never',
-                  postalCode: 'never'
+                  postalCode: 'auto' // Solo mostrar código postal si es necesario
                 }
               }
             },
-            // Desactivar términos y condiciones de Link
+            // Desactivar términos y condiciones
             terms: {
-              card: 'never'
+              card: 'never',
+              applePay: 'never',
+              googlePay: 'never'
             }
           }}
         />
