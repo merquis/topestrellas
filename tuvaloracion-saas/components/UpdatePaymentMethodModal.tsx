@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
-  PaymentElement,
+  CardElement,
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
@@ -40,18 +40,24 @@ function UpdatePaymentMethodForm({
       return;
     }
 
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      return;
+    }
+
     setIsProcessing(true);
     setErrorMessage(null);
 
     try {
-      // Confirmar el SetupIntent
-      // Ahora el PaymentElement recoge los datos de facturación automáticamente
-      const { error, setupIntent } = await stripe.confirmSetup({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/admin/subscriptions?payment_method_updated=true`
-        },
-        redirect: 'if_required'
+      // Confirmar el SetupIntent con CardElement
+      const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: customerInfo?.name || undefined,
+            email: customerInfo?.email || undefined,
+          }
+        }
       });
 
       if (error) {
@@ -87,47 +93,31 @@ function UpdatePaymentMethodForm({
       </div>
 
       <div className="space-y-4">
-        <PaymentElement 
-          options={{
-            layout: 'tabs',
-            // Solo mostrar tarjeta como método de pago
-            paymentMethodOrder: ['card'],
-            // Desactivar wallets digitales
-            wallets: {
-              applePay: 'never',
-              googlePay: 'never'
-            },
-            // Configurar para que use los datos de facturación existentes del cliente
-            defaultValues: {
-              billingDetails: customerInfo ? {
-                name: customerInfo.name || undefined,
-                email: customerInfo.email || undefined,
-                phone: customerInfo.phone || undefined,
-                address: customerInfo.address || undefined
-              } : {}
-            },
-            fields: {
-              billingDetails: {
-                // Hacer los campos obligatorios y ocultarlos si ya tenemos los datos
-                name: customerInfo?.name ? 'never' : 'auto',
-                email: customerInfo?.email ? 'never' : 'auto',
-                phone: 'never', // Nunca mostrar teléfono
-                address: {
-                  country: 'never', // No mostrar país (siempre España)
-                  line1: 'never',
-                  line2: 'never',
-                  city: 'never',
-                  state: 'never',
-                  postalCode: 'never'
-                }
-              }
-            },
-            // Desactivar términos y condiciones de Link
-            terms: {
-              card: 'never'
-            }
-          }}
-        />
+        <div className="p-4 border border-gray-300 rounded-lg">
+          <CardElement 
+            options={{
+              style: {
+                base: {
+                  fontSize: '16px',
+                  color: '#424770',
+                  '::placeholder': {
+                    color: '#aab7c4',
+                  },
+                  fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                  fontSmoothing: 'antialiased',
+                },
+                invalid: {
+                  color: '#9e2146',
+                  iconColor: '#9e2146'
+                },
+              },
+              hidePostalCode: false,
+            }}
+          />
+        </div>
+        <p className="text-xs text-gray-500">
+          Los datos de tu tarjeta están seguros y encriptados
+        </p>
       </div>
 
       {errorMessage && (
