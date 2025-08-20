@@ -70,11 +70,7 @@ function UpdatePaymentMethodForm({
         // El método de pago se guardó correctamente
         console.log('SetupIntent exitoso:', setupIntent.id);
         setIsSuccess(true);
-        // Esperar 5 segundos para mostrar el mensaje de éxito antes de cerrar
-        setTimeout(() => {
-          onSuccess();  // Refrescar los datos
-          onCancel();   // Cerrar el modal después de mostrar el mensaje
-        }, 5000);
+        // No cerramos automáticamente, esperamos a que el usuario haga clic en Aceptar
       }
     } catch (error) {
       console.error('Error en handleSubmit:', error);
@@ -104,6 +100,17 @@ function UpdatePaymentMethodForm({
             Los cambios se han guardado y su suscripción continuará sin interrupciones.
           </p>
         </div>
+        
+        {/* Botón Aceptar para cerrar cuando el usuario termine de leer */}
+        <button
+          onClick={() => {
+            onSuccess();  // Refrescar los datos
+            onCancel();   // Cerrar el modal
+          }}
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition font-semibold shadow-lg"
+        >
+          Aceptar
+        </button>
       </div>
     );
   }
