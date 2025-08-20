@@ -281,6 +281,7 @@ export default function UpdatePaymentMethodModal({
             stripe={stripePromise} 
             options={{ 
               clientSecret,
+              mode: 'setup',
               appearance: {
                 theme: 'stripe',
                 variables: {
