@@ -278,7 +278,7 @@ export default function AdminLayout({ children, user }: AdminLayoutProps) {
         )}
         
         {/* Content con padding superior en móvil para la barra fija */}
-        <div className={`p-6 ${(isMobile || isTablet) ? 'pt-20' : ''}`}>
+        <div className={`p-6 ${(isMobile || isTablet) ? 'pt-24' : ''}`}>
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
