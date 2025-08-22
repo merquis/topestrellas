@@ -383,7 +383,7 @@ export default function ChangePlanModal({
                         </div>
 
                         <ul className="space-y-1 sm:space-y-2 mb-4 sm:mb-6">
-                          {plan.features.slice(0, 5).map((feature, index) => {
+                          {plan.features.map((feature, index) => {
                             const featureName = typeof feature === 'string' ? feature : feature.name;
                             const isIncluded = typeof feature === 'string' ? true : feature.included;
                             
@@ -404,11 +404,6 @@ export default function ChangePlanModal({
                               </li>
                             );
                           })}
-                          {plan.features.length > 5 && (
-                            <li className="text-xs sm:text-sm text-gray-500 pl-6 sm:pl-7">
-                              +{plan.features.length - 5} más...
-                            </li>
-                          )}
                         </ul>
 
                         {isSelected && (
