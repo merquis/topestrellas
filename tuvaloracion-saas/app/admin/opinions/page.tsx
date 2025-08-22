@@ -529,18 +529,18 @@ function OpinionsContent() {
 
                     {/* Premio (si existe) */}
                     {(opinion.prize || opinion.premio) && (
-                      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">🎁</span>
-                          <span className="text-sm font-semibold text-orange-900">Premio Ganado</span>
-                        </div>
-                        <div className="text-sm text-orange-800">
-                          {opinion.premio || 
-                           (opinion.prize?.emoji ? `${opinion.prize.emoji} ${opinion.prize.name}` : opinion.prize?.name) || 
-                           opinion.prize}
+                      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">🎁</span>
+                          <span className="text-sm font-semibold text-orange-900">Premio</span>
+                          <span className="text-sm text-orange-800">
+                            {opinion.premio || 
+                             (opinion.prize?.emoji ? `${opinion.prize.emoji} ${opinion.prize.name}` : opinion.prize?.name) || 
+                             opinion.prize}
+                          </span>
                         </div>
                         {opinion.codigoPremio && (
-                          <div className="mt-2 text-xs font-mono bg-white px-2 py-1 rounded border border-orange-200">
+                          <div className="mt-1.5 text-xs font-mono bg-white px-2 py-1 rounded border border-orange-200 inline-block">
                             Código: {opinion.codigoPremio}
                           </div>
                         )}
@@ -603,19 +603,20 @@ function OpinionsContent() {
 
                     {/* Prize Info */}
                     {(opinion.prize || opinion.premio) && (
-                      <div className="ml-6 text-right">
-                        <div className="bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-300 rounded-lg p-3">
-                          <div className="text-sm font-medium text-orange-900 mb-1">
-                            🎁 Premio Ganado
-                          </div>
-                          <div className="text-sm text-orange-800 mb-1">
-                            {opinion.premio || 
-                             (opinion.prize?.emoji ? `${opinion.prize.emoji} ${opinion.prize.name}` : opinion.prize?.name) || 
-                             opinion.prize}
+                      <div className="ml-6">
+                        <div className="bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-300 rounded-lg p-2.5 inline-block">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-base">🎁</span>
+                            <span className="font-medium text-orange-900">Premio</span>
+                            <span className="text-orange-800">
+                              {opinion.premio || 
+                               (opinion.prize?.emoji ? `${opinion.prize.emoji} ${opinion.prize.name}` : opinion.prize?.name) || 
+                               opinion.prize}
+                            </span>
                           </div>
                           {opinion.codigoPremio && (
-                            <div className="text-xs text-orange-700 font-mono bg-orange-50 px-2 py-1 rounded border">
-                              {opinion.codigoPremio}
+                            <div className="text-xs text-orange-700 font-mono bg-orange-50 px-2 py-1 rounded border mt-1.5 inline-block">
+                              Código: {opinion.codigoPremio}
                             </div>
                           )}
                         </div>
