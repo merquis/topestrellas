@@ -239,9 +239,7 @@ function UpdatePaymentMethodForm({
                   },
                   showIcon: true,
                   iconStyle: 'solid' as const,
-                  // Intentar deshabilitar Link si la opción existe
-                  disableLink: true,
-                } as any}
+                }}
               />
             </div>
           </div>

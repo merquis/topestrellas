@@ -10,6 +10,9 @@ interface Business {
   name: string;
   subdomain: string;
   active: boolean;
+  subscription?: {
+    plan: string;
+  };
 }
 
 interface DashboardProps {
@@ -19,7 +22,7 @@ interface DashboardProps {
 export default function Dashboard({ user }: DashboardProps) {
   const router = useRouter();
   const selectedBusiness: Business | null = null; // Temporalmente sin selector
-  const [businesses, setBusinesses] = useState([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [stats, setStats] = useState({
     totalBusinesses: 0,
     activeBusinesses: 0,
@@ -84,9 +87,8 @@ export default function Dashboard({ user }: DashboardProps) {
 
   return (
     <>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      {/* Stats Grid - Responsive para móvil */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {user.role === 'super_admin' && (
           <StatsCard
             title="Negocios Totales"
@@ -134,23 +136,23 @@ export default function Dashboard({ user }: DashboardProps) {
         />
       </div>
 
-      {/* Recent Activity & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* Recent Activity & Quick Actions - Stack en móvil */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Recent Activity */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Actividad Reciente</h2>
-          <div className="space-y-4">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Actividad Reciente</h2>
+          <div className="space-y-3 sm:space-y-4">
             {[
               { icon: '⭐', text: 'Nueva opinión 5 estrellas en Restaurante La Plaza', time: 'Hace 5 min' },
               { icon: '🎁', text: 'Premio "Cena para 2" canjeado en Café Central', time: 'Hace 15 min' },
               { icon: '🏢', text: 'Nuevo negocio registrado: Peluquería Style', time: 'Hace 1 hora' },
               { icon: '📊', text: 'Informe mensual generado automáticamente', time: 'Hace 2 horas' },
             ].map((activity, index) => (
-              <div key={index} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <span className="text-2xl">{activity.icon}</span>
-                <div className="flex-1">
-                  <p className="text-gray-800">{activity.text}</p>
-                  <p className="text-sm text-gray-500">{activity.time}</p>
+              <div key={index} className="flex items-start sm:items-center gap-3 sm:gap-4 p-2 sm:p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <span className="text-xl sm:text-2xl flex-shrink-0">{activity.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm sm:text-base text-gray-800 break-words">{activity.text}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">{activity.time}</p>
                 </div>
               </div>
             ))}
@@ -158,53 +160,100 @@ export default function Dashboard({ user }: DashboardProps) {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Acciones Rápidas</h2>
-          <div className="space-y-3">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Acciones Rápidas</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-3">
             {user.role === 'super_admin' && (
               <button
                 onClick={() => router.push('/admin/new-business')}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
               >
-                <span>➕</span> Añadir Negocio
+                <span>➕</span> 
+                <span className="hidden sm:inline">Añadir Negocio</span>
+                <span className="sm:hidden">Añadir</span>
               </button>
             )}
             <button
               onClick={() => router.push('/admin/opinions')}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
             >
-              <span>📝</span> Ver Opiniones
+              <span>📝</span> 
+              <span className="hidden sm:inline">Ver Opiniones</span>
+              <span className="sm:hidden">Opiniones</span>
             </button>
             <button
               onClick={() => router.push('/admin/analytics')}
-              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
             >
-              <span>📊</span> Estadísticas
+              <span>📊</span> 
+              <span className="hidden sm:inline">Estadísticas</span>
+              <span className="sm:hidden">Stats</span>
             </button>
             <button
               onClick={() => router.push('/admin/settings')}
-              className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-4 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
             >
-              <span>⚙️</span> Configuración
+              <span>⚙️</span> 
+              <span className="hidden sm:inline">Configuración</span>
+              <span className="sm:hidden">Config</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Business Overview */}
+      {/* Business Overview - Tabla responsive con scroll horizontal en móvil */}
       {user.role === 'super_admin' && (
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Vista General de Negocios</h2>
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Vista General de Negocios</h2>
             <button
               onClick={() => router.push('/admin/businesses')}
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
             >
               Ver todos →
             </button>
           </div>
           
-          <div className="overflow-x-auto">
+          {/* Versión móvil - Cards */}
+          <div className="block sm:hidden space-y-3">
+            {businesses.slice(0, 5).map((business: Business) => (
+              <div key={business._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800">{business.name}</p>
+                    <p className="text-xs text-gray-500">{business.subdomain}.tuvaloracion.com</p>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    business.active 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {business.active ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <div className="flex gap-4">
+                    <span className="text-gray-600">
+                      Plan: <span className="font-medium">{business.subscription?.plan || 'Trial'}</span>
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-500">★</span>
+                      <span className="font-medium">4.8</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => router.push(`/admin/edit-business/${business._id}`)}
+                    className="text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Editar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Versión desktop - Tabla */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -217,7 +266,7 @@ export default function Dashboard({ user }: DashboardProps) {
                 </tr>
               </thead>
               <tbody>
-                {businesses.slice(0, 5).map((business: any) => (
+                {businesses.slice(0, 5).map((business: Business) => (
                   <tr key={business._id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4">
                       <div>
