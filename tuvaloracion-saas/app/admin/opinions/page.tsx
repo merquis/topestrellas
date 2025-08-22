@@ -510,18 +510,27 @@ function OpinionsContent() {
                     {/* Información del cliente */}
                     <div className="space-y-1 text-xs text-gray-600">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">Cliente:</span>
+                        <span className="flex items-center gap-1 font-medium">
+                          <span>👤</span>
+                          Cliente:
+                        </span>
                         <span>{opinion.customerName || 'Anónimo'}</span>
                       </div>
                       {opinion.customerEmail && (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">Email:</span>
+                          <span className="flex items-center gap-1 font-medium">
+                            <span>📧</span>
+                            Email:
+                          </span>
                           <span className="truncate">{opinion.customerEmail}</span>
                         </div>
                       )}
                       {opinion.customerPhone && (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">Teléfono:</span>
+                          <span className="flex items-center gap-1 font-medium">
+                            <span>📞</span>
+                            Teléfono:
+                          </span>
                           <span>{opinion.customerPhone}</span>
                         </div>
                       )}
