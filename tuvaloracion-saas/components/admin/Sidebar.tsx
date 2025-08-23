@@ -53,6 +53,13 @@ export default function Sidebar({
       description: 'Administrar usuarios'
     },
     {
+      title: 'Afiliados',
+      icon: '🤝',
+      href: '/admin/affiliates',
+      show: user.role === 'super_admin',
+      description: 'Gestionar partners y afiliados'
+    },
+    {
       title: 'Mis Negocios',
       icon: '🏪',
       href: '/admin/my-business',
