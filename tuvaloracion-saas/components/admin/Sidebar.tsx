@@ -271,7 +271,7 @@ export default function Sidebar({
             {!isMobile && !isTablet && (
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-700/50 p-1 rounded"
+                className="text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-700/50 p-1 rounded cursor-pointer"
                 title={isCollapsed ? 'Expandir' : 'Colapsar'}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,7 +284,7 @@ export default function Sidebar({
             {(isMobile || isTablet) && (
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-700/50 p-1 rounded lg:hidden"
+                className="text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-700/50 p-1 rounded lg:hidden cursor-pointer"
                 title="Cerrar menú"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -381,7 +381,7 @@ export default function Sidebar({
             className={`
               group flex items-center gap-3 px-3 py-2.5 rounded-lg w-full transition-all duration-200 
               bg-gradient-to-r from-red-600/10 to-red-700/10 hover:from-red-600 hover:to-red-700 
-              text-gray-300 hover:text-white hover:shadow-lg hover:shadow-red-500/25
+              text-gray-300 hover:text-white hover:shadow-lg hover:shadow-red-500/25 cursor-pointer
               ${shouldCollapse ? 'justify-center' : ''}
             `}
             title={shouldCollapse ? 'Cerrar Sesión' : ''}

@@ -185,7 +185,7 @@ export default function SuperAdminDashboard() {
                   </p>
                   <p className="text-xs text-gray-500 mt-2">Hace 2 horas</p>
                 </div>
-                <button className="text-red-600 hover:text-red-700 font-medium text-sm">
+                <button className="text-red-600 hover:text-red-700 font-medium text-sm cursor-pointer">
                   Ver detalles
                 </button>
               </div>
@@ -202,7 +202,7 @@ export default function SuperAdminDashboard() {
                   </p>
                   <p className="text-xs text-gray-500 mt-2">Hace 5 horas</p>
                 </div>
-                <button className="text-yellow-600 hover:text-yellow-700 font-medium text-sm">
+                <button className="text-yellow-600 hover:text-yellow-700 font-medium text-sm cursor-pointer">
                   Contactar
                 </button>
               </div>
@@ -219,7 +219,7 @@ export default function SuperAdminDashboard() {
                   </p>
                   <p className="text-xs text-gray-500 mt-2">Hace 1 día</p>
                 </div>
-                <button className="text-green-600 hover:text-green-700 font-medium text-sm">
+                <button className="text-green-600 hover:text-green-700 font-medium text-sm cursor-pointer">
                   Ver perfil
                 </button>
               </div>
@@ -232,25 +232,25 @@ export default function SuperAdminDashboard() {
             <div className="space-y-3">
               <button
                 onClick={() => router.push('/super/businesses')}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>🏢</span> Ver Todos los Negocios
               </button>
               <button
                 onClick={() => router.push('/super/affiliates')}
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>🤝</span> Gestionar Afiliados
               </button>
               <button
                 onClick={() => router.push('/super/subscriptions')}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>💳</span> Planes y Facturación
               </button>
               <button
                 onClick={() => router.push('/super/analytics')}
-                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-orange-800 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-orange-800 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>📊</span> Analytics Detallado
               </button>
