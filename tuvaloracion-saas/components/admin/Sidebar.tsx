@@ -40,42 +40,42 @@ export default function Sidebar({
     {
       title: 'Dashboard',
       icon: '📊',
-      href: '/super',
+      href: baseRoute,
       show: true,
       description: 'Métricas del negocio SaaS'
     },
     {
       title: 'Negocios',
       icon: '🏢',
-      href: '/super/businesses',
+      href: `${baseRoute}/businesses`,
       show: true,
       description: 'Gestionar todos los negocios'
     },
     {
       title: 'Usuarios',
       icon: '👥',
-      href: '/super/users',
+      href: `${baseRoute}/users`,
       show: true,
       description: 'Administrar usuarios'
     },
     {
       title: 'Afiliados',
       icon: '🤝',
-      href: '/super/affiliates',
+      href: `${baseRoute}/affiliates`,
       show: true,
       description: 'Gestionar partners y afiliados'
     },
     {
       title: 'Planes de Suscripción',
       icon: '🛠️',
-      href: '/super/subscriptions',
+      href: `${baseRoute}/subscriptions`,
       show: true,
       description: 'Configurar planes y precios'
     },
     {
       title: 'Analytics',
       icon: '📈',
-      href: '/super/analytics',
+      href: `${baseRoute}/analytics`,
       show: true,
       description: 'Análisis detallado del negocio'
     }
@@ -86,42 +86,42 @@ export default function Sidebar({
     {
       title: 'Dashboard',
       icon: '📊',
-      href: '/affiliate',
+      href: baseRoute,
       show: true,
       description: 'Vista general de afiliado'
     },
     {
       title: 'Mis Referidos',
       icon: '👥',
-      href: '/affiliate/referrals',
+      href: `${baseRoute}/referrals`,
       show: true,
       description: 'Clientes que has referido'
     },
     {
       title: 'Comisiones',
       icon: '💰',
-      href: '/affiliate/commissions',
+      href: `${baseRoute}/commissions`,
       show: true,
       description: 'Historial de comisiones'
     },
     {
       title: 'Estadísticas',
       icon: '📈',
-      href: '/affiliate/stats',
+      href: `${baseRoute}/stats`,
       show: true,
       description: 'Análisis de rendimiento'
     },
     {
       title: 'Materiales',
       icon: '📦',
-      href: '/affiliate/materials',
+      href: `${baseRoute}/materials`,
       show: true,
       description: 'Recursos de marketing'
     },
     {
       title: 'Mi Perfil',
       icon: '👤',
-      href: '/affiliate/profile',
+      href: `${baseRoute}/profile`,
       show: true,
       description: 'Configuración de cuenta'
     }
@@ -132,63 +132,63 @@ export default function Sidebar({
     {
       title: 'Dashboard',
       icon: '📊',
-      href: '/admin',
+      href: baseRoute,
       show: true,
       description: 'Vista general'
     },
     {
       title: 'Mis Negocios',
       icon: '🏪',
-      href: '/admin/my-business',
+      href: `${baseRoute}/my-business`,
       show: true,
       description: 'Gestionar mis negocios'
     },
     {
       title: 'Mis Suscripciones',
       icon: '💳',
-      href: '/admin/subscriptions',
+      href: `${baseRoute}/subscriptions`,
       show: true,
       description: 'Ver mis suscripciones'
     },
     {
       title: 'Mis Facturas',
       icon: '📄',
-      href: '/admin/invoices',
+      href: `${baseRoute}/invoices`,
       show: true,
       description: 'Historial de facturas'
     },
     {
       title: 'Opiniones',
       icon: '⭐',
-      href: '/admin/opinions',
+      href: `${baseRoute}/opinions`,
       show: true,
       description: 'Gestionar reseñas'
     },
     {
       title: 'Estadísticas',
       icon: '📈',
-      href: '/admin/analytics',
+      href: `${baseRoute}/analytics`,
       show: true,
       description: 'Análisis y métricas'
     },
     {
       title: 'Configuración',
       icon: '⚙️',
-      href: '/admin/settings',
+      href: `${baseRoute}/settings`,
       show: true,
       description: 'Ajustes del sistema'
     },
     {
       title: 'Centro de Ayuda',
       icon: '❓',
-      href: '/admin/help',
+      href: `${baseRoute}/help`,
       show: true,
       description: 'Documentación y soporte'
     },
     {
       title: 'Contacto',
       icon: '📞',
-      href: '/admin/contact',
+      href: `${baseRoute}/contact`,
       show: true,
       description: 'Contactar soporte'
     }

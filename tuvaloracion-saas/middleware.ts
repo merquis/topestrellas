@@ -33,21 +33,26 @@ export function middleware(request: NextRequest) {
     // Obtener el token de autenticación
     const token = request.cookies.get('auth-token')?.value
     
+    // Rutas públicas (no requieren autenticación)
+    const publicPaths = ['/login', '/registro', '/admin']
+    const isPublicPath = publicPaths.includes(pathname)
+    
     // Rutas que requieren autenticación
     const protectedPaths = ['/admin', '/super', '/affiliate']
     const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
     
+    // Si es una ruta pública, permitir acceso
+    if (isPublicPath) {
+      return NextResponse.next()
+    }
+    
     // Si es una ruta protegida
     if (isProtectedPath) {
-      // Permitir acceso a la página de login sin token
-      if (pathname === '/admin' && !token) {
-        return NextResponse.next()
-      }
       
       // Si no hay token y no es la página de login, redireccionar
       if (!token && pathname !== '/admin') {
         console.log(`⚠️ Intento de acceso sin autenticación a: ${pathname}`)
-        return NextResponse.redirect(new URL('/admin', request.url))
+        return NextResponse.redirect(new URL('/login', request.url))
       }
       
       // Si hay token, verificar permisos por rol
@@ -57,7 +62,7 @@ export function middleware(request: NextRequest) {
         if (!payload || !payload.role) {
           console.error('❌ Token inválido o sin rol')
           // Token inválido, redireccionar a login
-          const response = NextResponse.redirect(new URL('/admin', request.url))
+          const response = NextResponse.redirect(new URL('/login', request.url))
           response.cookies.delete('auth-token')
           return response
         }
@@ -78,7 +83,7 @@ export function middleware(request: NextRequest) {
             } else if (userRole === 'admin') {
               return NextResponse.redirect(new URL('/admin', request.url))
             } else {
-              return NextResponse.redirect(new URL('/admin', request.url))
+              return NextResponse.redirect(new URL('/login', request.url))
             }
           }
         }
@@ -94,14 +99,14 @@ export function middleware(request: NextRequest) {
             } else if (userRole === 'admin') {
               return NextResponse.redirect(new URL('/admin', request.url))
             } else {
-              return NextResponse.redirect(new URL('/admin', request.url))
+              return NextResponse.redirect(new URL('/login', request.url))
             }
           }
         }
         
-        // Rutas de ADMIN normal
+        // Rutas de ADMIN normal (excepto la página de login que es /admin)
         else if (pathname.startsWith('/admin') && pathname !== '/admin') {
-          // Super admin NO puede acceder al panel de admin normal
+          // Super admin NO puede acceder al panel de admin normal (excepto login)
           if (userRole === 'super_admin') {
             console.error(`🚫 ACCESO DENEGADO: ${userEmail} (super_admin) intentó acceder a panel admin normal: ${pathname}`)
             return NextResponse.redirect(new URL('/super', request.url))
@@ -116,7 +121,7 @@ export function middleware(request: NextRequest) {
           // Si es admin normal, permitir acceso
           if (userRole !== 'admin') {
             console.error(`🚫 ACCESO DENEGADO: ${userEmail} (rol: ${userRole}) no tiene permisos de admin`)
-            return NextResponse.redirect(new URL('/admin', request.url))
+            return NextResponse.redirect(new URL('/login', request.url))
           }
         }
         

@@ -57,6 +57,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       path: '/',
       sameSite: 'lax',
+      maxAge: 100 * 365 * 24 * 60 * 60 // 100 años - sesión prácticamente eterna
     });
     
     return response;
