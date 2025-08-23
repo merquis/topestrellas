@@ -47,35 +47,35 @@ export default function Sidebar({
     {
       title: 'Negocios',
       icon: '🏢',
-      href: '/admin/businesses',
+      href: '/super/businesses',
       show: true,
       description: 'Gestionar todos los negocios'
     },
     {
       title: 'Usuarios',
       icon: '👥',
-      href: '/admin/users',
+      href: '/super/users',
       show: true,
       description: 'Administrar usuarios'
     },
     {
       title: 'Afiliados',
       icon: '🤝',
-      href: '/admin/affiliates',
+      href: '/super/affiliates',
       show: true,
       description: 'Gestionar partners y afiliados'
     },
     {
       title: 'Planes de Suscripción',
       icon: '🛠️',
-      href: '/admin/subscriptions',
+      href: '/super/subscriptions',
       show: true,
       description: 'Configurar planes y precios'
     },
     {
       title: 'Analytics',
       icon: '📈',
-      href: '/admin/analytics',
+      href: '/super/analytics',
       show: true,
       description: 'Análisis detallado del negocio'
     }

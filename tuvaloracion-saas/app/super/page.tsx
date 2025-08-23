@@ -231,25 +231,25 @@ export default function SuperAdminDashboard() {
             <h2 className="text-xl font-bold text-gray-800 mb-4">Acciones Rápidas</h2>
             <div className="space-y-3">
               <button
-                onClick={() => router.push('/admin/businesses')}
+                onClick={() => router.push('/super/businesses')}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all flex items-center justify-center gap-2"
               >
                 <span>🏢</span> Ver Todos los Negocios
               </button>
               <button
-                onClick={() => router.push('/admin/affiliates')}
+                onClick={() => router.push('/super/affiliates')}
                 className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all flex items-center justify-center gap-2"
               >
                 <span>🤝</span> Gestionar Afiliados
               </button>
               <button
-                onClick={() => router.push('/admin/subscriptions')}
+                onClick={() => router.push('/super/subscriptions')}
                 className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-2"
               >
                 <span>💳</span> Planes y Facturación
               </button>
               <button
-                onClick={() => router.push('/admin/analytics')}
+                onClick={() => router.push('/super/analytics')}
                 className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-orange-800 transition-all flex items-center justify-center gap-2"
               >
                 <span>📊</span> Analytics Detallado
