@@ -8,14 +8,11 @@ export function middleware(request: NextRequest) {
   // Obtener el dominio principal de las variables de entorno
   const mainDomain = process.env.APP_DOMAIN || 'tuvaloracion.com'
   const adminDomain = process.env.ADMIN_DOMAIN || 'admin.topestrellas.com'
-  const legacyAdminDomain = 'admin.tuvaloracion.com' // Mantener compatibilidad temporal
   
-  // Si es el dominio de admin (nuevo o legacy), permitir acceso
+  // Si es el dominio de admin, permitir acceso
   if (hostname === adminDomain || 
-      hostname === legacyAdminDomain || 
       hostname === 'admin.topestrellas.com' ||
-      hostname === 'admin.tuvaloracion.com' ||
-      hostname.startsWith('admin.')) {
+      hostname.startsWith('admin.topestrellas.')) {
     return NextResponse.next()
   }
   

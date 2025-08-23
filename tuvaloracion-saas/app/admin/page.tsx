@@ -212,8 +212,17 @@ export default function AdminDashboard() {
       const authUser = await authenticateUser(loginEmail, loginPassword);
       if (authUser) {
         saveAuth(authUser);
-        setUser(authUser);
-        loadDashboardData(authUser);
+        
+        // Redirigir según el rol del usuario
+        if (authUser.role === 'super_admin') {
+          router.push('/super');
+        } else if (authUser.role === 'affiliate') {
+          router.push('/affiliate');
+        } else {
+          // Para usuarios admin normales, cargar el dashboard aquí
+          setUser(authUser);
+          loadDashboardData(authUser);
+        }
       } else {
         setLoginError('Credenciales incorrectas');
       }
