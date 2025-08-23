@@ -77,7 +77,7 @@ export default function Sidebar({
       title: 'Opiniones',
       icon: '⭐',
       href: '/admin/opinions',
-      show: true,
+      show: user.role !== 'super_admin', // Ocultar para super_admin
       description: 'Gestionar reseñas'
     },
     {
@@ -91,21 +91,21 @@ export default function Sidebar({
       title: 'Configuración',
       icon: '⚙️',
       href: '/admin/settings',
-      show: true,
+      show: user.role !== 'super_admin', // Ocultar para super_admin
       description: 'Ajustes del sistema'
     },
     {
       title: 'Centro de Ayuda',
       icon: '❓',
       href: '/admin/help',
-      show: true,
+      show: user.role !== 'super_admin', // Ocultar para super_admin
       description: 'Documentación y soporte'
     },
     {
       title: 'Contacto',
       icon: '📞',
       href: '/admin/contact',
-      show: true,
+      show: user.role !== 'super_admin', // Ocultar para super_admin
       description: 'Contactar soporte'
     }
   ];
