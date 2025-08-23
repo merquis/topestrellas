@@ -35,7 +35,7 @@ El error "Solicitud denegada. Verifica la API key y las restricciones" indica qu
 
 **Para Producción:**
 - HTTP referrers (web sites)
-- Añadir: `admin.topestrellas.com/*`, `*.tuvaloracion.com/*`
+- Añadir: `panel.topestrellas.com/*`, `*.tuvaloracion.com/*`
 
 ### 4. Configurar Variables de Entorno
 

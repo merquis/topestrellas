@@ -1,5 +1,5 @@
 /**
- * Script de verificación para la migración de admin.tuvaloracion.com a admin.topestrellas.com
+ * Script de verificación para la migración de admin.topestrellas.com a panel.topestrellas.com
  * Ejecutar con: node scripts/verify-admin-migration.js
  */
 
@@ -7,8 +7,8 @@ const https = require('https');
 const http = require('http');
 
 const domains = [
-  'admin.topestrellas.com',
-  'admin.tuvaloracion.com'
+  'panel.topestrellas.com',
+  'admin.topestrellas.com' // dominio antiguo para verificar redirección
 ];
 
 const colors = {

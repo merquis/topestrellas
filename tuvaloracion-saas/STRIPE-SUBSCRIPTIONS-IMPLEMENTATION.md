@@ -72,7 +72,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 MONGODB_URI=mongodb://...
 
 # App
-NEXT_PUBLIC_APP_URL=https://admin.topestrellas.com
+NEXT_PUBLIC_APP_URL=https://panel.topestrellas.com
 ```
 
 ### 2. Configuración en Stripe Dashboard

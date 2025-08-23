@@ -23,12 +23,12 @@ export function middleware(request: NextRequest) {
   
   // Obtener el dominio principal de las variables de entorno
   const mainDomain = process.env.APP_DOMAIN || 'tuvaloracion.com'
-  const adminDomain = process.env.ADMIN_DOMAIN || 'admin.topestrellas.com'
+  const adminDomain = process.env.ADMIN_DOMAIN || 'panel.topestrellas.com'
   
   // Si es el dominio de admin, aplicar verificación de seguridad
   if (hostname === adminDomain || 
-      hostname === 'admin.topestrellas.com' ||
-      hostname.startsWith('admin.topestrellas.')) {
+      hostname === 'panel.topestrellas.com' ||
+      hostname.startsWith('panel.topestrellas.')) {
     
     // Obtener el token de autenticación
     const token = request.cookies.get('auth-token')?.value

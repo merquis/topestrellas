@@ -213,7 +213,7 @@ export async function PUT(
           success: true,
           message: 'Negocio actualizado exitosamente',
           firstTimeSetup: true, // Señal especial para el frontend
-          redirectUrl: 'https://admin.topestrellas.com/admin'
+          redirectUrl: 'https://panel.topestrellas.com/admin'
         });
       } catch (error) {
         console.error('Error actualizando usuario:', error);
