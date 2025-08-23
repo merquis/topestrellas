@@ -30,7 +30,105 @@ export default function Sidebar({
   // En móvil/tablet, nunca colapsar
   const shouldCollapse = !isMobile && !isTablet && isCollapsed;
 
-  const menuItems = [
+  // Determinar la ruta base según el rol
+  const baseRoute = user.role === 'super_admin' ? '/super' : 
+                    user.role === 'affiliate' ? '/affiliate' : 
+                    '/admin';
+
+  // Menú para Super Admin
+  const superAdminMenu = [
+    {
+      title: 'Dashboard',
+      icon: '📊',
+      href: '/super',
+      show: true,
+      description: 'Métricas del negocio SaaS'
+    },
+    {
+      title: 'Negocios',
+      icon: '🏢',
+      href: '/admin/businesses',
+      show: true,
+      description: 'Gestionar todos los negocios'
+    },
+    {
+      title: 'Usuarios',
+      icon: '👥',
+      href: '/admin/users',
+      show: true,
+      description: 'Administrar usuarios'
+    },
+    {
+      title: 'Afiliados',
+      icon: '🤝',
+      href: '/admin/affiliates',
+      show: true,
+      description: 'Gestionar partners y afiliados'
+    },
+    {
+      title: 'Planes de Suscripción',
+      icon: '🛠️',
+      href: '/admin/subscriptions',
+      show: true,
+      description: 'Configurar planes y precios'
+    },
+    {
+      title: 'Analytics',
+      icon: '📈',
+      href: '/admin/analytics',
+      show: true,
+      description: 'Análisis detallado del negocio'
+    }
+  ];
+
+  // Menú para Afiliados
+  const affiliateMenu = [
+    {
+      title: 'Dashboard',
+      icon: '📊',
+      href: '/affiliate',
+      show: true,
+      description: 'Vista general de afiliado'
+    },
+    {
+      title: 'Mis Referidos',
+      icon: '👥',
+      href: '/affiliate/referrals',
+      show: true,
+      description: 'Clientes que has referido'
+    },
+    {
+      title: 'Comisiones',
+      icon: '💰',
+      href: '/affiliate/commissions',
+      show: true,
+      description: 'Historial de comisiones'
+    },
+    {
+      title: 'Estadísticas',
+      icon: '📈',
+      href: '/affiliate/stats',
+      show: true,
+      description: 'Análisis de rendimiento'
+    },
+    {
+      title: 'Materiales',
+      icon: '📦',
+      href: '/affiliate/materials',
+      show: true,
+      description: 'Recursos de marketing'
+    },
+    {
+      title: 'Mi Perfil',
+      icon: '👤',
+      href: '/affiliate/profile',
+      show: true,
+      description: 'Configuración de cuenta'
+    }
+  ];
+
+  // Menú para Admin normal
+  const adminMenu = [
     {
       title: 'Dashboard',
       icon: '📊',
@@ -39,52 +137,31 @@ export default function Sidebar({
       description: 'Vista general'
     },
     {
-      title: 'Negocios',
-      icon: '🏢',
-      href: '/admin/businesses',
-      show: user.role === 'super_admin',
-      description: 'Gestionar todos los negocios'
-    },
-    {
-      title: 'Usuarios',
-      icon: '👥',
-      href: '/admin/users',
-      show: user.role === 'super_admin',
-      description: 'Administrar usuarios'
-    },
-    {
-      title: 'Afiliados',
-      icon: '🤝',
-      href: '/admin/affiliates',
-      show: user.role === 'super_admin',
-      description: 'Gestionar partners y afiliados'
-    },
-    {
       title: 'Mis Negocios',
       icon: '🏪',
       href: '/admin/my-business',
-      show: user.role === 'admin',
+      show: true,
       description: 'Gestionar mis negocios'
     },
     {
-      title: user.role === 'super_admin' ? 'Planes de Suscripción' : 'Mis Suscripciones',
-      icon: user.role === 'super_admin' ? '🛠️' : '💳',
+      title: 'Mis Suscripciones',
+      icon: '💳',
       href: '/admin/subscriptions',
-      show: user.role === 'admin' || user.role === 'super_admin',
-      description: user.role === 'super_admin' ? 'Configurar planes' : 'Ver mis suscripciones'
+      show: true,
+      description: 'Ver mis suscripciones'
     },
     {
       title: 'Mis Facturas',
       icon: '📄',
       href: '/admin/invoices',
-      show: user.role === 'admin',
+      show: true,
       description: 'Historial de facturas'
     },
     {
       title: 'Opiniones',
       icon: '⭐',
       href: '/admin/opinions',
-      show: user.role !== 'super_admin', // Ocultar para super_admin
+      show: true,
       description: 'Gestionar reseñas'
     },
     {
@@ -98,24 +175,29 @@ export default function Sidebar({
       title: 'Configuración',
       icon: '⚙️',
       href: '/admin/settings',
-      show: user.role !== 'super_admin', // Ocultar para super_admin
+      show: true,
       description: 'Ajustes del sistema'
     },
     {
       title: 'Centro de Ayuda',
       icon: '❓',
       href: '/admin/help',
-      show: user.role !== 'super_admin', // Ocultar para super_admin
+      show: true,
       description: 'Documentación y soporte'
     },
     {
       title: 'Contacto',
       icon: '📞',
       href: '/admin/contact',
-      show: user.role !== 'super_admin', // Ocultar para super_admin
+      show: true,
       description: 'Contactar soporte'
     }
   ];
+
+  // Seleccionar el menú según el rol
+  const menuItems = user.role === 'super_admin' ? superAdminMenu :
+                   user.role === 'affiliate' ? affiliateMenu :
+                   adminMenu;
 
   const isActive = (href: string) => pathname === href;
 
