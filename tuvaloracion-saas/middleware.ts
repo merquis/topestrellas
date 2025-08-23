@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Función para decodificar el JWT (sin verificar firma, solo para obtener payload)
+// Función para decodificar el token Base64 (no es JWT, es un objeto JSON en base64)
 function decodeToken(token: string) {
   try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString('utf-8')
-    )
+    // El token es simplemente un objeto JSON codificado en base64
+    const decoded = Buffer.from(token, 'base64').toString('utf-8')
+    const payload = JSON.parse(decoded)
+    console.log('🔍 Token decodificado:', payload)
     return payload
   } catch (error) {
+    console.error('❌ Error decodificando token:', error)
     return null
   }
 }
@@ -34,7 +33,7 @@ export function middleware(request: NextRequest) {
     const token = request.cookies.get('auth-token')?.value
     
     // Rutas públicas (no requieren autenticación)
-    const publicPaths = ['/login', '/registro', '/admin']
+    const publicPaths = ['/login', '/registro']
     const isPublicPath = publicPaths.includes(pathname)
     
     // Rutas que requieren autenticación
@@ -49,8 +48,8 @@ export function middleware(request: NextRequest) {
     // Si es una ruta protegida
     if (isProtectedPath) {
       
-      // Si no hay token y no es la página de login, redireccionar
-      if (!token && pathname !== '/admin') {
+      // Si no hay token, redireccionar a login
+      if (!token) {
         console.log(`⚠️ Intento de acceso sin autenticación a: ${pathname}`)
         return NextResponse.redirect(new URL('/login', request.url))
       }
