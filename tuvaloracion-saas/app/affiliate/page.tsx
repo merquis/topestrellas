@@ -32,13 +32,11 @@ export default function AffiliateDashboard() {
       return;
     }
     
-    // Solo afiliados pueden acceder
+    // Solo afiliados pueden acceder - SIN EXCEPCIONES
     if (authUser.role !== 'affiliate') {
-      // Por ahora permitimos super_admin para testing
-      if (authUser.role !== 'super_admin') {
-        router.push('/admin');
-        return;
-      }
+      console.error(`🚫 Acceso denegado a panel afiliados: ${authUser.email} (rol: ${authUser.role})`);
+      router.push('/admin');
+      return;
     }
     
     setUser(authUser);

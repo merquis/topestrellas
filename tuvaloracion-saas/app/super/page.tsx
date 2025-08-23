@@ -29,8 +29,9 @@ export default function SuperAdminDashboard() {
       return;
     }
     
-    // Solo super_admin puede acceder
+    // Solo super_admin puede acceder - VERIFICACIÓN ESTRICTA
     if (authUser.role !== 'super_admin') {
+      console.error(`🚫 Acceso denegado a panel super admin: ${authUser.email} (rol: ${authUser.role})`);
       router.push('/admin');
       return;
     }
