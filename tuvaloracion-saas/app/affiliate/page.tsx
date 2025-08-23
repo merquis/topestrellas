@@ -28,14 +28,14 @@ export default function AffiliateDashboard() {
   useEffect(() => {
     const authUser = checkAuth();
     if (!authUser) {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     
     // Solo afiliados pueden acceder - SIN EXCEPCIONES
     if (authUser.role !== 'affiliate') {
       console.error(`🚫 Acceso denegado a panel afiliados: ${authUser.email} (rol: ${authUser.role})`);
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     

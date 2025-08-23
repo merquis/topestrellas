@@ -15,13 +15,13 @@ export default function AffiliateCommissionsPage() {
   useEffect(() => {
     const authUser = checkAuth();
     if (!authUser) {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     
     // Solo afiliados pueden acceder
     if (authUser.role !== 'affiliate') {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     

@@ -14,13 +14,13 @@ export default function SuperAnalyticsPage() {
   useEffect(() => {
     const authUser = checkAuth();
     if (!authUser) {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     
     // Solo super_admin puede acceder
     if (authUser.role !== 'super_admin') {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     

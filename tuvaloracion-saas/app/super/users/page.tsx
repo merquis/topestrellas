@@ -56,7 +56,7 @@ export default function SuperUsersPage() {
   useEffect(() => {
     const authUser = checkAuth();
     if (!authUser || authUser.role !== 'super_admin') {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     setUser(authUser);

@@ -134,13 +134,13 @@ export default function SuperSubscriptionsPage() {
     const authUser = checkAuth();
     console.log('Usuario autenticado:', authUser);
     if (!authUser) {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     
     // Solo super_admin puede acceder a esta página
     if (authUser.role !== 'super_admin') {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     

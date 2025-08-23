@@ -25,14 +25,14 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     const authUser = checkAuth();
     if (!authUser) {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     
     // Solo super_admin puede acceder - VERIFICACIÓN ESTRICTA
     if (authUser.role !== 'super_admin') {
       console.error(`🚫 Acceso denegado a panel super admin: ${authUser.email} (rol: ${authUser.role})`);
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     
