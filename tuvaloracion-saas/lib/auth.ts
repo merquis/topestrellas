@@ -3,8 +3,9 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: 'super_admin' | 'admin';
+  role: 'super_admin' | 'admin' | 'affiliate';
   businessId?: string;
+  affiliateCode?: string; // Para afiliados
 }
 
 // Autenticación usando API

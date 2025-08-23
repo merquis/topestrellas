@@ -313,7 +313,9 @@ export default function Sidebar({
               <div className="flex-1">
                 <p className="font-medium text-sm text-white">{user.name}</p>
                 <p className="text-xs text-gray-400">
-                  {user.role === 'super_admin' ? '👑 Super Admin' : '🔧 Administrador'}
+                  {user.role === 'super_admin' ? '👑 Super Admin' : 
+                   user.role === 'affiliate' ? '🤝 Afiliado' : 
+                   '🔧 Administrador'}
                 </p>
               </div>
             )}
