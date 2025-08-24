@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { ObjectId } from 'mongodb';
-import clientPromise, { getDatabase } from '@/lib/mongodb';
+import getMongoClientPromise, { getDatabase } from '@/lib/mongodb';
 import { verifyAuth } from '@/lib/auth';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+// Inicializar Stripe solo si la clave está disponible
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeKey ? new Stripe(stripeKey, {
   apiVersion: '2025-07-30.basil',
-});
+}) : null;
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +37,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!dbUser) {
-      const client = await clientPromise;
+      const client = await getMongoClientPromise();
       const fallbackDb = client.db('topestrellas');
       const foundInFallback = await fallbackDb.collection('users').findOne({ email: user.email });
       if (foundInFallback) {
@@ -150,6 +152,14 @@ export async function GET(request: NextRequest) {
         gte: Math.floor(startOfYear.getTime() / 1000),
         lte: Math.floor(endOfYear.getTime() / 1000)
       };
+    }
+
+    // Verificar que Stripe esté configurado
+    if (!stripe) {
+      return NextResponse.json({ 
+        error: 'Stripe no está configurado',
+        details: 'La configuración de pagos no está disponible'
+      }, { status: 500 });
     }
 
     // Obtener facturas de Stripe filtradas por suscripción específica
@@ -270,7 +280,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!dbUser) {
-      const client = await clientPromise;
+      const client = await getMongoClientPromise();
       const fallbackDb = client.db('topestrellas');
       const foundInFallback = await fallbackDb.collection('users').findOne({ email: user.email });
       if (foundInFallback) {
@@ -318,6 +328,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No se encontró información de facturación' }, { status: 404 });
     }
 
+    // Verificar que Stripe esté configurado
+    if (!stripe) {
+      return NextResponse.json({ 
+        error: 'Stripe no está configurado',
+        details: 'La configuración de pagos no está disponible'
+      }, { status: 500 });
+    }
+
     // Obtener la factura de Stripe
     const invoice = await stripe.invoices.retrieve(invoiceId);
 
@@ -339,7 +357,7 @@ export async function POST(request: NextRequest) {
         // Si la factura está abierta, intentar pagarla
         if (invoice.status === 'open') {
           try {
-            const paidInvoice = await stripe.invoices.pay(invoiceId);
+            const paidInvoice = await stripe!.invoices.pay(invoiceId);
             return NextResponse.json({
               success: true,
               invoice: paidInvoice,
@@ -360,7 +378,7 @@ export async function POST(request: NextRequest) {
 
       case 'send':
         // Enviar factura por email
-        await stripe.invoices.sendInvoice(invoiceId);
+        await stripe!.invoices.sendInvoice(invoiceId);
         return NextResponse.json({
           success: true,
           message: 'Factura enviada por email'
