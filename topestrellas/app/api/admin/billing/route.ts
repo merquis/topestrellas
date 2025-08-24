@@ -3,9 +3,11 @@ import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+// Inicializar Stripe solo si la clave está disponible
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeKey ? new Stripe(stripeKey, {
   apiVersion: '2025-07-30.basil',
-});
+}) : null;
 
 // PUT - Actualizar datos de facturación después de validar el pago
 export async function PUT(request: Request) {
@@ -48,7 +50,7 @@ export async function PUT(request: Request) {
     }
 
     // Actualizar cliente en Stripe si existe
-    if (business.subscription?.stripeCustomerId) {
+    if (business.subscription?.stripeCustomerId && stripe) {
       try {
         // Actualizar datos del cliente en Stripe
         await stripe.customers.update(business.subscription.stripeCustomerId, {
@@ -71,7 +73,7 @@ export async function PUT(request: Request) {
         });
 
         // Gestionar tax_id
-        if (billingInfo.taxId) {
+        if (billingInfo.taxId && stripe) {
           // Obtener tax_ids existentes
           const existingTaxIds = await stripe.customers.listTaxIds(
             business.subscription.stripeCustomerId
@@ -79,14 +81,14 @@ export async function PUT(request: Request) {
           
           // Eliminar tax_ids antiguos
           for (const taxId of existingTaxIds.data) {
-            await stripe.customers.deleteTaxId(
+            await stripe!.customers.deleteTaxId(
               business.subscription.stripeCustomerId,
               taxId.id
             );
           }
           
           // Añadir nuevo tax_id
-          const newTaxId = await stripe.customers.createTaxId(
+          const newTaxId = await stripe!.customers.createTaxId(
             business.subscription.stripeCustomerId,
             {
               type: 'es_cif',

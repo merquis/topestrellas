@@ -3,9 +3,10 @@ import { getDatabase } from './mongodb';
 import { ObjectId } from 'mongodb';
 
 // Inicializar Stripe con la versión de API correcta
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeKey ? new Stripe(stripeKey, {
   apiVersion: '2025-07-30.basil',
-});
+}) : null;
 
 // Tipos para los planes
 export interface SubscriptionPlan {
@@ -77,6 +78,11 @@ export async function syncPlanToStripe(plan: SubscriptionPlan): Promise<{
       productId: 'local_trial_product',
       priceId: 'local_trial_price',
     };
+  }
+
+  if (!stripe) {
+    console.error('[syncPlanToStripe] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
   }
 
   try {
@@ -314,6 +320,11 @@ export async function getOrCreateStripeCustomer(
   name?: string,
   billingInfo?: any
 ): Promise<{ customerId: string; taxId: string | null }> {
+  if (!stripe) {
+    console.error('[getOrCreateStripeCustomer] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
+  }
+  
   try {
     let createdTaxId: string | null = null;
     
@@ -435,6 +446,11 @@ export async function createSetupIntentAndReturnClientSecret(
   userName?: string,
   billingInfo?: any
 ): Promise<{ clientSecret: string; customerId: string; taxId: string | null }> {
+  if (!stripe) {
+    console.error('[createSetupIntentAndReturnClientSecret] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
+  }
+  
   try {
     console.log('[createSetupIntentAndReturnClientSecret] Iniciando con:', { userEmail, businessId });
 
@@ -522,6 +538,11 @@ export async function createSubscriptionAndReturnClientSecret(
 export async function confirmSubscription(
   subscriptionId: string
 ): Promise<Stripe.Subscription> {
+  if (!stripe) {
+    console.error('[confirmSubscription] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
+  }
+  
   try {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
       expand: ['latest_invoice.payment_intent'],
@@ -547,6 +568,11 @@ export async function cancelSubscription(
   stripeSubscriptionId: string,
   immediately: boolean = false
 ): Promise<Stripe.Subscription> {
+  if (!stripe) {
+    console.error('[cancelSubscription] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
+  }
+  
   try {
     if (immediately) {
       // Cancelar inmediatamente
@@ -570,6 +596,11 @@ export async function pauseSubscription(
   stripeSubscriptionId: string,
   resumeAt?: Date
 ): Promise<Stripe.Subscription> {
+  if (!stripe) {
+    console.error('[pauseSubscription] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
+  }
+  
   try {
     return await stripe.subscriptions.update(stripeSubscriptionId, {
       pause_collection: {
@@ -589,6 +620,11 @@ export async function pauseSubscription(
 export async function resumeSubscription(
   stripeSubscriptionId: string
 ): Promise<Stripe.Subscription> {
+  if (!stripe) {
+    console.error('[resumeSubscription] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
+  }
+  
   try {
     return await stripe.subscriptions.update(stripeSubscriptionId, {
       pause_collection: null,
@@ -607,6 +643,11 @@ export async function changePlan(
   newPlanKey: string,
   prorate: boolean = true
 ): Promise<Stripe.Subscription> {
+  if (!stripe) {
+    console.error('[changePlan] Stripe no está configurado');
+    throw new Error('Stripe no está configurado');
+  }
+  
   try {
     // Obtener el nuevo plan de la DB
     const newPlan = await getPlanFromDB(newPlanKey);
@@ -665,6 +706,11 @@ export async function changePlan(
 export async function getSubscriptionStatus(
   stripeSubscriptionId: string
 ): Promise<Stripe.Subscription | null> {
+  if (!stripe) {
+    console.error('[getSubscriptionStatus] Stripe no está configurado');
+    return null;
+  }
+  
   try {
     return await stripe.subscriptions.retrieve(stripeSubscriptionId);
   } catch (error) {
