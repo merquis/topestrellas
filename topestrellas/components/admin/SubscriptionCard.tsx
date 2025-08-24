@@ -1,0 +1,655 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import CancelSubscriptionModal from './CancelSubscriptionModal';
+import ChangePlanModal from './ChangePlanModal';
+import UpdatePaymentMethodModal from '../UpdatePaymentMethodModal';
+
+interface GoogleStats {
+  rating: number;
+  totalReviews: number;
+}
+
+interface Business {
+  _id: string;
+  name: string;
+  subdomain: string;
+  createdAt?: string;
+  businessId?: string;
+  businessName?: string;
+  googlePlaces?: {
+    placeId?: string;
+    rating?: number;
+    totalReviews?: number;
+    photoUrl?: string;
+  };
+  subscription?: {
+    plan: string;
+    status: string;
+    validUntil?: Date;
+    stripeSubscriptionId?: string;
+    trialDays?: number;
+    pauseStatus?: boolean | string;
+  };
+  stripeDetails?: {
+    status: string;
+    currentPeriodEnd?: Date;
+    cancelAtPeriodEnd?: boolean;
+    trialEnd?: Date;
+  };
+  stats?: {
+    googleRating?: number;
+    googleReviews?: number;
+    createdAt?: string;
+  };
+}
+
+interface Plan {
+  _id: string;
+  key: string;
+  name: string;
+  description: string;
+  recurringPrice: number;
+  currency: string;
+  interval: string;
+  features: (string | { name: string; included: boolean })[];
+  icon: string;
+  color: string;
+  popular?: boolean;
+  trialDays?: number;
+}
+
+interface SubscriptionCardProps {
+  business: Business;
+  plans: Plan[];
+  onUpdate: () => void;
+}
+
+export default function SubscriptionCard({ business, plans, onUpdate }: SubscriptionCardProps) {
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showChangePlanModal, setShowChangePlanModal] = useState(false);
+  const [showUpdatePaymentModal, setShowUpdatePaymentModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentStats, setCurrentStats] = useState<GoogleStats | null>(null);
+  const [initialStats, setInitialStats] = useState<GoogleStats | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [businessPhotoUrl, setBusinessPhotoUrl] = useState<string | null>(
+    business.googlePlaces?.photoUrl || null
+  );
+  const bizId = business._id || (business as any).businessId;
+  const bizName = business.name || (business as any).businessName;
+
+  const currentPlan = plans.find(p => p.key === business.subscription?.plan);
+  
+  // Nueva lógica que considera tanto el status principal como el pauseStatus
+  const isPaused = business.subscription?.pauseStatus === true || business.subscription?.pauseStatus === 'paused';
+  const isActive = (business.subscription?.status === 'active' || business.subscription?.status === 'trialing') 
+                   && !isPaused;
+  const isCanceled = business.subscription?.status === 'canceled';
+
+  // Cargar estadísticas iniciales desde stats (valores cuando se creó el negocio)
+  useEffect(() => {
+    // stats contiene los valores INICIALES guardados cuando se creó el negocio
+    // Estos valores NUNCA cambian, son los que había cuando se dio de alta
+    if (business.stats) {
+      setInitialStats({
+        rating: business.stats.googleRating || 0,
+        totalReviews: business.stats.googleReviews || 0
+      });
+    }
+    
+    // googlePlaces contiene los valores ACTUALES de Google
+    // Estos se actualizan cada vez que se llama a la API
+    if (business.googlePlaces) {
+      setCurrentStats({
+        rating: business.googlePlaces.rating || 0,
+        totalReviews: business.googlePlaces.totalReviews || 0
+      });
+    }
+  }, [business]);
+
+  // Obtener estadísticas actuales de Google Places
+  const fetchCurrentStats = async () => {
+    // Verificar que tenemos placeId antes de hacer la petición
+    if (!business.googlePlaces?.placeId) {
+      console.log('No placeId available for business:', bizName);
+      return;
+    }
+    
+    // Verificar que tenemos un businessId válido
+    if (!bizId) {
+      console.error('No businessId available for:', bizName);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      // Obtener el usuario autenticado del localStorage
+      const authData = localStorage.getItem('authUser');
+      if (!authData) {
+        console.error('No auth data available in localStorage');
+        return;
+      }
+      
+      let authUser;
+      try {
+        authUser = JSON.parse(authData);
+      } catch (e) {
+        console.error('Failed to parse auth data:', e);
+        return;
+      }
+      
+      // Crear el token en formato base64 como espera la API
+      const tokenData = {
+        id: authUser.id,
+        email: authUser.email,
+        name: authUser.name,
+        role: authUser.role,
+        businessId: authUser.businessId
+      };
+      const token = btoa(JSON.stringify(tokenData));
+      
+      console.log('Fetching Google stats for:', bizName, 'with placeId:', business.googlePlaces.placeId);
+      
+      const response = await fetch('/api/admin/google/places-stats', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include', // Incluir cookies para autenticación
+        body: JSON.stringify({ 
+          businessId: bizId,
+          placeId: business.googlePlaces.placeId 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentStats({
+          rating: data.rating,
+          totalReviews: data.totalReviews
+        });
+        // Guardar la URL de la foto si viene en la respuesta
+        if (data.photoUrl) {
+          setBusinessPhotoUrl(data.photoUrl);
+        }
+      } else {
+        console.error('Error response from Google stats API:', response.status);
+        if (response.status === 401) {
+          console.error('Authentication error - user may need to login again');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching Google stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePauseClick = async () => {
+    // Solo intentar obtener estadísticas si tenemos placeId
+    if (business.googlePlaces?.placeId) {
+      await fetchCurrentStats();
+    } else {
+      console.log('No Google Places ID configured for:', bizName);
+    }
+    
+    // Debug: Verificar qué valores se están pasando al modal
+    console.log('=== DEBUG MODAL CANCELACIÓN ===');
+    console.log('Business completo:', business);
+    console.log('Stats iniciales (cuando se creó):', {
+      rating: business.stats?.googleRating,
+      totalReviews: business.stats?.googleReviews
+    });
+    console.log('Google Places actuales:', {
+      rating: business.googlePlaces?.rating,
+      totalReviews: business.googlePlaces?.totalReviews
+    });
+    console.log('initialStats state:', initialStats);
+    console.log('currentStats state:', currentStats);
+    console.log('createdAt:', business.createdAt);
+    console.log('===============================');
+    
+    setShowCancelModal(true);
+  };
+
+  const handleResume = async () => {
+    setIsLoading(true);
+    try {
+      // Obtener el usuario autenticado del localStorage
+      const authData = localStorage.getItem('authUser');
+      let authToken = '';
+      
+      if (authData) {
+        try {
+          const authUser = JSON.parse(authData);
+          // Crear el token en formato base64 como espera la API
+          const tokenData = {
+            id: authUser.id,
+            email: authUser.email,
+            name: authUser.name,
+            role: authUser.role,
+            businessId: authUser.businessId
+          };
+          authToken = btoa(JSON.stringify(tokenData));
+        } catch (e) {
+          console.error('Failed to parse auth data:', e);
+        }
+      }
+      
+      const response = await fetch(`/api/admin/subscriptions/${bizId}/resume`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+        },
+        credentials: 'include' // Incluir cookies para autenticación
+      });
+
+      if (response.ok) {
+        onUpdate();
+      } else {
+        console.error('Error response:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => null);
+        if (errorData) {
+          console.error('Error details:', errorData);
+        }
+      }
+    } catch (error) {
+      console.error('Error resuming subscription:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getPlanGradient = (color: string) => {
+    switch (color) {
+      case 'blue':
+        return 'from-blue-500 to-indigo-600';
+      case 'purple':
+        return 'from-purple-500 to-pink-600';
+      case 'green':
+        return 'from-green-500 to-emerald-600';
+      default:
+        return 'from-gray-500 to-gray-600';
+    }
+  };
+
+  const getStatusBadge = () => {
+    if (isActive) {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 flex items-center gap-1">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          Activo
+        </span>
+      );
+    }
+    if (isPaused) {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 flex items-center gap-1">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+          Suspendido
+        </span>
+      );
+    }
+    if (isCanceled) {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 flex items-center gap-1">
+          <span className="text-red-600">✕</span>
+          Cancelado
+        </span>
+      );
+    }
+    return null;
+  };
+
+  const getDaysRemaining = () => {
+    if (!business.subscription?.validUntil) return null;
+    const now = new Date();
+    const validUntil = new Date(business.subscription.validUntil);
+    const diffTime = validUntil.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  // Validar si se puede actualizar el método de pago
+  const canUpdatePaymentMethod = () => {
+    return business.subscription?.stripeSubscriptionId && 
+           ['active', 'paused', 'suspended', 'past_due', 'trialing'].includes(business.subscription.status);
+  };
+
+  return (
+    <>
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+        {/* Header con gradiente */}
+        <div className={`h-3 bg-gradient-to-r ${currentPlan ? getPlanGradient(currentPlan.color) : 'from-gray-400 to-gray-500'}`} />
+        
+        <div className="p-6">
+          {/* Información del negocio */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-gray-900 mb-1">{bizName}</h3>
+              <p className="text-sm text-gray-500 flex items-center gap-2">
+                <span>🌐</span>
+                <a 
+                  href={`https://${business.subdomain}.tuvaloracion.com`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  {business.subdomain}.tuvaloracion.com
+                </a>
+              </p>
+            </div>
+            {getStatusBadge()}
+          </div>
+
+          {/* Plan actual con diseño mejorado */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-4xl">{currentPlan?.icon || '📦'}</span>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider">Plan actual</p>
+                  <p className="font-bold text-xl text-gray-900">{currentPlan?.name || 'Sin plan'}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-gray-900">
+                  {currentPlan?.recurringPrice || 0}€
+                  <span className="text-sm text-gray-500 font-normal">/{currentPlan?.interval === 'year' ? 'año' : 'mes'}</span>
+                </p>
+                {/* Fecha de próxima renovación */}
+                {isActive && (() => {
+                  let renewalDate: Date | null = null;
+                  
+                  // Primero intentar usar los datos de Stripe
+                  if (business.subscription?.status === 'trialing' && business.stripeDetails?.trialEnd) {
+                    // Si está en periodo de prueba, usar trialEnd de Stripe
+                    renewalDate = new Date(business.stripeDetails.trialEnd);
+                  } else if (business.stripeDetails?.currentPeriodEnd) {
+                    // Si está activo, usar currentPeriodEnd de Stripe
+                    renewalDate = new Date(business.stripeDetails.currentPeriodEnd);
+                  } else if (business.subscription?.validUntil) {
+                    // Fallback: usar validUntil si está disponible y es válido
+                    const validUntilDate = new Date(business.subscription.validUntil);
+                    if (validUntilDate.getTime() > new Date('2000-01-01').getTime()) {
+                      renewalDate = validUntilDate;
+                    }
+                  }
+                  
+                  // Si aún no tenemos fecha, calcular manualmente para trials
+                  if (!renewalDate && business.subscription?.status === 'trialing') {
+                    const createdDate = business.createdAt ? new Date(business.createdAt) : new Date();
+                    const trialDays = currentPlan?.trialDays || 7;
+                    renewalDate = new Date(createdDate.getTime() + trialDays * 24 * 60 * 60 * 1000);
+                  }
+                  
+                  if (renewalDate) {
+                    const label = business.subscription?.status === 'trialing' 
+                      ? 'Prueba termina' 
+                      : 'Renueva';
+                    
+                    return (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {label}: {renewalDate.toLocaleDateString('es-ES', { 
+                          day: 'numeric', 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                    );
+                  }
+                  
+                  return null;
+                })()}
+              </div>
+            </div>
+
+            {/* Días restantes si está cancelado */}
+            {isCanceled && getDaysRemaining() !== null && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">⚠️</span>
+                  <p className="text-sm text-red-800">
+                    <strong>Suscripción cancelada.</strong> Tienes {getDaysRemaining()} días restantes.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Características del plan */}
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="w-full text-left"
+            >
+              <div className="flex items-center justify-between py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <span className="font-medium">Ver características del plan</span>
+                <motion.span
+                  animate={{ rotate: showDetails ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  ▼
+                </motion.span>
+              </div>
+            </button>
+
+            <AnimatePresence>
+              {showDetails && (
+                <div className="overflow-hidden">
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                  <div className="pt-3 space-y-2">
+                    {currentPlan?.features.map((feature, index) => {
+                      // Manejar tanto strings como objetos para compatibilidad
+                      const featureName = typeof feature === 'string' ? feature : feature.name;
+                      const isIncluded = typeof feature === 'string' ? true : feature.included;
+                      
+                      return (
+                        <div key={index} className="flex items-start gap-2">
+                          {isIncluded ? (
+                            <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                          <span className={`text-sm ${isIncluded ? 'text-gray-600' : 'text-gray-400 line-through'}`}>
+                            {featureName}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Estadísticas de Google si están disponibles */}
+          {business.googlePlaces?.placeId && (
+            <div className="bg-blue-50 rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                    <span className="text-2xl">⭐</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">Valoración Google</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-gray-900">
+                        {business.googlePlaces.rating || business.stats?.googleRating || 0}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({business.googlePlaces.totalReviews || business.stats?.googleReviews || 0} reseñas)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <a
+                  href={`https://search.google.com/local/writereview?placeid=${business.googlePlaces.placeId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Ver en Google →
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Botones de acción mejorados */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              {isActive && (
+                <>
+                  <button
+                    onClick={() => setShowChangePlanModal(true)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      <span>🔄</span>
+                      Cambiar Plan
+                  </button>
+                  <button
+                    onClick={handlePauseClick}
+                    disabled={isLoading}
+                    className="border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      {isLoading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-700" />
+                      ) : (
+                        <>
+                          <span>⏸️</span>
+                          Suspender Suscripción
+                        </>
+                      )}
+                  </button>
+                </>
+              )}
+
+              {(isPaused || isCanceled) && (
+                <>
+                  <button
+                    onClick={handleResume}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      {isLoading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                      ) : (
+                        <>
+                          <span>▶️</span>
+                          Reanudar Suscripción
+                        </>
+                      )}
+                  </button>
+                  <button
+                    onClick={() => setShowChangePlanModal(true)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                      <span>🚀</span>
+                      Cambiar Plan
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Botón de Método de Pago - Solo si se puede actualizar */}
+            {canUpdatePaymentMethod() && (
+              <button
+                onClick={() => setShowUpdatePaymentModal(true)}
+                className="w-full border-2 border-gray-300 text-gray-700 px-4 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <span>💳</span>
+                Cambiar método de pago
+              </button>
+            )}
+          </div>
+
+          {/* Información adicional */}
+          {business.subscription?.stripeSubscriptionId && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Método de pago:</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-purple-600 font-bold">Stripe</span>
+                  <span className="text-xl">💳</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        </motion.div>
+      </div>
+
+      {/* Modal de cancelación con nombre del negocio */}
+      {showCancelModal && (
+        <CancelSubscriptionModal
+          businessId={bizId}
+          businessName={bizName}
+          businessPhotoUrl={businessPhotoUrl || undefined}
+          initialStats={initialStats || {
+            rating: business.stats?.googleRating || 0,
+            totalReviews: business.stats?.googleReviews || 0
+          }}
+          currentStats={currentStats || {
+            rating: business.googlePlaces?.rating || 0,
+            totalReviews: business.googlePlaces?.totalReviews || 0
+          }}
+          createdAt={business.createdAt}
+          onClose={() => setShowCancelModal(false)}
+          onConfirm={() => {
+            setShowCancelModal(false);
+            onUpdate();
+          }}
+        />
+      )}
+
+      {/* Modal de cambio de plan */}
+      {showChangePlanModal && (
+        <ChangePlanModal
+          business={business}
+          currentPlan={currentPlan}
+          plans={plans}
+          onClose={() => setShowChangePlanModal(false)}
+          onSuccess={() => {
+            setShowChangePlanModal(false);
+            onUpdate();
+          }}
+        />
+      )}
+
+      {/* Modal de actualización de método de pago */}
+      {showUpdatePaymentModal && (
+        <UpdatePaymentMethodModal
+          businessId={bizId}
+          businessName={bizName}
+          onClose={() => setShowUpdatePaymentModal(false)}
+          onSuccess={() => {
+            setShowUpdatePaymentModal(false);
+            onUpdate();
+          }}
+        />
+      )}
+    </>
+  );
+}

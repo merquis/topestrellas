@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: topestrellas-app
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - ADMIN_DOMAIN=${ADMIN_DOMAIN}
+      - APP_DOMAIN=${APP_DOMAIN}
+    networks:
+      - topestrellas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (r) => {if (r.statusCode !== 200) throw new Error()})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MongoDB opcional - solo si quieres ejecutar MongoDB localmente
+  # Si usas MongoDB Atlas o un servidor remoto, puedes comentar esta sección
+  mongodb:
+    image: mongo:7
+    container_name: topestrellas-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-password}
+      - MONGO_INITDB_DATABASE=topestrellas
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - topestrellas-network
+    restart: unless-stopped
+
+  # Nginx para proxy reverso y SSL (opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: topestrellas-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - app
+    networks:
+      - topestrellas-network
+    restart: unless-stopped
+
+volumes:
+  mongodb-data:
+    driver: local
+
+networks:
+  topestrellas-network:
+    driver: bridge
