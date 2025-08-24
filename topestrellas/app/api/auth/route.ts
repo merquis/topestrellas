@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import getMongoClientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     
     

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import getMongoClientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { translatePrizesWithAI } from '@/lib/ai-translation';
 
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   const resolvedParams = await params;
   try {
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     
     let objectId;
@@ -49,7 +49,7 @@ export async function PUT(
 ) {
   const resolvedParams = await params;
   try {
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     const data = await request.json();
     
@@ -241,7 +241,7 @@ export async function PATCH(
 ) {
   const resolvedParams = await params;
   try {
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     const data = await request.json();
     
