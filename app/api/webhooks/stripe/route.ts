@@ -193,19 +193,69 @@ export async function POST(request: Request) {
 
         const plan = planKey ? await getPlanFromDB(planKey) : null;
 
+        const isPaused = !!(subscription as any).pause_collection;
+        const mappedStatus = isPaused ? 'suspended' : (stripeStatusToOurStatus[subscription.status] || 'active');
+
         await updateBusinessSubscription(businessId, {
           plan: planKey || 'unknown',
-          status: stripeStatusToOurStatus[subscription.status] || 'active',
+          status: mappedStatus,
           stripeSubscriptionId: subscription.id,
           stripePriceId: subscription.items.data[0]?.price.id,
           validUntil: new Date((subscription as any).current_period_end * 1000),
-          active: subscription.status === 'active' || subscription.status === 'trialing',
+          active: ((subscription.status === 'active' || subscription.status === 'trialing') && !isPaused),
           ...(plan?.color ? { color: plan.color } : {})
         });
 
-        // Si la suscripción está activa, resetear fallos de pago
-        if (subscription.status === 'active') {
-          await resetPaymentFailures(businessId);
+        // Manejar pausa/reanudación también desde 'updated' (Stripe deja status='active' con pause_collection)
+        if (isPaused) {
+          await db.collection('businesses').updateOne(
+            { _id: new ObjectId(businessId) },
+            {
+              $set: {
+                'subscription.pauseStatus': true,
+                'subscription.pausedAt': new Date(),
+                updatedAt: new Date(),
+              },
+            }
+          );
+
+          // Registrar evento de pausa si viene por 'updated'
+          await db.collection('activity_logs').insertOne({
+            businessId,
+            type: 'subscription_paused',
+            description: 'Suscripción pausada (customer.subscription.updated)',
+            metadata: {
+              subscriptionId: subscription.id,
+            },
+            createdAt: new Date(),
+          });
+        } else {
+          // Reanudada o sin pausa
+          await db.collection('businesses').updateOne(
+            { _id: new ObjectId(businessId) },
+            {
+              $set: {
+                'subscription.pauseStatus': false,
+                'subscription.resumedAt': new Date(),
+                updatedAt: new Date(),
+              },
+            }
+          );
+
+          if (subscription.status === 'active') {
+            await resetPaymentFailures(businessId);
+          }
+
+          // Registrar evento de reanudación si viene por 'updated'
+          await db.collection('activity_logs').insertOne({
+            businessId,
+            type: 'subscription_resumed',
+            description: 'Suscripción reanudada (customer.subscription.updated)',
+            metadata: {
+              subscriptionId: subscription.id,
+            },
+            createdAt: new Date(),
+          });
         }
 
         // También actualizar el usuario asociado al negocio
