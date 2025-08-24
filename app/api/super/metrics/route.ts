@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // 2) Negocios totales y activos
     const totalBusinesses = await db.collection('businesses').countDocuments({});
-    const activeBusinesses = await db.collection('businesses').countDocuments({ active: true });
+    const activeBusinesses = await db.collection('businesses').countDocuments({ active: true, 'subscription.pauseStatus': { $ne: true } });
 
     // 3) Nuevos este mes
     const newThisMonth = await db.collection('businesses').countDocuments({
