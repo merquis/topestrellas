@@ -9,15 +9,38 @@ import {
   useElements,
 } from '@stripe/react-stripe-js';
 
-// IMPORTANTE: La clave pública debe estar disponible en el cliente
-// Asegúrate de que NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY esté configurada en Easypanel
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
+/**
+ * Carga Stripe en runtime.
+ * Si la clave pública no está incrustada en el build (NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
+ * intenta obtenerla desde un endpoint público del servidor.
+ */
+let stripePromiseCache: Promise<any> | null = null;
 
-// Debug: Verificar si la clave está configurada
-if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-  console.error('⚠️ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY no está configurada. El formulario de pago no funcionará.');
+function getStripePromise(): Promise<any> {
+  if (stripePromiseCache) return stripePromiseCache;
+
+  const buildTimeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  if (buildTimeKey && buildTimeKey.startsWith('pk_')) {
+    stripePromiseCache = loadStripe(buildTimeKey);
+    return stripePromiseCache;
+  }
+
+  // Fallback a runtime para entornos donde la variable pública no se inyectó en el build
+  stripePromiseCache = fetch('/api/public/stripe-publishable-key')
+    .then((res) => res.json())
+    .then((data) => {
+      if (data?.publishableKey && typeof data.publishableKey === 'string') {
+        return loadStripe(data.publishableKey);
+      }
+      console.error('Stripe publishable key no configurada');
+      return null;
+    })
+    .catch((err) => {
+      console.error('No se pudo obtener la clave pública de Stripe en runtime:', err);
+      return null;
+    });
+
+  return stripePromiseCache;
 }
 
 interface PaymentFormProps {
@@ -422,7 +445,20 @@ export default function StripePaymentForm({ clientSecret, planData, ...props }: 
     appearance,
   };
 
-  if (!clientSecret || !stripePromise) {
+  // Cargar Stripe en runtime (con fallback) y mantener una promesa estable para &lt;Elements&gt;
+  const [runtimeStripePromise, setRuntimeStripePromise] = useState<Promise<any> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getStripePromise().then((p) => {
+      if (active) setRuntimeStripePromise(p);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!clientSecret || !runtimeStripePromise) {
     return (
       <div className="w-full max-w-2xl mx-auto">
         <div className="bg-white p-8 rounded-2xl shadow-xl flex items-center justify-center py-12">
@@ -433,7 +469,7 @@ export default function StripePaymentForm({ clientSecret, planData, ...props }: 
   }
 
   return (
-    <Elements stripe={stripePromise} options={options}>
+    <Elements stripe={runtimeStripePromise as any} options={options}>
       <CheckoutForm {...props} clientSecret={clientSecret} planData={planData} />
     </Elements>
   );

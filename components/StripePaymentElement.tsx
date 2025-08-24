@@ -1,5 +1,6 @@
 'use client';
 
+declare const process: any;
 import React, { useState, useEffect } from 'react';
 import {
   Elements,
@@ -11,8 +12,26 @@ import {
 import { loadStripe } from '@stripe/stripe-js';
 import { Loader2, CreditCard, Shield, CheckCircle } from 'lucide-react';
 
-// Cargar Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+/**
+ * Carga Stripe en runtime con fallback si la clave pública no está embebida.
+ */
+let stripePromiseCache: Promise<any> | null = null;
+function getStripePromise(): Promise<any> {
+  if (stripePromiseCache) return stripePromiseCache;
+
+  const buildTimeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  if (buildTimeKey && buildTimeKey.startsWith('pk_')) {
+    stripePromiseCache = loadStripe(buildTimeKey);
+  return stripePromiseCache as Promise<any>;
+  }
+
+  stripePromiseCache = fetch('/api/public/stripe-publishable-key')
+    .then((res) => res.json())
+    .then((data) => (data?.publishableKey ? loadStripe(data.publishableKey) : null))
+    .catch(() => null);
+
+  return stripePromiseCache;
+}
 
 interface PaymentFormProps {
   clientSecret: string;
@@ -321,8 +340,23 @@ export default function StripePaymentElement({
     loader: 'auto' as const,
   };
 
+  const [runtimeStripePromise, setRuntimeStripePromise] = useState<Promise<any> | null>(null);
+  useEffect(() => {
+    let active = true;
+    getStripePromise().then((p) => {
+      if (active) setRuntimeStripePromise(p);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!runtimeStripePromise) {
+    return null;
+  }
+
   return (
-    <Elements stripe={stripePromise} options={options}>
+    <Elements stripe={runtimeStripePromise as any} options={options}>
       <PaymentForm
         clientSecret={clientSecret}
         subscriptionId={subscriptionId}

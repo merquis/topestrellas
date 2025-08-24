@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+declare const process: any;
+import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
@@ -11,15 +12,25 @@ import {
   useElements
 } from '@stripe/react-stripe-js';
 
-// IMPORTANTE: La clave pública debe estar disponible en el cliente
-// Asegúrate de que NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY esté configurada en Easypanel
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
+/**
+ * Carga Stripe en runtime con fallback si la clave pública no está embebida.
+ */
+let stripePromiseCache: Promise<any> | null = null;
+function getStripePromise(): Promise<any> {
+  if (stripePromiseCache) return stripePromiseCache;
 
-// Debug: Verificar si la clave está configurada
-if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-  console.error('⚠️ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY no está configurada. El formulario de actualización de pago no funcionará.');
+  const buildTimeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  if (buildTimeKey && buildTimeKey.startsWith('pk_')) {
+    stripePromiseCache = loadStripe(buildTimeKey);
+    return stripePromiseCache;
+  }
+
+  stripePromiseCache = fetch('/api/public/stripe-publishable-key')
+    .then((res) => res.json())
+    .then((data) => (data?.publishableKey ? loadStripe(data.publishableKey) : null))
+    .catch(() => null);
+
+  return stripePromiseCache;
 }
 
 interface UpdatePaymentMethodFormProps {
@@ -374,6 +385,18 @@ export default function UpdatePaymentMethodModal({
   const [isLoading, setIsLoading] = useState(true); // Empezar cargando
   const [error, setError] = useState<string | null>(null);
 
+  // Cargar Stripe en runtime
+  const [runtimeStripePromise, setRuntimeStripePromise] = useState<Promise<any> | null>(null);
+  useEffect(() => {
+    let active = true;
+    getStripePromise().then((p) => {
+      if (active) setRuntimeStripePromise(p);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // Crear SetupIntent automáticamente al abrir el modal
   const createSetupIntent = async () => {
     try {
@@ -468,9 +491,9 @@ export default function UpdatePaymentMethodModal({
           </div>
         )}
 
-        {clientSecret && (
+        {clientSecret && runtimeStripePromise && (
           <Elements 
-            stripe={stripePromise} 
+            stripe={runtimeStripePromise as any} 
             options={{ 
               clientSecret,
               appearance: {
