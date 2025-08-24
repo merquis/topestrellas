@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
-import Stripe from 'stripe';
 import { verifyAuth } from '@/lib/auth';
+import { getStripeOrThrow } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-07-30.basil',
-});
 
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = 'tuvaloracion';
@@ -99,6 +95,7 @@ export async function POST(
     }
 
     // Reanudar la suscripción en Stripe
+    const stripe = getStripeOrThrow();
     const subscription = await stripe.subscriptions.update(
       business.subscription.stripeSubscriptionId,
       {

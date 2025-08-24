@@ -460,15 +460,17 @@ export async function DELETE(request: Request) {
     // Desactivar el precio en Stripe si existe
     if (plan.stripePriceId) {
       try {
-        const Stripe = (await import('stripe')).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-          apiVersion: '2025-07-30.basil',
-        });
+        const { getStripe } = await import('@/lib/stripe');
+        const stripe = getStripe();
         
-        await stripe.prices.update(plan.stripePriceId, { active: false });
-        
-        if (plan.stripeProductId) {
-          await stripe.products.update(plan.stripeProductId, { active: false });
+        if (stripe) {
+          await stripe.prices.update(plan.stripePriceId, { active: false });
+          
+          if (plan.stripeProductId) {
+            await stripe.products.update(plan.stripeProductId, { active: false });
+          }
+        } else {
+          console.warn('Stripe no está configurado, no se puede desactivar el precio');
         }
       } catch (stripeError) {
         console.error('Error desactivando en Stripe:', stripeError);
