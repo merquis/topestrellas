@@ -5,6 +5,55 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { checkAuth, AuthUser } from '@/lib/auth';
 
+type ActivityItem = {
+  id: string;
+  type: string;
+  severity: 'danger' | 'warning' | 'info' | 'success';
+  createdAt: string;
+  occurredAt: string;
+  business: {
+    id: string;
+    name: string;
+    email: string;
+    subdomain: string;
+  };
+  summary: string;
+  description: string;
+  metadata: any;
+  cta?: { label: string; url: string };
+};
+
+const severityStyles: Record<string, string> = {
+  danger: 'bg-red-50 border-l-4 border-red-500',
+  warning: 'bg-yellow-50 border-l-4 border-yellow-500',
+  info: 'bg-blue-50 border-l-4 border-blue-500',
+  success: 'bg-green-50 border-l-4 border-green-500',
+};
+
+function formatDateTime(dateStr: string) {
+  try {
+    const d = new Date(dateStr);
+    return new Intl.DateTimeFormat('es-ES', {
+      timeZone: 'Atlantic/Canary',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(d);
+  } catch {
+    return dateStr;
+  }
+}
+
+const typeLabels: Record<string, string> = {
+  subscription_paused: 'Cancelaciones',
+  payment_failed: 'Pagos fallidos',
+  subscription_started: 'Nuevas suscripciones',
+  invoice_paid: 'Pagos realizados',
+};
+
 type SuperMetrics = {
   mrr: number;
   totalBusinesses: number;
@@ -32,6 +81,11 @@ export default function SuperAdminDashboard() {
     pendingPayments: 0,
     totalAffiliates: 0
   });
+
+  // Feed de eventos (activity_logs)
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [activityLoading, setActivityLoading] = useState<boolean>(true);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const authUser = checkAuth();
@@ -71,6 +125,36 @@ export default function SuperAdminDashboard() {
       console.error('Error cargando métricas del super admin:', err);
     }
   };
+
+  // Helpers de filtros
+  const toggleType = (t: string) => {
+    setSelectedTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+  };
+  const buildTypesQuery = () => (selectedTypes.length ? `&types=${selectedTypes.join(',')}` : '');
+
+  // Cargar eventos recientes con filtros
+  const loadActivities = async () => {
+    try {
+      setActivityLoading(true);
+      const res = await fetch(`/api/super/recent-activity?limit=12${buildTypesQuery()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        setActivities(data.items || []);
+      } else {
+        setActivities([]);
+      }
+    } catch (e) {
+      console.error('Error cargando eventos recientes:', e);
+      setActivities([]);
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
+  // Refrescar eventos cuando cambie el usuario o los filtros
+  useEffect(() => {
+    if (user) loadActivities();
+  }, [user, selectedTypes]);
 
   if (loading) {
     return (
@@ -183,60 +267,79 @@ export default function SuperAdminDashboard() {
 
         {/* Sección de actividades y acciones */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Eventos de negocio */}
+          {/* Eventos de negocio (dinámico) */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Eventos de Negocio</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Eventos de Negocio</h2>
+              {/* Filtros rápidos */}
+              <div className="flex flex-wrap gap-2">
+                {(['subscription_paused', 'payment_failed', 'subscription_started', 'invoice_paid'] as const).map((t) => {
+                  const active = selectedTypes.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => toggleType(t)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition cursor-pointer ${
+                        active
+                          ? 'bg-blue-600 text-white shadow'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      title={typeLabels[t]}
+                    >
+                      {typeLabels[t]}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setSelectedTypes([])}
+                  className="px-3 py-1.5 rounded-full text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-600 border cursor-pointer"
+                  title="Quitar filtros"
+                >
+                  Todos
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-4">
-              {/* Evento 1 */}
-              <div className="flex items-start gap-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                <span className="text-2xl">💔</span>
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900">
-                    Cancelación: restaurante@ejemplo.com
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Plan Premium (49€/mes) - Motivo: "Precio elevado"
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">Hace 2 horas</p>
+              {activityLoading && (
+                <div className="flex items-center justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-sm text-gray-500">Cargando eventos...</span>
                 </div>
-                <button className="text-red-600 hover:text-red-700 font-medium text-sm cursor-pointer">
-                  Ver detalles
-                </button>
-              </div>
+              )}
 
-              {/* Evento 2 */}
-              <div className="flex items-start gap-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
-                <span className="text-2xl">⚠️</span>
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900">
-                    Pago fallido: bar@ejemplo.com
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    3er intento fallido - Tarjeta expirada
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">Hace 5 horas</p>
+              {!activityLoading && activities.length === 0 && (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-600">No hay eventos para los filtros seleccionados.</p>
                 </div>
-                <button className="text-yellow-600 hover:text-yellow-700 font-medium text-sm cursor-pointer">
-                  Contactar
-                </button>
-              </div>
+              )}
 
-              {/* Evento 3 */}
-              <div className="flex items-start gap-4 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
-                <span className="text-2xl">✅</span>
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900">
-                    Nueva suscripción: cafe@ejemplo.com
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Plan Básico (29€/mes) - Conversión desde trial
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">Hace 1 día</p>
-                </div>
-                <button className="text-green-600 hover:text-green-700 font-medium text-sm cursor-pointer">
-                  Ver perfil
-                </button>
-              </div>
+              {!activityLoading &&
+                activities.map((ev) => (
+                  <div
+                    key={ev.id}
+                    className={`flex items-start gap-4 p-4 rounded-lg ${severityStyles[ev.severity] || 'bg-gray-50 border-l-4 border-gray-300'}`}
+                  >
+                    <div className="text-2xl">
+                      {ev.severity === 'danger' ? '🚨' : ev.severity === 'warning' ? '⚠️' : ev.severity === 'success' ? '✅' : 'ℹ️'}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">{ev.summary}</p>
+                      {ev.description && <p className="text-sm text-gray-600 mt-1">{ev.description}</p>}
+                      <p className="text-xs text-gray-500 mt-2" title={new Date(ev.occurredAt).toISOString()}>
+                        {formatDateTime(ev.occurredAt)}
+                      </p>
+                    </div>
+                    {ev.cta?.url && ev.cta?.label && (
+                      <a
+                        href={ev.cta.url}
+                        className="text-blue-600 hover:text-blue-700 font-medium text-sm cursor-pointer"
+                      >
+                        {ev.cta.label}
+                      </a>
+                    )}
+                  </div>
+                ))}
             </div>
           </div>
 
