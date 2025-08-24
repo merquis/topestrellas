@@ -137,6 +137,33 @@ export async function PUT(
       }
     }
     
+    // Normalizar sorteos (array con frecuencia)
+    let raffleArray: any[] = [];
+    if (Array.isArray(data.raffles)) {
+      raffleArray = data.raffles.map((r: any) => ({
+        item: r?.item || '',
+        prizeValue: typeof r?.prizeValue === 'number' ? r.prizeValue : (parseFloat(r?.prizeValue) || 0),
+        frequency: (r?.frequency === 'weekly' || r?.frequency === 'monthly') ? r.frequency : 'daily'
+      })).filter((r: any) => r.item && r.item.trim() !== '');
+    } else if (data.raffleItem || data.raffleValue) {
+      raffleArray = [{
+        item: data.raffleItem || '',
+        prizeValue: typeof data.raffleValue === 'number' ? data.raffleValue : (parseFloat(data.raffleValue) || 0),
+        frequency: 'daily'
+      }].filter((r: any) => r.item && r.item.trim() !== '');
+    } else if (currentBusiness.config?.raffle) {
+      const raw = currentBusiness.config.raffle;
+      if (Array.isArray(raw)) {
+        raffleArray = raw;
+      } else if (typeof raw === 'object') {
+        raffleArray = [{
+          item: raw.item || '',
+          prizeValue: typeof raw.prizeValue === 'number' ? raw.prizeValue : (parseFloat(raw.prizeValue) || 0),
+          frequency: (raw.frequency === 'weekly' || raw.frequency === 'monthly') ? raw.frequency : 'daily'
+        }].filter((r: any) => r.item && r.item.trim() !== '');
+      }
+    }
+
     // Preparar datos para actualizar según permisos
     const updateData: any = {
       name: data.name,
@@ -157,15 +184,7 @@ export async function PUT(
         },
         theme: {
         },
-        raffle: {
-          item: data.raffleItem || currentBusiness.config?.raffle?.item || '',
-          prizeValue:
-            (typeof data.raffleValue === 'number'
-              ? data.raffleValue
-              : (typeof data.raffleValue === 'string' ? parseFloat(data.raffleValue) : 0)) ||
-            currentBusiness.config?.raffle?.prizeValue ||
-            0
-        },
+        raffle: raffleArray,
         prizes: translatedPrizes
       },
       contact: {

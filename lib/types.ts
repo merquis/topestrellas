@@ -49,7 +49,8 @@ export interface Business {
     raffle?: {
       item: string
       prizeValue: number
-    }
+      frequency?: 'daily' | 'weekly' | 'monthly'
+    }[]
     googleReviewUrl?: string
     tripadvisorReviewUrl?: string
     reviewPlatform?: 'google' | 'tripadvisor' | 'alternating'

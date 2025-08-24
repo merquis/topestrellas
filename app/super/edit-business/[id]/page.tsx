@@ -32,8 +32,7 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
     plan: 'trial',
     active: true,
     prizes: Array(8).fill({ name: '', realCost: 0 }),
-    raffleItem: '',
-    raffleValue: 0,
+    raffles: [],
     googleCurrentRating: 0,
     googleTotalReviews: 0,
     tripadvisorCurrentRating: 0,
@@ -109,6 +108,23 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
         });
         setCostInputValues(initialCostValues);
 
+        // Preparar sorteos (compatibilidad: objeto o array)
+        const rawRaffle = business.config?.raffle;
+        let raffles: { item: string; prizeValue: number; frequency: string }[] = [];
+        if (Array.isArray(rawRaffle)) {
+          raffles = rawRaffle.map((r: any) => ({
+            item: r?.item || '',
+            prizeValue: typeof r?.prizeValue === 'number' ? r.prizeValue : parseFloat(r?.prizeValue) || 0,
+            frequency: (r?.frequency === 'weekly' || r?.frequency === 'monthly') ? r.frequency : 'daily'
+          }));
+        } else if (rawRaffle && typeof rawRaffle === 'object') {
+          raffles = [{
+            item: rawRaffle.item || '',
+            prizeValue: typeof rawRaffle.prizeValue === 'number' ? rawRaffle.prizeValue : parseFloat(rawRaffle.prizeValue) || 0,
+            frequency: rawRaffle.frequency === 'weekly' || rawRaffle.frequency === 'monthly' ? rawRaffle.frequency : 'daily'
+          }];
+        }
+
         setFormData({
           subdomain: business.subdomain,
           name: business.name,
@@ -122,8 +138,7 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
           plan: business.subscription?.plan || 'trial',
           active: business.active !== false,
           prizes: prizes,
-          raffleItem: business.config?.raffle?.item || '',
-          raffleValue: business.config?.raffle?.prizeValue || 0,
+          raffles: raffles,
           googleCurrentRating: business.config?.googleStats?.currentRating || 0,
           googleTotalReviews: business.config?.googleStats?.totalReviews || 0,
           tripadvisorCurrentRating: business.config?.tripadvisorStats?.currentRating || 0,
@@ -252,6 +267,33 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
     
     const numericValue = parseFloat(normalizedValue) || 0;
     handlePrizeChange(index, 'realCost', numericValue);
+  };
+
+  // Gestión de sorteos (dinámicos)
+  const handleRaffleChange = (index: number, field: 'item' | 'prizeValue' | 'frequency', value: string | number) => {
+    const list = [...(formData.raffles || [])];
+    if (!list[index]) return;
+    if (field === 'prizeValue' && typeof value === 'string') {
+      const n = parseFloat(value);
+      // @ts-ignore
+      list[index][field] = isNaN(n) ? 0 : n;
+    } else {
+      // @ts-ignore
+      list[index][field] = value as any;
+    }
+    setFormData({ ...formData, raffles: list });
+  };
+
+  const addRaffle = () => {
+    const list = [...(formData.raffles || [])];
+    list.push({ item: '', prizeValue: 0, frequency: 'daily' });
+    setFormData({ ...formData, raffles: list });
+  };
+
+  const removeRaffle = (index: number) => {
+    const list = [...(formData.raffles || [])];
+    list.splice(index, 1);
+    setFormData({ ...formData, raffles: list });
   };
 
   // Handler para cuando se selecciona un lugar con autocompletado
@@ -598,40 +640,69 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <h3 className="font-medium text-yellow-900 mb-2">🎟️ Configuración de Sorteos</h3>
                   <p className="text-sm text-yellow-800 mb-2">
-                    Añade un sorteo activo para tus clientes. Esta información puede mostrarse en tu landing y materiales promocionales.
+                    Puedes añadir varios premios y elegir si cada uno se sortea diariamente, semanalmente o mensualmente.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  {(formData.raffles || []).map((r, index) => (
+                    <div key={index} className="p-4 rounded-lg border border-gray-200">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <div className="md:col-span-5">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Premio</label>
+                          <input
+                            type="text"
+                            value={r.item}
+                            onChange={(e) => handleRaffleChange(index, 'item', e.target.value)}
+                            placeholder="Ej: Zapatos"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div className="md:col-span-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Valor (€)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={r.prizeValue ?? 0}
+                            onChange={(e) => handleRaffleChange(index, 'prizeValue', e.target.value)}
+                            placeholder="50"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div className="md:col-span-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Frecuencia</label>
+                          <select
+                            value={r.frequency || 'daily'}
+                            onChange={(e) => handleRaffleChange(index, 'frequency', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          >
+                            <option value="daily">Diario</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly">Mensual</option>
+                          </select>
+                        </div>
+                        <div className="md:col-span-1 flex">
+                          <button
+                            type="button"
+                            onClick={() => removeRaffle(index)}
+                            className="w-full md:w-auto px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100"
+                            title="Eliminar"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Qué se sortea
-                    </label>
-                    <input
-                      type="text"
-                      name="raffleItem"
-                      value={formData.raffleItem}
-                      onChange={handleChange}
-                      placeholder="Ej: Cena para 2 personas"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Valor del premio sorteado (€)
-                    </label>
-                    <input
-                      type="number"
-                      name="raffleValue"
-                      step="0.01"
-                      value={formData.raffleValue}
-                      onChange={handleChange}
-                      placeholder="50"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Usa el valor aproximado del premio para fines informativos.
-                    </p>
+                    <button
+                      type="button"
+                      onClick={addRaffle}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Añadir premio de sorteo
+                    </button>
                   </div>
                 </div>
               </div>
