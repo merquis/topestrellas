@@ -3,6 +3,7 @@ import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getStripe } from '@/lib/stripe';
 import { syncPlanToStripe } from '@/lib/subscriptions';
+import type Stripe from 'stripe';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
