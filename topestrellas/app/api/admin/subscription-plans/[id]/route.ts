@@ -4,10 +4,18 @@ import { ObjectId } from 'mongodb';
 import Stripe from 'stripe';
 import { syncPlanToStripe } from '@/lib/subscriptions';
 
-// Inicializar Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-07-30.basil' as any,
-});
+// Función para obtener la instancia de Stripe de forma lazy
+function getStripe(): Stripe | null {
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  if (!apiKey || apiKey === '') {
+    console.warn('⚠️ STRIPE_SECRET_KEY no está configurada');
+    return null;
+  }
+  
+  return new Stripe(apiKey, {
+    apiVersion: '2025-07-30.basil' as any,
+  });
+}
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -39,6 +47,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     // Si el plan tiene stripeProductId, actualizar también en Stripe
     if (currentPlan.stripeProductId && currentPlan.key !== 'trial') {
+      const stripe = getStripe();
+      if (!stripe) {
+        console.warn('⚠️ Stripe no está configurado, saltando actualización en Stripe');
+        return NextResponse.json({ 
+          success: true, 
+          warning: 'Plan actualizado en la base de datos, pero Stripe no está configurado' 
+        });
+      }
+      
       try {
         console.log(`📝 Actualizando plan en Stripe: ${currentPlan.stripeProductId}`);
         
@@ -128,12 +145,17 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     // Si el plan tiene stripeProductId, archivarlo en Stripe
     if (plan.stripeProductId && plan.key !== 'trial') {
-      try {
-        console.log(`📦 Archivando producto en Stripe: ${plan.stripeProductId}`);
-        
-        // Archivar (desactivar) el producto en Stripe
-        // Nota: No eliminamos, solo archivamos para preservar el historial
-        await stripe.products.update(plan.stripeProductId, {
+      const stripe = getStripe();
+      if (!stripe) {
+        console.warn('⚠️ Stripe no está configurado, saltando archivado en Stripe');
+        // Continuar con la eliminación de la base de datos
+      } else {
+        try {
+          console.log(`📦 Archivando producto en Stripe: ${plan.stripeProductId}`);
+          
+          // Archivar (desactivar) el producto en Stripe
+          // Nota: No eliminamos, solo archivamos para preservar el historial
+          await stripe.products.update(plan.stripeProductId, {
           active: false,
           metadata: {
             ...plan.metadata,
@@ -186,20 +208,21 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
           console.warn(`⚠️ Error archivando precios adicionales: ${pricesError.message}`);
         }
 
-      } catch (stripeError: any) {
-        console.error('❌ Error archivando en Stripe:', stripeError);
-        
-        // Si hay suscripciones activas, informar al usuario
-        if (stripeError.code === 'resource_missing') {
+        } catch (stripeError: any) {
+          console.error('❌ Error archivando en Stripe:', stripeError);
+          
+          // Si hay suscripciones activas, informar al usuario
+          if (stripeError.code === 'resource_missing') {
+            return NextResponse.json({ 
+              error: 'El producto no existe en Stripe. Se eliminará solo de la base de datos.' 
+            }, { status: 400 });
+          }
+          
+          // Para otros errores de Stripe, continuar pero avisar
           return NextResponse.json({ 
-            error: 'El producto no existe en Stripe. Se eliminará solo de la base de datos.' 
+            error: `No se pudo archivar en Stripe: ${stripeError.message}. El plan se mantendrá en la base de datos.` 
           }, { status: 400 });
         }
-        
-        // Para otros errores de Stripe, continuar pero avisar
-        return NextResponse.json({ 
-          error: `No se pudo archivar en Stripe: ${stripeError.message}. El plan se mantendrá en la base de datos.` 
-        }, { status: 400 });
       }
     }
 
