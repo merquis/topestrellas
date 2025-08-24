@@ -121,8 +121,9 @@ export default function FunctionalDashboard({ user }: FunctionalDashboardProps) 
       const isDownloadQRButton = target.closest('button')?.textContent?.includes('Descargar QR Irresistible');
       const isUnderstoodButton = target.closest('button')?.textContent?.includes('¡Entendido!');
       const isHelpButton = target.closest('button')?.textContent?.includes('Ver Centro de Ayuda');
+      const isDownloadAnchor = target.closest('a[download], a[href^="blob:"]');
 
-      if (!isConfigurePrizesButton && !isDownloadQRButton && !isUnderstoodButton && !isHelpButton) {
+      if (!isConfigurePrizesButton && !isDownloadQRButton && !isDownloadAnchor && !isUnderstoodButton && !isHelpButton) {
         event.preventDefault();
         event.stopPropagation();
         setUserTriedToNavigate(true);

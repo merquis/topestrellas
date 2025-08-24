@@ -40,7 +40,7 @@ export default function QRIrresistibleButton({
         return;
       }
 
-      const businessUrl = `${window.location.protocol}//${businessToUse.subdomain}.${window.location.host.replace('admin.', '')}`;
+      const businessUrl = `https://${businessToUse.subdomain}.tuvaloracion.com`;
       
       console.log('🎨 Generating QR for business:', {
         businessName: businessToUse.name,
@@ -52,6 +52,7 @@ export default function QRIrresistibleButton({
         businessName: businessToUse.name,
         url: businessUrl,
         template: 'restaurantes-01',
+        dpi: 300
       };
 
       console.log('📤 Sending request to /api/qr-designer:', requestBody);
