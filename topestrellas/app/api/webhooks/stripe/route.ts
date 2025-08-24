@@ -41,6 +41,13 @@ export async function POST(request: Request) {
 
     try {
       const stripe = getStripe();
+      if (!stripe) {
+        console.error('Stripe no está configurado');
+        return NextResponse.json(
+          { error: 'Stripe not configured' },
+          { status: 500 }
+        );
+      }
       event = stripe.webhooks.constructEvent(
         body,
         signature,
@@ -85,6 +92,10 @@ export async function POST(request: Request) {
 
         // 1. Adjuntar el método de pago al cliente y establecerlo como predeterminado
         const stripe = getStripe();
+        if (!stripe) {
+          console.error('[Webhook] Stripe no está configurado');
+          break;
+        }
         await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
         await stripe.customers.update(customerId, {
           invoice_settings: {
@@ -329,6 +340,10 @@ export async function POST(request: Request) {
         if (!subscription) break;
 
         const stripe = getStripe();
+        if (!stripe) {
+          console.error('[Webhook] Stripe no está configurado');
+          break;
+        }
         const subscriptionObj = await stripe.subscriptions.retrieve(
           subscription as string
         );
@@ -373,6 +388,10 @@ export async function POST(request: Request) {
         if (!subscription) break;
 
         const stripe = getStripe();
+        if (!stripe) {
+          console.error('[Webhook] Stripe no está configurado');
+          break;
+        }
         const subscriptionObj = await stripe.subscriptions.retrieve(
           subscription as string
         );
@@ -412,6 +431,10 @@ export async function POST(request: Request) {
         if (!subscription) break;
 
         const stripe = getStripe();
+        if (!stripe) {
+          console.error('[Webhook] Stripe no está configurado');
+          break;
+        }
         const subscriptionObj = await stripe.subscriptions.retrieve(
           subscription as string
         );
