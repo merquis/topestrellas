@@ -4,9 +4,21 @@ import { ObjectId } from 'mongodb';
 import { confirmSubscription, updateBusinessSubscription } from '@/lib/subscriptions';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
+// Inicialización lazy de Stripe para evitar errores durante el build
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY no está configurada');
+    }
+    stripe = new Stripe(key, {
+      apiVersion: '2025-07-30.basil',
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: Request) {
   try {
@@ -35,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     // Verificar el estado del PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const paymentIntent = await getStripe().paymentIntents.retrieve(paymentIntentId);
     
     if (paymentIntent.status !== 'succeeded') {
       return NextResponse.json(
