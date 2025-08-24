@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { AuthUser, checkAuth } from '@/lib/auth';
+import UpdatePaymentMethodModal from '@/components/UpdatePaymentMethodModal';
 
 interface Invoice {
   id: string;
@@ -56,6 +57,10 @@ function InvoicesContent() {
   const [unpaidAmount, setUnpaidAmount] = useState<number>(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
+  const [showUpdatePM, setShowUpdatePM] = useState(false);
+  const [businessMeta, setBusinessMeta] = useState<{ id: string; name: string } | null>(null);
+  const [lastAttemptInvoiceId, setLastAttemptInvoiceId] = useState<string | null>(null);
 
   const ITEMS_PER_PAGE = 24;
   const currentYear = new Date().getFullYear();
@@ -192,9 +197,61 @@ function InvoicesContent() {
     }
   };
 
+  const getSelectedBusiness = () => {
+    const selectedBusiness = localStorage.getItem('selectedBusiness');
+    if (!selectedBusiness) return null;
+    try {
+      return JSON.parse(selectedBusiness);
+    } catch {
+      return null;
+    }
+  };
+
+  const payInvoiceNow = async (invoice: Invoice) => {
+    try {
+      setIsPaying(true);
+      setLastAttemptInvoiceId(invoice.id);
+
+      const res = await fetch('/api/admin/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: invoice.id, action: 'pay' }),
+      });
+      const data = await res.json();
+
+      if (res.ok && (data.success === true || data.invoice?.status === 'paid')) {
+        await fetchInvoices();
+      } else {
+        const biz = getSelectedBusiness();
+        if (biz?._id) {
+          setBusinessMeta({ id: biz._id, name: biz.name || 'Tu negocio' });
+          setShowUpdatePM(true);
+        } else {
+          router.push('/admin/subscriptions');
+        }
+      }
+    } catch (e) {
+      const biz = getSelectedBusiness();
+      if (biz?._id) {
+        setBusinessMeta({ id: biz._id, name: biz.name || 'Tu negocio' });
+        setShowUpdatePM(true);
+      } else {
+        router.push('/admin/subscriptions');
+      }
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  const handlePayNowBanner = () => {
+    const firstUnpaid = invoices.find(i => i.status === 'open' || i.status === 'uncollectible');
+    if (firstUnpaid) {
+      payInvoiceNow(firstUnpaid);
+    }
+  };
+
   const handlePayInvoice = (invoice: Invoice) => {
-    setSelectedInvoice(invoice);
-    setShowPaymentModal(true);
+    payInvoiceNow(invoice);
   };
 
   const handleUpdatePaymentMethod = () => {
@@ -234,11 +291,16 @@ function InvoicesContent() {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setSelectedYear('all')}
-                  className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+                  onClick={handlePayNowBanner}
+                  disabled={isPaying}
+                  className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${isPaying ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'} text-white`}
                 >
-                  💳 <span className="hidden sm:inline">Pagar Ahora</span>
-                  <span className="sm:hidden">Pagar</span>
+                  {isPaying ? 'Procesando…' : (
+                    <>
+                      💳 <span className="hidden sm:inline">Pagar Ahora</span>
+                      <span className="sm:hidden">Pagar</span>
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={handleUpdatePaymentMethod}
@@ -390,10 +452,11 @@ function InvoicesContent() {
                       <div className="flex items-center gap-2">
                         {invoice.status === 'open' || invoice.status === 'uncollectible' ? (
                           <button
-                            onClick={() => handlePayInvoice(invoice)}
-                            className="px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600"
+                            onClick={() => payInvoiceNow(invoice)}
+                            disabled={isPaying}
+                            className={`px-3 py-1.5 text-white text-xs rounded-lg ${isPaying ? 'bg-yellow-300 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600'}`}
                           >
-                            Pagar
+                            {isPaying ? '...' : 'Pagar'}
                           </button>
                         ) : (
                           <button
@@ -484,7 +547,7 @@ function InvoicesContent() {
                           <div className="flex justify-center gap-2">
                             {invoice.status === 'open' && (
                               <button
-                                onClick={() => handlePayInvoice(invoice)}
+                                onClick={() => payInvoiceNow(invoice)}
                                 className="text-yellow-600 hover:text-yellow-800 font-medium text-sm cursor-pointer"
                                 title="Pagar factura"
                               >
@@ -493,7 +556,7 @@ function InvoicesContent() {
                             )}
                             {invoice.status === 'uncollectible' && (
                               <button
-                                onClick={() => handlePayInvoice(invoice)}
+                                onClick={() => payInvoiceNow(invoice)}
                                 className="text-red-600 hover:text-red-800 font-medium text-sm animate-pulse cursor-pointer"
                                 title="Resolver pago"
                               >
@@ -584,6 +647,24 @@ function InvoicesContent() {
             </button>
           </div>
         </div>
+      )}
+
+      {showUpdatePM && businessMeta && (
+        <UpdatePaymentMethodModal
+          businessId={businessMeta.id}
+          businessName={businessMeta.name}
+          onClose={() => setShowUpdatePM(false)}
+          onSuccess={() => {
+            setShowUpdatePM(false);
+            // Tras guardar la tarjeta, reintentar el pago de la última factura
+            const toRetry = invoices.find(i => i.id === lastAttemptInvoiceId) || invoices.find(i => i.status === 'open' || i.status === 'uncollectible');
+            if (toRetry) {
+              setTimeout(() => payInvoiceNow(toRetry), 700);
+            } else {
+              fetchInvoices();
+            }
+          }}
+        />
       )}
 
       {/* Modal de pago - Responsive */}
