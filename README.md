@@ -2,7 +2,7 @@
 
 ## 📋 Descripción
 
-TopEstrellas es una plataforma SaaS completa para la gestión de reseñas y fidelización de clientes, diseñada para ayudar a los negocios a mejorar su reputación online y aumentar las reseñas positivas en Google y TripAdvisor.
+TopEstrellas es una plataforma SaaS completa para la gestión de reseñas y fidelización de clientes, diseñada para ayudar a los negocios a mejorar su reputación online y aumentar las reseñas positivas en Google y TripAdvisor
 
 ## 🏗️ Arquitectura
 
