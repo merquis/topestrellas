@@ -288,7 +288,7 @@ export default function SuperBusinessesPage() {
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => router.push(`/admin/edit-business/${business._id}`)}
+onClick={() => router.push(`/super/edit-business/${business._id}`)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="Editar"
                         >
