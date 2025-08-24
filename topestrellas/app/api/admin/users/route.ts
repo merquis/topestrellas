@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import getMongoClientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function GET() {
   try {
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     
     // Obtener todos los usuarios de la base de datos
@@ -61,7 +61,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     const data = await request.json();
     

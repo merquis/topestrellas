@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import getMongoClientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function GET(request: Request) {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const userEmail = searchParams.get('userEmail');
     const userRole = searchParams.get('userRole');
     
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     
     let businessFilter = {};
@@ -161,7 +161,7 @@ const PROVINCE_TIMEZONE_MAP: { [key: string]: string } = {
 
 export async function POST(request: Request) {
   try {
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     const data = await request.json();
     
@@ -407,7 +407,7 @@ export async function DELETE(request: Request) {
       );
     }
     
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     
     // Verificar que el ID sea válido

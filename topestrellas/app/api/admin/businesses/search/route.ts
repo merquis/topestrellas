@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import getMongoClientPromise from '@/lib/mongodb';
 
 // Marcar esta ruta como dinámica para evitar pre-renderizado estático
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const query = searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '10');
     
-    const client = await clientPromise;
+    const client = await getMongoClientPromise();
     const db = client.db('tuvaloracion');
     
     let searchFilter = {};
