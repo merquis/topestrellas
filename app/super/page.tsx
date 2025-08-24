@@ -5,18 +5,29 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { checkAuth, AuthUser } from '@/lib/auth';
 
+type SuperMetrics = {
+  mrr: number;
+  totalBusinesses: number;
+  activeBusinesses: number;
+  newThisMonth: number;
+  cancellationsCount: number;
+  avgLifetimeValue: number;
+  pendingPayments: number;
+  totalAffiliates: number;
+};
+
 export default function SuperAdminDashboard() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   
   // Estados para métricas
-  const [metrics, setMetrics] = useState({
+  const [metrics, setMetrics] = useState<SuperMetrics>({
     mrr: 0,
     totalBusinesses: 0,
     activeBusinesses: 0,
     newThisMonth: 0,
-    churnRate: 0,
+    cancellationsCount: 0,
     avgLifetimeValue: 0,
     pendingPayments: 0,
     totalAffiliates: 0
@@ -42,17 +53,23 @@ export default function SuperAdminDashboard() {
   }, [router]);
 
   const loadMetrics = async () => {
-    // TODO: Cargar métricas reales desde la API
-    setMetrics({
-      mrr: 4850,
-      totalBusinesses: 125,
-      activeBusinesses: 98,
-      newThisMonth: 12,
-      churnRate: 3.2,
-      avgLifetimeValue: 1250,
-      pendingPayments: 3,
-      totalAffiliates: 8
-    });
+    try {
+      const res = await fetch('/api/super/metrics', { method: 'GET', cache: 'no-store' });
+      if (!res.ok) {
+        throw new Error(`Error cargando métricas: ${res.status}`);
+      }
+      const data = await res.json();
+      setMetrics((prev: SuperMetrics) => ({
+        ...prev,
+        mrr: Math.round(((data?.mrr ?? 0) + Number.EPSILON) * 100) / 100,
+        totalBusinesses: data?.totalBusinesses ?? 0,
+        activeBusinesses: data?.activeBusinesses ?? 0,
+        newThisMonth: data?.newThisMonth ?? 0,
+        cancellationsCount: data?.cancellationsCount ?? 0,
+      }));
+    } catch (err) {
+      console.error('Error cargando métricas del super admin:', err);
+    }
   };
 
   if (loading) {
@@ -147,23 +164,19 @@ export default function SuperAdminDashboard() {
             </div>
           </div>
 
-          {/* Tasa de cancelación */}
+          {/* Cancelaciones (pausas del mes) */}
           <div className="bg-gradient-to-br from-red-50 to-orange-100 rounded-xl p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-2xl">📉</span>
               </div>
               <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">
-                Churn
+                Cancelaciones
               </span>
             </div>
             <div>
-              <p className="text-3xl font-bold text-gray-900">{metrics.churnRate}%</p>
-              <p className="text-sm text-gray-600 mt-1">Tasa de cancelación</p>
-              <div className="mt-3 flex items-center text-sm">
-                <span className="text-green-600 font-semibold">↓ 0.5%</span>
-                <span className="text-gray-500 ml-2">mejorando</span>
-              </div>
+              <p className="text-3xl font-bold text-gray-900">{metrics.cancellationsCount}</p>
+              <p className="text-sm text-gray-600 mt-1">Pausas de suscripción este mes</p>
             </div>
           </div>
         </div>

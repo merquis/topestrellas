@@ -262,12 +262,24 @@ export async function POST(request: Request) {
         await db.collection('businesses').updateOne(
           { _id: new ObjectId(businessId) },
           {
-            $set: {
+$set: {
               'subscription.pauseStatus': true,
+              'subscription.pausedAt': new Date(),
               updatedAt: new Date()
             }
           }
         );
+
+        // Registrar el evento de pausa
+        await db.collection('activity_logs').insertOne({
+          businessId,
+          type: 'subscription_paused',
+          description: 'Suscripción pausada',
+          metadata: {
+            subscriptionId: subscription.id,
+          },
+          createdAt: new Date(),
+        });
 
         console.log(`Suscripción pausada para negocio ${businessId}`);
         break;
@@ -292,14 +304,26 @@ export async function POST(request: Request) {
         await db.collection('businesses').updateOne(
           { _id: new ObjectId(businessId) },
           {
-            $set: {
+$set: {
               'subscription.pauseStatus': false,
+              'subscription.resumedAt': new Date(),
               updatedAt: new Date()
             }
           }
         );
 
         await resetPaymentFailures(businessId);
+
+        // Registrar el evento de reanudación
+        await db.collection('activity_logs').insertOne({
+          businessId,
+          type: 'subscription_resumed',
+          description: 'Suscripción reanudada',
+          metadata: {
+            subscriptionId: subscription.id,
+          },
+          createdAt: new Date(),
+        });
 
         console.log(`Suscripción reanudada para negocio ${businessId}`);
         break;
