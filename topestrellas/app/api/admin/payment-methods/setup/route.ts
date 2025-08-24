@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getOrCreateStripeCustomer } from '@/lib/subscriptions';
-import Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 import { verifyAuth } from '@/lib/auth';
 import { headers } from 'next/headers';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
 
 export async function POST(request: Request) {
   try {
@@ -28,6 +24,7 @@ export async function POST(request: Request) {
     const { customerId, taxId } = await getOrCreateStripeCustomer(userEmail, businessId, userName);
 
     // 2. Crear un SetupIntent
+    const stripe = getStripe();
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
       payment_method_types: ['card', 'link'], // Se elimina PayPal temporalmente

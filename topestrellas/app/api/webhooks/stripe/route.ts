@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { 
   updateBusinessSubscription,
@@ -8,12 +7,9 @@ import {
   getPlanFromDB
 } from '@/lib/subscriptions';
 import { getDatabase } from '@/lib/mongodb';
+import { getStripe } from '@/lib/stripe';
 import { ObjectId } from 'mongodb';
-
-// Inicializar Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
+import type { Stripe } from 'stripe';
 
 // Mapeo de estados de Stripe a nuestros estados
 const stripeStatusToOurStatus: Record<string, string> = {
@@ -44,6 +40,7 @@ export async function POST(request: Request) {
     let event: Stripe.Event;
 
     try {
+      const stripe = getStripe();
       event = stripe.webhooks.constructEvent(
         body,
         signature,
@@ -87,6 +84,7 @@ export async function POST(request: Request) {
         }
 
         // 1. Adjuntar el método de pago al cliente y establecerlo como predeterminado
+        const stripe = getStripe();
         await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
         await stripe.customers.update(customerId, {
           invoice_settings: {
@@ -330,6 +328,7 @@ export async function POST(request: Request) {
 
         if (!subscription) break;
 
+        const stripe = getStripe();
         const subscriptionObj = await stripe.subscriptions.retrieve(
           subscription as string
         );
@@ -373,6 +372,7 @@ export async function POST(request: Request) {
 
         if (!subscription) break;
 
+        const stripe = getStripe();
         const subscriptionObj = await stripe.subscriptions.retrieve(
           subscription as string
         );
@@ -411,6 +411,7 @@ export async function POST(request: Request) {
 
         if (!subscription) break;
 
+        const stripe = getStripe();
         const subscriptionObj = await stripe.subscriptions.retrieve(
           subscription as string
         );
