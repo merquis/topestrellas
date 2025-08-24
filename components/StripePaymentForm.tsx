@@ -15,6 +15,11 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : null;
 
+// Debug: Verificar si la clave está configurada
+if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+  console.error('⚠️ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY no está configurada. El formulario de pago no funcionará.');
+}
+
 interface PaymentFormProps {
   businessId: string;
   businessName: string;
@@ -60,6 +65,7 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [isElementReady, setIsElementReady] = useState(false);
   const hasTrial = planData.trialDays && planData.trialDays > 0;
   
   // Estados para capturar los valores actualizados de los campos
@@ -69,6 +75,24 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
   
   // Estado para forzar la actualización del LinkAuthenticationElement
   const [linkKey, setLinkKey] = useState(0);
+
+  // Detectar cuando el PaymentElement está listo
+  useEffect(() => {
+    if (!elements) return;
+    
+    const checkElementReady = () => {
+      const paymentElement = elements.getElement('payment');
+      if (paymentElement) {
+        setIsElementReady(true);
+      }
+    };
+    
+    // Verificar inmediatamente y después de un pequeño delay
+    checkElementReady();
+    const timer = setTimeout(checkElementReady, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [elements]);
 
   // Función para actualizar los elementos de Stripe con los datos actuales
   const updateStripeElements = () => {
@@ -212,32 +236,64 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
         {clientSecret ? (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Payment Element para la tarjeta */}
-            <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
-              <PaymentElement 
-                options={{
-                  layout: 'tabs',
-                  paymentMethodOrder: ['card'],
-                  defaultValues: {
-                    billingDetails: {
-                      address: {
-                        country: 'ES'
+            <div className="space-y-4">
+              <div className="text-sm font-medium text-gray-700">
+                Información de pago
+              </div>
+              
+              <div className="border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors min-h-[200px] relative">
+                {!isElementReady && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 rounded-xl">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                      <p className="text-sm text-gray-600">Cargando formulario de pago...</p>
+                      <p className="text-xs text-gray-500 mt-1">Por favor, espera un momento</p>
+                    </div>
+                  </div>
+                )}
+                
+                <PaymentElement 
+                  options={{
+                    layout: 'tabs',
+                    paymentMethodOrder: ['card'],
+                    defaultValues: {
+                      billingDetails: {
+                        address: {
+                          country: 'ES'
+                        }
                       }
-                    }
-                  },
-                  fields: {
-                    billingDetails: {
-                      address: {
-                        country: 'never'
+                    },
+                    fields: {
+                      billingDetails: {
+                        address: {
+                          country: 'never'
+                        }
                       }
+                    },
+                    // Deshabilitar la opción de guardar para pagos futuros
+                    wallets: {
+                      applePay: 'never',
+                      googlePay: 'never'
                     }
-                  },
-                  // Deshabilitar la opción de guardar para pagos futuros
-                  wallets: {
-                    applePay: 'never',
-                    googlePay: 'never'
-                  }
-                }}
-              />
+                  }}
+                  onReady={() => setIsElementReady(true)}
+                  onLoadError={(error) => {
+                    console.error('Error cargando PaymentElement:', error);
+                    setMessage('Error al cargar el formulario de pago. Por favor, recarga la página.');
+                    setIsElementReady(true); // Marcar como listo para mostrar el error
+                  }}
+                />
+              </div>
+              
+              {/* Mensaje de ayuda si no se carga */}
+              {!isElementReady && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
+                  <p className="text-yellow-800">
+                    <span className="font-semibold">⚠️ Nota:</span> Si el formulario de pago no aparece después de unos segundos, 
+                    verifica tu conexión a internet o intenta recargar la página.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Mensaje de error */}
