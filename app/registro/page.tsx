@@ -1423,7 +1423,7 @@ export default function RegistroPage() {
                                 await preparePayment(pendingBusinessId, selectedPlanData);
                               }}
                               disabled={isLoadingPayment || !companyNIF || !!billingFieldsError.companyNIF}
-                              className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                              className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                             >
                               {isLoadingPayment ? (
                                 <span className="flex items-center justify-center gap-2">
