@@ -25,6 +25,10 @@ export async function POST(request: Request) {
 
     // 2. Crear un SetupIntent
     const stripe = getStripe();
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe no está configurado' }, { status: 500 });
+    }
+    
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
       payment_method_types: ['card', 'link'], // Se elimina PayPal temporalmente
