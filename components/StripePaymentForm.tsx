@@ -55,7 +55,7 @@ interface PaymentFormProps {
     name: string;
     recurringPrice: number;
     trialDays?: number;
-    interval?: 'month' | 'year';
+    interval?: 'month' | 'quarter' | 'semester' | 'year';
   };
   clientSecret: string;
   userData?: {
@@ -390,14 +390,14 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                 type="button"
                 onClick={onCancel}
                 disabled={isProcessing}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50"
+                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={!stripe || isProcessing}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
                   <span className="flex items-center justify-center gap-2">
@@ -415,8 +415,8 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
             {/* Términos y condiciones */}
             <p className="text-xs text-gray-500 text-center">
               Al confirmar tu suscripción, aceptas nuestros{' '}
-              <a href="#" className="text-blue-600 hover:underline">términos de servicio</a> y{' '}
-              <a href="#" className="text-blue-600 hover:underline">política de privacidad</a>.
+              <a href="#" className="text-blue-600 hover:underline cursor-pointer">términos de servicio</a> y{' '}
+              <a href="#" className="text-blue-600 hover:underline cursor-pointer">política de privacidad</a>.
               Puedes cancelar en cualquier momento.
             </p>
           </form>

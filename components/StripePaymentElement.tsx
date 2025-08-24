@@ -33,6 +33,9 @@ function getStripePromise(): Promise<any> {
   return stripePromiseCache;
 }
 
+const intervalPerLabel = { month: 'mes', quarter: '3 meses', semester: '6 meses', year: 'año' } as const;
+const intervalRenewalLabel = { month: 'mensual', quarter: 'trimestral', semester: 'semestral', year: 'anual' } as const;
+
 interface PaymentFormProps {
   clientSecret: string;
   subscriptionId?: string;
@@ -154,6 +157,7 @@ function PaymentForm({
 
   const hasTrial = planDetails.trialDays && planDetails.trialDays > 0;
   const total = planDetails.price + (planDetails.setupFee || 0);
+  const intervalKey = (planDetails.interval || 'month') as keyof typeof intervalPerLabel;
 
   return (
     <div className="space-y-6">
@@ -171,10 +175,10 @@ function PaymentForm({
           
           <div className="flex justify-between">
             <span className="text-gray-600">
-              Precio {planDetails.interval === 'month' ? 'mensual' : 'anual'}:
+              Precio {intervalRenewalLabel[intervalKey]}:
             </span>
             <span className="font-medium">
-              {planDetails.price}€/{planDetails.interval === 'month' ? 'mes' : 'año'}
+              {planDetails.price}€/{intervalPerLabel[intervalKey]}
             </span>
           </div>
           
@@ -306,7 +310,7 @@ interface StripePaymentElementProps {
     price: number;
     setupFee?: number;
     currency: string;
-    interval?: string;
+    interval?: 'month' | 'quarter' | 'semester' | 'year';
     trialDays?: number; // Añadido para detectar prueba
   };
   onSuccess: () => void;
