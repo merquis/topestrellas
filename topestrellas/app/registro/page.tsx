@@ -38,9 +38,11 @@ export default function RegistroPage() {
   const [clientSecret, setClientSecret] = useState('');
   const [pendingBusinessId, setPendingBusinessId] = useState('');
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [showBillingForm, setShowBillingForm] = useState(true);
   
   // Billing fields
+  const [companyName, setCompanyName] = useState('');
   const [companyNIF, setCompanyNIF] = useState('');
   const [billingAddress, setBillingAddress] = useState('');
   const [billingPostalCode, setBillingPostalCode] = useState('');
@@ -52,6 +54,7 @@ export default function RegistroPage() {
   // Nuevos estados para el formulario de facturación
   const [customerType, setCustomerType] = useState<'autonomo' | 'empresa'>('autonomo');
   const [legalName, setLegalName] = useState('');
+  const [contactPerson, setContactPerson] = useState('');
   const [billingEmail, setBillingEmail] = useState('');
   const [billingPhone, setBillingPhone] = useState('');
 
@@ -308,6 +311,8 @@ export default function RegistroPage() {
       setRegistrationStep(4);
       setRegisterError('');
       
+      // NO llamar a preparePayment aquí - se hará cuando el usuario haga clic en pagar
+      
     } catch (error: any) {
       console.error('Error al seleccionar plan:', error);
       setRegisterError(error.message || 'Error al procesar la selección del plan');
@@ -359,7 +364,7 @@ export default function RegistroPage() {
         throw new Error(subscriptionData.error || 'Error al crear la sesión de pago');
       }
 
-      const { clientSecret: newClientSecret } = subscriptionData;
+      const { clientSecret: newClientSecret, subscriptionId, customerId, taxId } = subscriptionData;
       
       if (!newClientSecret) {
         throw new Error('No se pudo obtener el client secret para el pago');
@@ -370,7 +375,9 @@ export default function RegistroPage() {
         businessId,
         planKey: plan.key,
         userEmail: tempUserData.email,
-        ...subscriptionData
+        subscriptionId,
+        customerId,
+        clientSecret: newClientSecret
       }));
 
       // Establecer el clientSecret para el formulario de pago
@@ -387,8 +394,23 @@ export default function RegistroPage() {
     }
   };
 
+  const resetForms = () => {
+    setName('');
+    setEmail('');
+    setPhone('');
+    setPassword('');
+    setConfirmPassword('');
+    setBusinessType('restaurante');
+    setSelectedBusiness(null);
+    setBusinessPlaceId('');
+    setBusinessPhotoUrl('');
+    setRegisterError('');
+    setRegistrationStep(1);
+    setTempUserData(null);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">
@@ -401,7 +423,7 @@ export default function RegistroPage() {
                 setRegisterError('');
               }
             }}
-            className="absolute top-6 left-6 p-2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            className="absolute top-6 left-6 p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -653,363 +675,4 @@ export default function RegistroPage() {
               >
                 {isCreatingBusiness ? (
                   <div className="flex items-center justify-center gap-3">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Guardando datos...</span>
-                  </div>
-                ) : selectedBusiness ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <span>Continuar</span>
-                    <span>→</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <span>🔍</span>
-                    <span>Primero busca tu negocio</span>
-                  </div>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Plan Selection */}
-        {registrationStep === 3 && (
-          <div className="space-y-6">
-            {/* Mensaje unificado arriba */}
-            <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-              <p className="text-sm text-green-700 flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✨</span>
-                <span>
-                  <strong>Todos los planes incluyen 7 días de prueba gratis.</strong> No se te cobrará hasta que termine el periodo de prueba.
-                </span>
-              </p>
-            </div>
-
-            {/* Grid de planes */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {subscriptionPlans.map((plan) => (
-                <div
-                  key={plan.key}
-                  className={`relative bg-white rounded-2xl border-2 transition-all hover:shadow-xl ${
-                    plan.popular ? 'border-green-500 shadow-lg' : 'border-gray-200'
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-1 rounded-full text-xs font-bold">
-                        MÁS POPULAR
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                    <div className="flex items-baseline gap-1 mb-4">
-                      <span className="text-3xl font-bold text-gray-900">{plan.price}€</span>
-                      <span className="text-gray-600">/mes</span>
-                    </div>
-                    
-                    <ul className="space-y-3 mb-6">
-                      {plan.features?.map((feature: string, index: number) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-sm text-gray-700">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <button
-                      onClick={() => handleSelectPlan(plan)}
-                      disabled={isCreatingBusiness}
-                      className={`w-full py-3 rounded-xl font-semibold transition-all transform hover:scale-[1.02] ${
-                        plan.popular
-                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800'
-                          : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                      } disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
-                    >
-                      {isCreatingBusiness ? 'Procesando...' : 'Seleccionar Plan'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {registerError && (
-              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200">
-                <div className="flex items-center gap-2">
-                  <span className="text-red-500">❌</span>
-                  <span>{registerError}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Step 4: Payment */}
-        {registrationStep === 4 && (
-          <div className="space-y-6">
-            {/* Plan seleccionado */}
-            {selectedPlanData && (
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-blue-700 font-medium">Plan seleccionado:</p>
-                    <p className="text-lg font-bold text-blue-900">{selectedPlanData.name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-900">{selectedPlanData.price}€/mes</p>
-                    <p className="text-xs text-blue-700">7 días de prueba gratis</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Formulario de facturación */}
-            {showBillingForm && !clientSecret && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Datos de Facturación</h3>
-                
-                {/* Tipo de cliente */}
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setCustomerType('autonomo')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      customerType === 'autonomo'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-900">Autónomo</p>
-                      <p className="text-sm text-gray-600">Persona física</p>
-                    </div>
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={() => setCustomerType('empresa')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      customerType === 'empresa'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-900">Empresa</p>
-                      <p className="text-sm text-gray-600">Persona jurídica</p>
-                    </div>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {customerType === 'autonomo' ? 'Nombre completo' : 'Razón social'}
-                    </label>
-                    <input
-                      type="text"
-                      value={legalName}
-                      onChange={(e) => setLegalName(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder={customerType === 'autonomo' ? 'Juan Pérez García' : 'Mi Empresa S.L.'}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {customerType === 'autonomo' ? 'NIF' : 'CIF'}
-                    </label>
-                    <input
-                      type="text"
-                      value={companyNIF}
-                      onChange={(e) => setCompanyNIF(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder={customerType === 'autonomo' ? '12345678A' : 'B12345678'}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email de facturación
-                    </label>
-                    <input
-                      type="email"
-                      value={billingEmail}
-                      onChange={(e) => setBillingEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="facturacion@ejemplo.com"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Teléfono
-                    </label>
-                    <input
-                      type="tel"
-                      value={billingPhone}
-                      onChange={(e) => setBillingPhone(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="+34 900 000 000"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Dirección de facturación</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Dirección
-                      </label>
-                      <input
-                        type="text"
-                        value={billingAddress}
-                        onChange={(e) => setBillingAddress(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="Calle Principal 123"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Código Postal
-                      </label>
-                      <input
-                        type="text"
-                        value={billingPostalCode}
-                        onChange={(e) => setBillingPostalCode(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="28001"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Ciudad
-                      </label>
-                      <input
-                        type="text"
-                        value={billingCity}
-                        onChange={(e) => setBillingCity(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="Madrid"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Provincia
-                      </label>
-                      <input
-                        type="text"
-                        value={billingProvince}
-                        onChange={(e) => setBillingProvince(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="Madrid"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        País
-                      </label>
-                      <input
-                        type="text"
-                        value={billingCountry}
-                        onChange={(e) => setBillingCountry(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="España"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => preparePayment(pendingBusinessId, selectedPlanData)}
-                  disabled={isLoadingPayment || !legalName || !companyNIF}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
-                >
-                  {isLoadingPayment ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Preparando pago seguro...</span>
-                    </div>
-                  ) : (
-                    'Continuar al pago'
-                  )}
-                </button>
-              </div>
-            )}
-
-            {/* Formulario de pago de Stripe */}
-            {clientSecret && !showBillingForm && (
-              <div className="space-y-6">
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <p className="text-sm text-gray-700 flex items-start gap-2">
-                    <span className="text-gray-500 mt-0.5">🔒</span>
-                    <span>
-                      Pago seguro procesado por Stripe. Tu información está protegida con encriptación SSL.
-                    </span>
-                  </p>
-                </div>
-                
-                <StripePaymentForm
-                  clientSecret={clientSecret}
-                  businessId={pendingBusinessId}
-                  businessName={selectedBusiness?.name || ''}
-                  businessPhotoUrl={businessPhotoUrl}
-                  planData={{
-                    key: selectedPlanData?.key || '',
-                    name: selectedPlanData?.name || '',
-                    recurringPrice: selectedPlanData?.price || 0,
-                    trialDays: selectedPlanData?.trialDays || 7,
-                    interval: 'month'
-                  }}
-                  userData={{
-                    name: tempUserData?.name || '',
-                    email: tempUserData?.email || '',
-                    phone: tempUserData?.phone || ''
-                  }}
-                  billingInfo={{
-                    customerType: customerType,
-                    legalName: legalName,
-                    taxId: companyNIF,
-                    email: billingEmail || tempUserData?.email || '',
-                    phone: billingPhone || tempUserData?.phone || '',
-                    address: {
-                      line1: billingAddress,
-                      city: billingCity,
-                      postal_code: billingPostalCode,
-                      country: 'ES'
-                    }
-                  }}
-                  onSuccess={() => {
-                    // Redirigir al dashboard después del pago exitoso
-                    router.push('/admin');
-                  }}
-                  onCancel={() => {
-                    setClientSecret(''); // Resetear para permitir reintentar
-                    setShowBillingForm(true);
-                  }}
-                />
-              </div>
-            )}
-
-            {registerError && (
-              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm border border-red-200">
-                <div className="flex items-center gap-2">
-                  <span className="text-red-500">❌</span>
-                  <span>{registerError}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+                    <div className="animate
