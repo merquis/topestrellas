@@ -11,16 +11,8 @@ import {
 import { loadStripe } from '@stripe/stripe-js';
 import { Loader2, CreditCard, Shield, CheckCircle } from 'lucide-react';
 
-// IMPORTANTE: La clave pública debe estar disponible en el cliente
-// Asegúrate de que NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY esté configurada en Easypanel
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
-
-// Debug: Verificar si la clave está configurada
-if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-  console.error('⚠️ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY no está configurada. El formulario de pago no funcionará.');
-}
+// Cargar Stripe
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface PaymentFormProps {
   clientSecret: string;
