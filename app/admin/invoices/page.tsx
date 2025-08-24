@@ -293,7 +293,7 @@ function InvoicesContent() {
                 <button
                   onClick={handlePayNowBanner}
                   disabled={isPaying}
-                  className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${isPaying ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'} text-white`}
+                  className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${isPaying ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 cursor-pointer'} text-white`}
                 >
                   {isPaying ? 'Procesando…' : (
                     <>
@@ -304,7 +304,7 @@ function InvoicesContent() {
                 </button>
                 <button
                   onClick={handleUpdatePaymentMethod}
-                  className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm sm:text-base"
+                  className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm sm:text-base cursor-pointer"
                 >
                   🔄 <span className="hidden sm:inline">Actualizar Método de Pago</span>
                   <span className="sm:hidden">Actualizar</span>
@@ -454,14 +454,14 @@ function InvoicesContent() {
                           <button
                             onClick={() => payInvoiceNow(invoice)}
                             disabled={isPaying}
-                            className={`px-3 py-1.5 text-white text-xs rounded-lg ${isPaying ? 'bg-yellow-300 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600'}`}
+                            className={`px-3 py-1.5 text-white text-xs rounded-lg ${isPaying ? 'bg-yellow-300 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600 cursor-pointer'}`}
                           >
                             {isPaying ? '...' : 'Pagar'}
                           </button>
                         ) : (
                           <button
                             onClick={() => handleViewInvoice(invoice)}
-                            className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600"
+                            className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 cursor-pointer"
                           >
                             Ver
                           </button>

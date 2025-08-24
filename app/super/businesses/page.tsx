@@ -268,10 +268,20 @@ export default function SuperBusinessesPage() {
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-1">
                           <span className="text-yellow-500">★</span>
-                          <span className="font-medium">4.8</span>
+                          <span className="font-medium">
+                            {Number(
+                              business.googlePlaces?.rating ??
+                              business.config?.googleStats?.currentRating ??
+                              business.stats?.googleRating ??
+                              0
+                            ).toFixed(1)}
+                          </span>
                         </div>
                         <div className="text-gray-500">
-                          247 opiniones
+                          {(business.googlePlaces?.totalReviews ??
+                            business.config?.googleStats?.totalReviews ??
+                            business.stats?.googleReviews ??
+                            0).toLocaleString('es-ES')} opiniones
                         </div>
                       </div>
                     </td>
