@@ -2,9 +2,21 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getDatabase } from '@/lib/mongodb';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
+// Inicialización lazy de Stripe para evitar errores durante el build
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY no está configurada');
+    }
+    stripe = new Stripe(key, {
+      apiVersion: '2025-07-30.basil',
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: Request) {
   try {
@@ -34,10 +46,10 @@ export async function POST(request: Request) {
     
     if (user?.stripeCustomerId) {
       // Usuario existente con customer en Stripe
-      customer = await stripe.customers.retrieve(user.stripeCustomerId);
+      customer = await getStripe().customers.retrieve(user.stripeCustomerId);
     } else {
       // Crear nuevo customer en Stripe
-      customer = await stripe.customers.create({
+      customer = await getStripe().customers.create({
         email: email,
         name: name,
         metadata: {
@@ -56,7 +68,7 @@ export async function POST(request: Request) {
     }
 
     // Crear SetupIntent para guardar método de pago
-    const setupIntent = await stripe.setupIntents.create({
+    const setupIntent = await getStripe().setupIntents.create({
       customer: customer.id,
       payment_method_types: ['card'],
       usage: 'off_session', // Permite cobros futuros automáticos

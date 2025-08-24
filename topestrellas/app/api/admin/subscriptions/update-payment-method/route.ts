@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
+// Inicialización lazy de Stripe para evitar errores durante el build
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY no está configurada');
+    }
+    stripe = new Stripe(key, {
+      apiVersion: '2025-07-30.basil',
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: Request) {
   try {
@@ -68,7 +80,7 @@ export async function POST(request: Request) {
     if (!customerId) {
       // Si no tenemos el customer ID guardado, obtenerlo de la suscripción
       try {
-        const subscription = await stripe.subscriptions.retrieve(
+        const subscription = await getStripe().subscriptions.retrieve(
           business.subscription.stripeSubscriptionId
         );
         customerId = subscription.customer as string;
@@ -94,7 +106,7 @@ export async function POST(request: Request) {
     // Obtener información del cliente de Stripe para pre-rellenar datos
     let customerInfo = null;
     try {
-      const customer = await stripe.customers.retrieve(customerId);
+      const customer = await getStripe().customers.retrieve(customerId);
       if (customer && !customer.deleted) {
         customerInfo = {
           email: (customer as any).email,
@@ -109,7 +121,7 @@ export async function POST(request: Request) {
 
     // Crear un SetupIntent para capturar el nuevo método de pago
     try {
-      const setupIntent = await stripe.setupIntents.create({
+      const setupIntent = await getStripe().setupIntents.create({
         customer: customerId,
         usage: 'off_session', // Para pagos futuros automáticos
         metadata: {

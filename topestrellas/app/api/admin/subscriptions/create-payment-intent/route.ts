@@ -4,9 +4,21 @@ import Stripe from 'stripe';
 import { verifyAuth } from "@/lib/auth";
 import { getDatabase } from '@/lib/mongodb';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
+// Inicialización lazy de Stripe para evitar errores durante el build
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY no está configurada');
+    }
+    stripe = new Stripe(key, {
+      apiVersion: '2025-07-30.basil',
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: Request) {
   try {
@@ -86,7 +98,7 @@ export async function POST(request: Request) {
     }
 
     // Crear un PaymentIntent en Stripe
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await getStripe().paymentIntents.create({
       amount: amount, // Stripe requiere el monto en céntimos
       currency: 'eur',
       automatic_payment_methods: {

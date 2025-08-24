@@ -59,7 +59,7 @@ export async function GET(request: Request) {
       let stripeSubscription = null;
       if (business.subscription?.stripeSubscriptionId) {
         try {
-          stripeSubscription = await stripe.subscriptions.retrieve(
+          stripeSubscription = await getStripe().subscriptions.retrieve(
             business.subscription.stripeSubscriptionId
           );
         } catch (error) {
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
       let paymentHistory: any[] = [];
       if (business.subscription?.stripeSubscriptionId) {
         try {
-          const invoices = await stripe.invoices.list({
+          const invoices = await getStripe().invoices.list({
             subscription: business.subscription.stripeSubscriptionId,
             limit: 10,
           });
@@ -119,7 +119,7 @@ export async function GET(request: Request) {
           let stripeSubscription = null;
           if (business.subscription?.stripeSubscriptionId) {
             try {
-              stripeSubscription = await stripe.subscriptions.retrieve(
+              stripeSubscription = await getStripe().subscriptions.retrieve(
                 business.subscription.stripeSubscriptionId
               );
             } catch (error) {
