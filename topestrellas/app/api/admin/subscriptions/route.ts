@@ -14,9 +14,21 @@ import {
 } from '@/lib/subscriptions';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
+// Inicialización lazy de Stripe para evitar errores durante el build
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY no está configurada');
+    }
+    stripe = new Stripe(key, {
+      apiVersion: '2025-07-30.basil',
+    });
+  }
+  return stripe;
+}
 
 const toDate = (secs?: number | null) =>
   typeof secs === 'number' ? new Date(secs * 1000) : null;
