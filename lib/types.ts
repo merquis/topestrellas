@@ -46,6 +46,10 @@ export interface Business {
     rouletteColors?: string[]
     languages: string[]
     prizes: Prize[]
+    raffle?: {
+      item: string
+      prizeValue: number
+    }
     googleReviewUrl?: string
     tripadvisorReviewUrl?: string
     reviewPlatform?: 'google' | 'tripadvisor' | 'alternating'

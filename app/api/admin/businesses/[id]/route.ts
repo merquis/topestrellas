@@ -157,6 +157,15 @@ export async function PUT(
         },
         theme: {
         },
+        raffle: {
+          item: data.raffleItem || currentBusiness.config?.raffle?.item || '',
+          prizeValue:
+            (typeof data.raffleValue === 'number'
+              ? data.raffleValue
+              : (typeof data.raffleValue === 'string' ? parseFloat(data.raffleValue) : 0)) ||
+            currentBusiness.config?.raffle?.prizeValue ||
+            0
+        },
         prizes: translatedPrizes
       },
       contact: {

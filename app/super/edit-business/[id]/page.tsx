@@ -32,6 +32,8 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
     plan: 'trial',
     active: true,
     prizes: Array(8).fill({ name: '', realCost: 0 }),
+    raffleItem: '',
+    raffleValue: 0,
     googleCurrentRating: 0,
     googleTotalReviews: 0,
     tripadvisorCurrentRating: 0,
@@ -66,6 +68,8 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
       const hash = window.location.hash;
       if (hash === '#premios') {
         setActiveTab('prizes');
+      } else if (hash === '#sorteos') {
+        setActiveTab('raffles');
       } else if (hash === '#resenas') {
         setActiveTab('reviews');
       } else if (hash === '#configuracion' || hash === '#mis-suscripciones') {
@@ -118,6 +122,8 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
           plan: business.subscription?.plan || 'trial',
           active: business.active !== false,
           prizes: prizes,
+          raffleItem: business.config?.raffle?.item || '',
+          raffleValue: business.config?.raffle?.prizeValue || 0,
           googleCurrentRating: business.config?.googleStats?.currentRating || 0,
           googleTotalReviews: business.config?.googleStats?.totalReviews || 0,
           tripadvisorCurrentRating: business.config?.tripadvisorStats?.currentRating || 0,
@@ -337,6 +343,19 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
                 }`}
               >
                 Premios
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('raffles');
+                  window.history.pushState(null, '', `#sorteos`);
+                }}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === 'raffles'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Sorteos
               </button>
               <button
                 onClick={() => {
@@ -569,6 +588,51 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Raffles Tab */}
+            {activeTab === 'raffles' && (
+              <div className="space-y-6">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h3 className="font-medium text-yellow-900 mb-2">🎟️ Configuración de Sorteos</h3>
+                  <p className="text-sm text-yellow-800 mb-2">
+                    Añade un sorteo activo para tus clientes. Esta información puede mostrarse en tu landing y materiales promocionales.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Qué se sortea
+                    </label>
+                    <input
+                      type="text"
+                      name="raffleItem"
+                      value={formData.raffleItem}
+                      onChange={handleChange}
+                      placeholder="Ej: Cena para 2 personas"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Valor del premio sorteado (€)
+                    </label>
+                    <input
+                      type="number"
+                      name="raffleValue"
+                      step="0.01"
+                      value={formData.raffleValue}
+                      onChange={handleChange}
+                      placeholder="50"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Usa el valor aproximado del premio para fines informativos.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
