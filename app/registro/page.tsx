@@ -1085,10 +1085,10 @@ export default function RegistroPage() {
                             <span>Datos de facturación</span>
                           </h4>
                           {clientSecret && (
-                            <button
-                              onClick={() => setShowBillingForm(!showBillingForm)}
-                              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                            >
+                              <button
+                                onClick={() => setShowBillingForm(!showBillingForm)}
+                                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 cursor-pointer"
+                              >
                               {showBillingForm ? (
                                 <>
                                   <span>Ocultar</span>
