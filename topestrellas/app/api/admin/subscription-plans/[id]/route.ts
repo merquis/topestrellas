@@ -1,21 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 import { syncPlanToStripe } from '@/lib/subscriptions';
-
-// Función para obtener la instancia de Stripe de forma lazy
-function getStripe(): Stripe | null {
-  const apiKey = process.env.STRIPE_SECRET_KEY;
-  if (!apiKey || apiKey === '') {
-    console.warn('⚠️ STRIPE_SECRET_KEY no está configurada');
-    return null;
-  }
-  
-  return new Stripe(apiKey, {
-    apiVersion: '2025-07-30.basil' as any,
-  });
-}
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
