@@ -960,12 +960,38 @@ export default function RegistroPage() {
                 <StripePaymentForm
                   clientSecret={clientSecret}
                   businessId={pendingBusinessId}
+                  businessName={selectedBusiness?.name || ''}
+                  businessPhotoUrl={businessPhotoUrl}
+                  planData={{
+                    key: selectedPlanData?.key || '',
+                    name: selectedPlanData?.name || '',
+                    recurringPrice: selectedPlanData?.price || 0,
+                    trialDays: selectedPlanData?.trialDays || 7,
+                    interval: 'month'
+                  }}
+                  userData={{
+                    name: tempUserData?.name || '',
+                    email: tempUserData?.email || '',
+                    phone: tempUserData?.phone || ''
+                  }}
+                  billingInfo={{
+                    customerType: customerType,
+                    legalName: legalName,
+                    taxId: companyNIF,
+                    email: billingEmail || tempUserData?.email || '',
+                    phone: billingPhone || tempUserData?.phone || '',
+                    address: {
+                      line1: billingAddress,
+                      city: billingCity,
+                      postal_code: billingPostalCode,
+                      country: 'ES'
+                    }
+                  }}
                   onSuccess={() => {
                     // Redirigir al dashboard después del pago exitoso
                     router.push('/admin');
                   }}
-                  onError={(error) => {
-                    setRegisterError(error);
+                  onCancel={() => {
                     setClientSecret(''); // Resetear para permitir reintentar
                     setShowBillingForm(true);
                   }}
