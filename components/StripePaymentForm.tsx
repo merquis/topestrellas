@@ -43,6 +43,9 @@ function getStripePromise(): Promise<any> {
   return stripePromiseCache;
 }
 
+const intervalPerLabel = { month: 'mes', quarter: '3 meses', semester: '6 meses', year: 'año' } as const;
+const intervalRenewalLabel = { month: 'mensual', quarter: 'trimestral', semester: 'semestral', year: 'anual' } as const;
+
 interface PaymentFormProps {
   businessId: string;
   businessName: string;
@@ -90,6 +93,7 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
   const [message, setMessage] = useState<string | null>(null);
   const [isElementReady, setIsElementReady] = useState(false);
   const hasTrial = planData.trialDays && planData.trialDays > 0;
+  const intervalKey = (planData.interval || 'month') as keyof typeof intervalPerLabel;
   
   // Estados para capturar los valores actualizados de los campos
   const [billingName, setBillingName] = useState(userData?.name || '');
@@ -241,13 +245,13 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                 <div className="text-3xl font-bold">0€</div>
                 <div className="text-xs text-blue-100">hoy</div>
                 <div className="text-[11px] text-blue-100/90">
-                  después {planData.recurringPrice}€/{planData.interval === 'month' ? 'mes' : 'año'}
+                  después {planData.recurringPrice}€/{intervalPerLabel[intervalKey]}
                 </div>
               </div>
             ) : (
               <div>
                 <div className="text-3xl font-bold">{planData.recurringPrice}€</div>
-                <div className="text-xs text-blue-100">/{planData.interval === 'month' ? 'mes' : 'año'}</div>
+                <div className="text-xs text-blue-100">/{intervalPerLabel[intervalKey]}</div>
               </div>
             )}
           </div>
@@ -362,7 +366,7 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                   <span className="text-base mt-0.5">🔄</span>
                   <div>
                     <span className="font-medium text-gray-700">Renovación automática </span>
-                    <span className="text-gray-600">{planData.interval === 'month' ? 'mensual' : 'anual'}</span>
+                    <span className="text-gray-600">{intervalRenewalLabel[intervalKey]}</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
@@ -403,7 +407,7 @@ function CheckoutForm({ businessId, businessName, businessPhotoUrl, planData, cl
                 ) : hasTrial ? (
                   `Iniciar prueba de ${planData.trialDays} días GRATIS`
                 ) : (
-                  `Pagar ${planData.recurringPrice}€/${planData.interval === 'month' ? 'mes' : 'año'}`
+                  `Pagar ${planData.recurringPrice}€/${intervalPerLabel[intervalKey]}`
                 )}
               </button>
             </div>
