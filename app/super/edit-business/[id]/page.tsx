@@ -10,6 +10,8 @@ import { GooglePlacesUltraSeparatedLarge } from '@/components/GooglePlacesUltraS
 import { GooglePlaceData } from '@/lib/types';
 import ChangePlanModal from '@/components/admin/ChangePlanModal';
 
+type RaffleItem = { item: string; prizeValue: number; frequency: 'daily' | 'weekly' | 'monthly' };
+
 export default function SuperEditBusinessPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -32,7 +34,7 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
     plan: 'trial',
     active: true,
     prizes: Array(8).fill({ name: '', realCost: 0 }),
-    raffles: [],
+    raffles: [] as RaffleItem[],
     googleCurrentRating: 0,
     googleTotalReviews: 0,
     tripadvisorCurrentRating: 0,
@@ -110,18 +112,18 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
 
         // Preparar sorteos (compatibilidad: objeto o array)
         const rawRaffle = business.config?.raffle;
-        let raffles: { item: string; prizeValue: number; frequency: string }[] = [];
+        let raffles: RaffleItem[] = [];
         if (Array.isArray(rawRaffle)) {
           raffles = rawRaffle.map((r: any) => ({
             item: r?.item || '',
             prizeValue: typeof r?.prizeValue === 'number' ? r.prizeValue : parseFloat(r?.prizeValue) || 0,
-            frequency: (r?.frequency === 'weekly' || r?.frequency === 'monthly') ? r.frequency : 'daily'
+            frequency: ((r?.frequency === 'weekly' || r?.frequency === 'monthly') ? r.frequency : 'daily') as 'daily' | 'weekly' | 'monthly'
           }));
         } else if (rawRaffle && typeof rawRaffle === 'object') {
           raffles = [{
             item: rawRaffle.item || '',
             prizeValue: typeof rawRaffle.prizeValue === 'number' ? rawRaffle.prizeValue : parseFloat(rawRaffle.prizeValue) || 0,
-            frequency: rawRaffle.frequency === 'weekly' || rawRaffle.frequency === 'monthly' ? rawRaffle.frequency : 'daily'
+            frequency: (rawRaffle.frequency === 'weekly' || rawRaffle.frequency === 'monthly' ? rawRaffle.frequency : 'daily') as 'daily' | 'weekly' | 'monthly'
           }];
         }
 
@@ -270,17 +272,20 @@ export default function SuperEditBusinessPage({ params }: { params: Promise<{ id
   };
 
   // Gestión de sorteos (dinámicos)
-  const handleRaffleChange = (index: number, field: 'item' | 'prizeValue' | 'frequency', value: string | number) => {
-    const list = [...(formData.raffles || [])];
+  const handleRaffleChange = (index: number, field: keyof RaffleItem, value: string | number) => {
+    const list = [...(formData.raffles || [])] as RaffleItem[];
     if (!list[index]) return;
-    if (field === 'prizeValue' && typeof value === 'string') {
-      const n = parseFloat(value);
-      // @ts-ignore
-      list[index][field] = isNaN(n) ? 0 : n;
+
+    if (field === 'prizeValue') {
+      const n = typeof value === 'string' ? parseFloat(value) : (value as number);
+      list[index].prizeValue = isNaN(n) ? 0 : n;
+    } else if (field === 'frequency') {
+      const v = typeof value === 'string' ? value : '';
+      list[index].frequency = (v === 'weekly' || v === 'monthly' || v === 'daily') ? (v as 'daily' | 'weekly' | 'monthly') : 'daily';
     } else {
-      // @ts-ignore
-      list[index][field] = value as any;
+      list[index].item = value as string;
     }
+
     setFormData({ ...formData, raffles: list });
   };
 
